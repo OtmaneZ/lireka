@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadrage de mission - Lireka × ZineInsights</title>
+    <style>
+        :root {
+            --primary-color: #051C2C;
+            --secondary-color: #232D3F;
+            --text-color: #333333;
+            --light-bg: #F8F9FA;
+            --border-color: #E2E8F0;
+            --accent-muted: #4A5568;
+            --accent-green: #1A6B3C;
+            --accent-amber: #92600A;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .company-title {
+            font-family: Georgia, serif;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+        }
+
+        .document-subtitle {
+            font-size: 1.1rem;
+            color: var(--accent-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: 0;
+        }
+
+        .meta-info {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--accent-muted);
+        }
+
+        h2 {
+            font-family: Georgia, serif;
+            font-size: 1.6rem;
+            color: var(--primary-color);
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            color: var(--secondary-color);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            margin: 0 0 1rem 0;
+            padding-left: 1.4rem;
+        }
+
+        li {
+            margin-bottom: 0.4rem;
+        }
+
+        .page-block {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 2rem;
+        }
+
+        .intro-box {
+            background-color: var(--light-bg);
+            border-left: 4px solid var(--primary-color);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .scope-box {
+            background-color: #FFF8E6;
+            border-left: 4px solid var(--accent-amber);
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .deliverables {
+            display: grid;
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .deliverable-item {
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.9rem 1.2rem;
+            border-radius: 4px;
+        }
+
+        .deliverable-item strong {
+            color: var(--primary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.92rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: var(--light-bg);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-inclus { background: #E6F4EA; color: var(--accent-green); }
+        .tag-existant { background: #E8EEF4; color: var(--secondary-color); }
+        .tag-conditionnel { background: #FFF3CD; color: var(--accent-amber); }
+        .tag-phase1 { background: #E8EEF4; color: var(--primary-color); }
+        .tag-phase2 { background: #E6F4EA; color: var(--accent-green); }
+
+        .phase-box {
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .phase-box h3 {
+            margin-top: 0;
+        }
+
+        footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.88rem;
+            color: var(--accent-muted);
+        }
+
+        @media print {
+            body { background-color: #FFFFFF; font-size: 11pt; }
+            .container { max-width: 100%; padding: 0; }
+            .page-block { break-inside: avoid; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1 class="company-title">Lireka</h1>
+        <p class="document-subtitle">Intégration Power BI &amp; profitabilité — Devis contractuel</p>
+        <div class="meta-info">
+            <strong>Prestataire :</strong> Otmane Boulahia - ZineInsights &nbsp;|&nbsp;
+            <strong>Durée :</strong> 4 jours &nbsp;|&nbsp;
+            <strong>Forfait :</strong> 1 800 &euro; HT
+        </div>
+    </header>
+
+    <div class="intro-box">
+        <p><strong>Objet :</strong> intégration des données transporteurs et commandes dans Power BI, jointure par numéro de suivi, mise en place de dashboards de profitabilité et formation des utilisateurs.</p>
+        <p>La mission s'appuie sur l'existant : dashboards transporteurs DHL, FedEx, UPS (factures CSV).</p>
+    </div>
+
+    <div class="scope-box">
+        <strong>Référence contractuelle :</strong> ce document est aligné sur le devis signé (4 jours, 1 800 &euro; HT). En cas d'écart avec un autre document du dépôt, <strong>le devis fait foi</strong>.
+    </div>
+
+    <main>
+
+        <div class="page-block">
+            <h2>1. Périmètre inclus</h2>
+
+            <div class="deliverables">
+                <div class="deliverable-item">
+                    <span class="tag tag-inclus">Inclus</span>&nbsp;
+                    <strong>Intégration des 3 transporteurs manquants</strong> — La Poste, Colis Privé, Chronopost
+                </div>
+                <div class="deliverable-item">
+                    <span class="tag tag-inclus">Inclus</span>&nbsp;
+                    <strong>Import et structuration</strong> du fichier CSV commandes backend
+                </div>
+                <div class="deliverable-item">
+                    <span class="tag tag-inclus">Inclus</span>&nbsp;
+                    <strong>Jointure factures &harr; commandes</strong> par numéro de suivi
+                </div>
+                <div class="deliverable-item">
+                    <span class="tag tag-inclus">Inclus</span>&nbsp;
+                    <strong>Dashboards de profitabilité</strong> — marge brute par pays, par type de commande
+                </div>
+                <div class="deliverable-item">
+                    <span class="tag tag-conditionnel">Inclus</span>&nbsp;
+                    <strong>Formation des utilisateurs</strong> — proposée durant la mission, sous réserve de disponibilité des équipes Lireka
+                </div>
+                <div class="deliverable-item">
+                    <span class="tag tag-inclus">Inclus</span>&nbsp;
+                    <strong>Documentation du processus</strong> — import CSV, refresh, limites connues
+                </div>
+            </div>
+        </div>
+
+        <div class="page-block">
+            <h2>2. Hors périmètre</h2>
+            <ul>
+                <li>Dashboards transporteurs dédiés (un par transporteur) calqués sur DHL / FedEx / UPS</li>
+                <li>Dashboards supplémentaires (synthèse direction, écarts transport, marketing…)</li>
+                <li>Refonte des dashboards DHL, FedEx, UPS existants</li>
+                <li>Programme formation multi-sessions (3 &times; 2 h)</li>
+                <li>Dictionnaire de données exhaustif, architecture complète, comité de pilotage</li>
+                <li>Développement backend, automatisation exports, maintenance post-mission</li>
+            </ul>
+        </div>
+
+        <div class="page-block">
+            <h2>3. Planning — 4 jours</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Jour</th>
+                        <th>Activités</th>
+                        <th>Livrables</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>J1</strong></td>
+                        <td>Kick-off, accès, collecte CSV, ETL</td>
+                        <td>Données prêtes, checklist validée</td>
+                    </tr>
+                    <tr>
+                        <td><strong>J2</strong></td>
+                        <td>Intégration transporteurs + commandes dans Power BI</td>
+                        <td>Datasets publiés</td>
+                    </tr>
+                    <tr>
+                        <td><strong>J3</strong></td>
+                        <td>Jointure n° suivi, dashboards profitabilité</td>
+                        <td>Marge brute par pays et par type de commande</td>
+                    </tr>
+                    <tr>
+                        <td><strong>J4</strong></td>
+                        <td>Formation, documentation, clôture</td>
+                        <td>Processus documenté, mission livrée</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-block">
+            <h2>4. Données nécessaires (prérequis Lireka — J1)</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Donnée</th>
+                        <th>Format</th>
+                        <th>Usage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Factures La Poste, Colis Privé, Chronopost</td>
+                        <td>CSV</td>
+                        <td>Intégration transporteurs + coûts réels</td>
+                    </tr>
+                    <tr>
+                        <td>Export commandes backend</td>
+                        <td>CSV</td>
+                        <td>Profitabilité, jointure par n° de suivi</td>
+                    </tr>
+                    <tr>
+                        <td>Accès workspace Power BI</td>
+                        <td>Contributor</td>
+                        <td>Création et publication des rapports</td>
+                    </tr>
+                    <tr>
+                        <td>Dashboards DHL / FedEx / UPS</td>
+                        <td>Lecture</td>
+                        <td>Référence modèle existant</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p><strong>Point critique :</strong> la clé de liaison est le <strong>numéro de suivi</strong>, présent dans les factures transporteurs et dans l'export commandes.</p>
+        </div>
+
+        <div class="page-block">
+            <h2>5. Modalités commerciales</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Élément</th>
+                        <th>Détail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Durée</strong></td>
+                        <td>4 jours</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tarif</strong></td>
+                        <td>450 &euro; HT / jour — forfait <strong>1 800 &euro; HT</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Interlocuteur</strong></td>
+                        <td>Otmane Boulahia — ZineInsights</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-block">
+            <h2>6. Conditions de démarrage</h2>
+            <p>La mission démarre dès que les éléments suivants sont réunis :</p>
+            <ul>
+                <li>Accès Power BI (workspace Lireka, Contributor)</li>
+                <li>Factures CSV La Poste, Colis Privé, Chronopost (1 mois)</li>
+                <li>Export commandes backend (CSV, 1 mois minimum)</li>
+                <li>Référent joignable côté Lireka pendant les 4 jours</li>
+                <li>Validation du devis par Marc Bordier</li>
+            </ul>
+        </div>
+
+    </main>
+
+    <footer>
+        <strong>Otmane Boulahia</strong> - Data Analyst, ZineInsights<br>
+        Devis contractuel - Juillet 2026
+    </footer>
+</div>
+
+</body>
+</html>

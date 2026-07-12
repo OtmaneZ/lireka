@@ -1,0 +1,7 @@
+# ZineInsights — Dépendances Python
+# Installation : pip install -r requirements.txt
+
+# Pas de dépendances externes pour l'instant — scripts en stdlib uniquement.
+# Ajouter ici si besoin futur :
+# pandas>=2.0
+# openpyxl>=3.1
