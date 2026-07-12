@@ -1,0 +1,97 @@
+# Lireka × ZineInsights — Pilotage économique & financier Power BI
+
+> **Prestataire** : Otmane Boulahia — ZineInsights (SASU)  
+> **Client** : Lireka — Marc Bordier, Président  
+> **Site** : [lireka.com](https://www.lireka.com)  
+> **Durée** : **4 jours** — forfait **1 800 € HT**  
+> **Statut** : 🟡 Préparation / Onboarding
+
+> **Référence contractuelle** : [`project/devis.md`](project/devis.md) — le devis fait foi sur le périmètre.
+
+---
+
+## Contexte
+
+Lireka est une librairie en ligne expédiant des livres dans le monde entier. En 2025, le groupe (Lireka + filiale Arthaud Grenoble) a réalisé **14,4 M€** de chiffre d'affaires.
+
+Trois tableaux de bord Power BI existent déjà pour les coûts transporteurs **DHL**, **FedEx** et **UPS** (factures CSV). Cette mission de **4 jours** vise à intégrer les transporteurs restants et les commandes, joindre les données par numéro de suivi, et livrer les **dashboards de profitabilité**.
+
+---
+
+## Périmètre contractuel (devis)
+
+| # | Livrable | Statut |
+|---|----------|--------|
+| 1 | Intégration **La Poste**, **Colis Privé**, **Chronopost** dans Power BI | ⬜ |
+| 2 | Import et structuration du **CSV commandes** backend | ⬜ |
+| 3 | **Jointure** factures ↔ commandes par numéro de suivi | ⬜ |
+| 4 | **Dashboards profitabilité** — marge brute par pays, par type de commande | ⬜ |
+| 5 | **Formation** utilisateurs (selon disponibilité équipes Lireka) | ⬜ |
+| 6 | **Documentation du processus** | ⬜ |
+
+---
+
+## Structure du dépôt
+
+```
+lireka/
+├── project/
+│   ├── devis.md                       ← Référence contractuelle (fait foi)
+│   ├── planning.md                    ← Planning 4 jours
+│   ├── livrables.md
+│   ├── raci.md
+│   └── risques.md
+├── docs/                              ← Documentation projet
+├── data/                              ← Données (gitignored sauf échantillons)
+├── scripts/etl/                       ← Pipelines d'import
+├── powerbi/                           ← Doc modèles & rapports Power BI
+├── communications/                    ← Emails & templates client
+└── templates/                         ← Schémas CSV cibles
+```
+
+Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates mensuels…) est du **matériel de travail** utile mais **hors périmètre contractuel** sauf mention contraire dans le devis.
+
+---
+
+## Démarrage rapide
+
+### Prérequis (à obtenir dès J1)
+
+- Accès Power BI workspace Lireka (Contributor)
+- Factures CSV : La Poste, Colis Privé, Chronopost (1 mois)
+- Export CSV commandes backend (1 mois)
+- Accès lecture dashboards DHL / FedEx / UPS (référence modèle existant)
+- Formule marge brute validée côté finance
+
+### Checklist J1
+
+- [ ] Kick-off avec Marc Bordier → `communications/emails/01-kickoff.md`
+- [ ] Récupérer accès et données → `docs/01-cadrage/checklist-acces-donnees.md`
+- [ ] Lancer ETL sur les fichiers réels → `scripts/etl/`
+- [ ] Compléter l'inventaire des sources → `docs/01-cadrage/inventaire-sources.md`
+
+---
+
+## Contacts
+
+| Rôle | Nom | Organisation |
+|------|-----|--------------|
+| Président / Sponsor | Marc Bordier | Lireka |
+| Data Analyst / Chef de projet | Otmane Boulahia | ZineInsights |
+| — | *À compléter* | Référent technique Lireka |
+| — | *À compléter* | Référent logistique Lireka |
+
+---
+
+## Liens utiles
+
+- [**Devis (référence contractuelle)**](project/devis.md)
+- [Cahier des charges](docs/01-cadrage/cahier-des-charges.md)
+- [Planning 4 jours](project/planning.md)
+- [Livrables](project/livrables.md)
+- [Guide de démarrage](docs/GUIDE-DEMARRAGE.md)
+
+---
+
+*Dernière mise à jour : 12 juillet 2026 — ZineInsights*
+# lireka
