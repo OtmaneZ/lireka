@@ -82,3 +82,32 @@ expression stg_Commande_Items =
 			#"Types appliques"
 	lineageTag: 0a8b65e4-a441-4c67-9c33-2084f7ea6296
 
+/// Staging (non chargé) — customer_order.csv lu et typé une seule fois.
+/// Consommé par fact_commandes, dim_pays et dim_type_commande (évite 3 lectures du fichier 187 Mo).
+expression stg_customer_order =
+		let
+			Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
+				{"id", Int64.Type},
+				{"origin_order_id", type text},
+				{"state", type text},
+				{"source", type text},
+				{"destination_country", type text},
+				{"currency", type text},
+				{"origin_created", type text},
+				{"order_amount_eur", type number},
+				{"shipping_fee_eur", type number},
+				{"marketplace_fees_eur", type number},
+				{"product_cost_eur", type number},
+				{"total_shipping_cost_to_delivery_country_eur", type number},
+				{"duties_and_taxes_eur", type number},
+				{"gross_profit_eur", type number},
+				{"gross_margin", type number},
+				{"contribution_profit_eur", type number},
+				{"contribution_margin", type number}
+			}, "en-US")
+		in
+			#"Types appliques"
+	lineageTag: b3c8e1f2-4a5d-6e7f-8091-a2b3c4d5e6f7
+

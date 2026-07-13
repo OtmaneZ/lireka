@@ -27,10 +27,8 @@ table dim_type_commande
 		mode: import
 		source =
 				let
-					// Lecture de la source pour récupérer les canaux distincts
-					Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-					#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					#"Colonne source" = Table.SelectColumns(#"En-tetes promus", {"source"}),
+					// Canaux distincts (via staging partagé)
+					#"Colonne source" = Table.SelectColumns(stg_customer_order, {"source"}),
 					// Normalisation de la clé type_commande (repli INCONNU)
 					#"Type commande derive" = Table.AddColumn(#"Colonne source", "type_commande", each if [source] = null or Text.Trim([source]) = "" then "INCONNU" else Text.Trim([source]), type text),
 					#"Valeurs distinctes" = Table.Distinct(Table.SelectColumns(#"Type commande derive", {"type_commande"})),

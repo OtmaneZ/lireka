@@ -10,7 +10,7 @@ annotation __PBI_TimeIntelligenceEnabled = 1
 
 annotation PBI_ProTooling = ["DevMode"]
 
-annotation PBI_QueryOrder = ["fact_commandes","fact_transport","fact_factures_transport","fact_lignes","dim_date","dim_pays","dim_transporteur","dim_type_commande","DossierDonnees","fnNormaliserTransporteur","fnCanonTransporteur","stg_Commande_Items"]
+annotation PBI_QueryOrder = ["fact_commandes","fact_transport","fact_factures_transport","fact_lignes","dim_date","dim_pays","dim_transporteur","dim_type_commande","DossierDonnees","stg_customer_order","fnNormaliserTransporteur","fnCanonTransporteur","stg_Commande_Items"]
 
 ref table fact_commandes
 ref table fact_transport

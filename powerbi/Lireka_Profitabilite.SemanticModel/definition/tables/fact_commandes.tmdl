@@ -125,30 +125,8 @@ table fact_commandes
 		mode: import
 		source =
 				let
-					// Lecture du CSV backend (séparateur virgule, UTF-8)
-					Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-					#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					// Typage des colonnes utiles (décimales au format anglo-saxon : point)
-					#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
-						{"id", Int64.Type},
-						{"origin_order_id", type text},
-						{"state", type text},
-						{"source", type text},
-						{"destination_country", type text},
-						{"currency", type text},
-						{"order_amount_eur", type number},
-						{"shipping_fee_eur", type number},
-						{"marketplace_fees_eur", type number},
-						{"product_cost_eur", type number},
-						{"total_shipping_cost_to_delivery_country_eur", type number},
-						{"duties_and_taxes_eur", type number},
-						{"gross_profit_eur", type number},
-						{"gross_margin", type number},
-						{"contribution_profit_eur", type number},
-						{"contribution_margin", type number}
-					}, "en-US"),
-					// Extraction de la date (jour) à partir de l'horodatage origin_created
-					#"Date commande ajoutee" = Table.AddColumn(#"Types appliques", "date_commande", each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null, type date),
+					// Source partagée (stg_customer_order) — une seule lecture du CSV
+					#"Date commande ajoutee" = Table.AddColumn(stg_customer_order, "date_commande", each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null, type date),
 					// Normalisation du code pays de livraison (majuscules, valeur de repli "??")
 					#"Code pays normalise" = Table.AddColumn(#"Date commande ajoutee", "code_pays", each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??" else Text.Upper(Text.Trim([destination_country])), type text),
 					// Axe type de commande dérivé du canal de vente (source)

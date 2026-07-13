@@ -33,10 +33,8 @@ table dim_pays
 		mode: import
 		source =
 				let
-					// Codes pays distincts présents dans les commandes
-					Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-					#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					#"Colonne pays" = Table.SelectColumns(#"En-tetes promus", {"destination_country"}),
+					// Codes pays distincts présents dans les commandes (via staging partagé)
+					#"Colonne pays" = Table.SelectColumns(stg_customer_order, {"destination_country"}),
 					#"Code pays normalise" = Table.AddColumn(#"Colonne pays", "code_pays", each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??" else Text.Upper(Text.Trim([destination_country])), type text),
 					#"Codes distincts" = Table.Distinct(Table.SelectColumns(#"Code pays normalise", {"code_pays"})),
 					// Table de correspondance code -> nom / zone / continent
