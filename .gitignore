@@ -42,7 +42,7 @@ secrets/
 *.pem
 *.key
 
-
+# Power BI Datawarehouse
 Power_BI_Datawarehouse/**
 !Power_BI_Datawarehouse/.gitkeep
 scripts/validation/rapport_backend.txt
