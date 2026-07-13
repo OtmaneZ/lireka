@@ -64,30 +64,32 @@ Voir le fichier complet : [`mesures-dax.md`](mesures-dax.md)
 
 ## Rapports
 
-### Transporteurs (x6)
+### Transporteurs — existants *(référence, hors livraison mission)*
 
-| Rapport | Pages | Statut |
-|---------|-------|--------|
-| Dashboard DHL | 3 | ✅ Existant |
-| Dashboard FedEx | 3 | ✅ Existant |
-| Dashboard UPS | 3 | ✅ Existant |
-| Dashboard La Poste | 3 | ⬜ À créer |
-| Dashboard Colis Privé | 3 | ⬜ À créer |
-| Dashboard Chronopost | 3 | ⬜ À créer |
+| Rapport | Statut | Note |
+|---------|--------|------|
+| Dashboard DHL | ✅ Existant | Référence modèle |
+| Dashboard FedEx | ✅ Existant | Référence modèle |
+| Dashboard UPS | ✅ Existant | Référence modèle |
 
-**Structure type par dashboard** :
-1. **Vue d'ensemble** — KPIs + graphique mensuel
-2. **Par pays** — Carte + tableau
-3. **Détail factures** — Table filtrable
+**Mission 4 jours** : intégrer les données La Poste, Colis Privé et Chronopost dans le **modèle de données** — **pas** créer de dashboards transporteurs dédiés calqués sur DHL/FedEx/UPS *(hors périmètre devis)*.
 
-### Profitabilité
+### Profitabilité — livrable contractuel J3
 
-| Rapport | Pages | Statut |
-|---------|-------|--------|
-| Marge par pays | 2 | ⬜ À créer |
-| Marge par type commande | 2 | ⬜ À créer |
-| Écarts coûts transport | 2 | ⬜ À créer |
-| Synthèse direction | 1 | ⬜ À créer |
+| Rapport | Statut | Périmètre devis |
+|---------|--------|-----------------|
+| Dashboard profitabilité | ⬜ À créer | **1 rapport** — marge brute par **pays** et par **type de commande** (2 axes d'analyse) |
+
+Le devis ne précise **aucun nombre de pages/onglets**. Structure au **choix du prestataire**.
+
+### Hors périmètre devis *(vision future / avenant — ne pas livrer dans les 4 jours)*
+
+| Rapport | Raison |
+|---------|--------|
+| Dashboards transporteurs dédiés (La Poste, Colis Privé, Chronopost) | Non mentionné au devis |
+| Synthèse direction | Non mentionné au devis |
+| Écarts coûts transport (rapport séparé) | Non mentionné au devis |
+| Dashboard marketing / opérations | Non mentionné au devis |
 
 ---
 

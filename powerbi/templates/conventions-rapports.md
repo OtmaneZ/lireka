@@ -14,9 +14,10 @@ Lireka - {Sujet}
 ```
 
 Exemples :
-- `Lireka - Dashboard DHL`
-- `Lireka - Marge par Pays`
-- `Lireka - Synthèse Direction`
+- `Lireka - Dashboard DHL` *(existant — référence)*
+- `Lireka - Profitabilité` *(livrable contractuel J3)*
+
+> **Hors périmètre devis** (ne pas nommer comme livrable de la mission) : synthèse direction, écarts transport, dashboard marketing, etc.
 
 ### Pages
 
@@ -42,7 +43,9 @@ Exemples :
 
 ---
 
-## Structure d'un dashboard transporteur
+## Structure d'un dashboard transporteur *(référence — existants DHL / FedEx / UPS)*
+
+> La création de dashboards transporteurs dédiés pour La Poste, Colis Privé ou Chronopost est **hors périmètre devis**. Cette section décrit le modèle des rapports existants, utile comme référence de design.
 
 ### Page 1 — Vue d'ensemble
 
@@ -71,16 +74,15 @@ Exemples :
 
 ---
 
-## Structure d'un dashboard profitabilité
+## Dashboard profitabilité *(livrable contractuel J3)*
 
-### Page 1 — Marge par pays
+**Périmètre devis** : **un seul** rapport Power BI couvrant la marge brute selon **deux axes d'analyse** :
+- par **pays**
+- par **type de commande**
 
-| Zone | Visuel |
-|------|--------|
-| KPIs | Marge Brute, Taux Marge, CA Total, Nb Commandes |
-| Carte | Marge par pays (code couleur) |
-| Barres | Top/Bottom 10 pays par marge |
-| Slicers | Période, Transporteur, Type commande |
+Le devis ne fixe **ni le nombre de pages/onglets, ni la disposition des visuels**. La structure (pages, onglets, répartition des visuels) est **au choix du prestataire**, sous réserve que les deux axes soient exploitables par l'utilisateur.
+
+**Mesures et filtres utiles** (non exhaustif) : Marge Brute, Taux Marge, CA Total, Nb Commandes ; slicers Période, Transporteur, Type commande, Pays.
 
 ---
 

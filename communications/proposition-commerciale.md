@@ -43,7 +43,7 @@ Intégration des données transporteurs et commandes dans Power BI, jointure par
 | 1 | 3 transporteurs intégrés dans Power BI |
 | 2 | Dataset commandes structuré |
 | 3 | Jointure factures ↔ commandes par n° de suivi |
-| 4 | Dashboards profitabilité (pays + type de commande) |
+| 4 | Dashboard profitabilité — marge brute par pays et par type de commande *(1 rapport, 2 axes)* |
 | 5 | Formation utilisateurs |
 | 6 | Documentation du processus |
 

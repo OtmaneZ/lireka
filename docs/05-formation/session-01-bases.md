@@ -70,9 +70,11 @@ Power BI est l'outil de Microsoft pour visualiser et analyser des données. Lire
 
 ---
 
-## 3. Dashboards transporteurs
+## 3. Dashboards transporteurs *(existants — référence)*
 
-### Structure commune (DHL, FedEx, UPS, La Poste, Colis Privé, Chronopost)
+> Les dashboards DHL, FedEx et UPS existent déjà. L'intégration La Poste / Colis Privé / Chronopost porte sur les **données** dans le modèle — **pas** la création de dashboards transporteurs dédiés *(hors périmètre devis)*.
+
+### Structure commune (DHL, FedEx, UPS)
 
 Chaque dashboard transporteur contient :
 
@@ -93,7 +95,9 @@ Chaque dashboard transporteur contient :
 
 ---
 
-## 4. Dashboards profitabilité
+## 4. Dashboard profitabilité *(livrable contractuel J3)*
+
+**Un seul rapport** couvre la marge brute selon **deux axes d'analyse** : par **pays** et par **type de commande**. Le nombre de pages ou la disposition des visuels n'est pas fixé par le devis.
 
 ### KPIs principaux
 
@@ -111,13 +115,14 @@ Chaque dashboard transporteur contient :
 - **Type de commande** : B2C, B2B, etc.
 - **Transporteur** : DHL, FedEx, UPS, La Poste, etc.
 
-### Exercice guidé — Marge par pays
+### Exercice guidé — Axes pays et type de commande
 
 1. Ouvrir le dashboard Profitabilité
 2. Filtrer sur le **T2 2026**
 3. Identifier le **pays le plus rentable** (marge brute la plus élevée)
 4. Identifier le **pays le moins rentable**
 5. Comparer le coût transport **estimé** vs **réel** pour ce pays
+6. Changer l'angle d'analyse vers le **type de commande** (B2C, B2B, etc.) et comparer les marges
 
 ---
 

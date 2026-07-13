@@ -43,8 +43,7 @@ python scripts/validation/validate_data.py --type matching
 
 - [ ] Jointure factures ↔ commandes par `numero_suivi`
 - [ ] Mesures marge brute (coût transport réel)
-- [ ] Dashboard — marge brute par **pays**
-- [ ] Dashboard — marge brute par **type de commande**
+- [ ] Dashboard profitabilité — marge brute par **pays** et par **type de commande** *(1 rapport, structure au choix du prestataire)*
 
 ---
 

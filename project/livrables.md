@@ -22,10 +22,9 @@
 | L01 | Intégration La Poste, Colis Privé, Chronopost dans Power BI | J2 | ⬜ | Marc Bordier |
 | L02 | CSV commandes importé et structuré dans Power BI | J2 | ⬜ | Marc Bordier |
 | L03 | Jointure factures ↔ commandes par numéro de suivi | J3 | ⬜ | Marc Bordier |
-| L04 | Dashboard profitabilité — marge brute par pays | J3 | ⬜ | Marc Bordier |
-| L05 | Dashboard profitabilité — marge brute par type de commande | J3 | ⬜ | Marc Bordier |
-| L06 | Formation utilisateurs *(selon disponibilité)* | J4 | ⬜ | Participants |
-| L07 | Documentation du processus | J4 | ⬜ | Marc Bordier |
+| L04 | Dashboard profitabilité — marge brute par pays et par type de commande *(1 rapport, 2 axes ; structure au choix du prestataire)* | J3 | ⬜ | Marc Bordier |
+| L05 | Formation utilisateurs *(selon disponibilité)* | J4 | ⬜ | Participants |
+| L06 | Documentation du processus | J4 | ⬜ | Marc Bordier |
 
 ---
 
@@ -75,6 +74,7 @@
 - [ ] Taux de matching documenté (objectif indicatif, non contractuel)
 
 ### Profitabilité
+- [ ] **Un** dashboard profitabilité livré (nombre de pages/onglets : au choix du prestataire)
 - [ ] Marge brute visible par **pays**
 - [ ] Marge brute visible par **type de commande**
 - [ ] Coût transport réel utilisé (issu des factures jointes)

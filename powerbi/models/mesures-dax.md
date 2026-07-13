@@ -1,7 +1,7 @@
 # Mesures DAX — Lireka Power BI
 
 > **Référence** : [`../../project/devis.md`](../../project/devis.md)  
-> Référentiel des mesures DAX pour les dashboards profitabilité (J3).  
+> Référentiel des mesures DAX pour le dashboard profitabilité (J3).  
 > Copier-coller dans Power BI Desktop → Modélisation → Nouvelle mesure.
 
 ---

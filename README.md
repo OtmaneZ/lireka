@@ -25,7 +25,7 @@ Trois tableaux de bord Power BI existent déjà pour les coûts transporteurs **
 | 1 | Intégration **La Poste**, **Colis Privé**, **Chronopost** dans Power BI | ⬜ |
 | 2 | Import et structuration du **CSV commandes** backend | ⬜ |
 | 3 | **Jointure** factures ↔ commandes par numéro de suivi | ⬜ |
-| 4 | **Dashboards profitabilité** — marge brute par pays, par type de commande | ⬜ |
+| 4 | **Dashboard profitabilité** — marge brute par pays et par type de commande *(1 rapport, 2 axes)* | ⬜ |
 | 5 | **Formation** utilisateurs (selon disponibilité équipes Lireka) | ⬜ |
 | 6 | **Documentation du processus** | ⬜ |
 

@@ -33,7 +33,7 @@
 | **Jointure & profitabilité** |
 | Mapping numéro de suivi | I | R | C | R | I |
 | Jointure factures ↔ commandes | I | R | C | C | I |
-| Dashboards profitabilité | A | R | C | C | R |
+| Dashboard profitabilité | A | R | C | C | R |
 | Validation calculs marge brute | A | R | I | I | R |
 | **Formation & clôture** |
 | Disponibilité participants | A | C | I | I | I |

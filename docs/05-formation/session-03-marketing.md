@@ -24,11 +24,11 @@ Le dataset commandes Lireka contient des informations précieuses pour le market
 
 ---
 
-## 2. Cas pratique guidé — "Performance par marché"
+## 2. Cas pratique guidé — "Performance par marché" *(vision future — hors périmètre devis)*
 
 ### Objectif
 
-Créer un dashboard marketing montrant la performance commerciale par pays sur 6 mois.
+Exemple pédagogique : créer un **dashboard marketing** montrant la performance commerciale par pays sur 6 mois. Ce livrable **n'est pas** inclus dans la mission 4 jours (devis : dashboards supplémentaires marketing exclus).
 
 ### Étapes guidées (30 min)
 

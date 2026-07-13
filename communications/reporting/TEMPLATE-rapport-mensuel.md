@@ -27,10 +27,9 @@
 | 1 | Intégration La Poste, Colis Privé, Chronopost | ⬜/🔄/✅ | |
 | 2 | CSV commandes structuré | ⬜/🔄/✅ | |
 | 3 | Jointure factures ↔ commandes | ⬜/🔄/✅ | |
-| 4 | Dashboard profitabilité — pays | ⬜/🔄/✅ | |
-| 5 | Dashboard profitabilité — type commande | ⬜/🔄/✅ | |
-| 6 | Formation utilisateurs | ⬜/🔄/✅ | |
-| 7 | Documentation du processus | ⬜/🔄/✅ | |
+| 4 | Dashboard profitabilité — marge brute par pays et par type de commande | ⬜/🔄/✅ | |
+| 5 | Formation utilisateurs | ⬜/🔄/✅ | |
+| 6 | Documentation du processus | ⬜/🔄/✅ | |
 
 ---
 
@@ -57,6 +56,7 @@
 | Élément | Raison |
 |---------|--------|
 | Dashboards transporteurs dédiés | Non mentionné au devis |
+| Dashboards supplémentaires (synthèse direction, marketing, opérations…) | Non mentionné au devis |
 | Sessions formation additionnelles | Non mentionné au devis |
 
 ---

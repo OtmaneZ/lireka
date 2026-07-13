@@ -56,10 +56,9 @@ gantt
 |----------|----------|
 | Jointure factures ↔ commandes par `numero_suivi` | Relation opérationnelle |
 | Mesures marge brute (coût transport réel) | Mesures DAX |
-| Dashboard profitabilité — **marge brute par pays** | Page rapport |
-| Dashboard profitabilité — **marge brute par type de commande** | Page rapport |
+| **Dashboard profitabilité** — marge brute par **pays** et par **type de commande** (2 axes d'analyse, structure au choix du prestataire) | Rapport Power BI |
 
-**Jalon J3** : ✅ Dashboards profitabilité fonctionnels
+**Jalon J3** : ✅ Dashboard profitabilité fonctionnel (2 axes d'analyse couverts)
 
 ---
 

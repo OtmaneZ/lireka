@@ -63,7 +63,7 @@ Voir [`../../project/livrables.md`](../../project/livrables.md)
 | 3 transporteurs intégrés dans Power BI | Power BI |
 | Dataset commandes structuré | Power BI |
 | Jointure par n° de suivi | Power BI |
-| Dashboard profitabilité (pays + type commande) | Power BI |
+| Dashboard profitabilité (pays + type commande — 1 rapport, structure au choix du prestataire) | Power BI |
 | Formation utilisateurs | Session visio |
 | Documentation du processus | Markdown / PDF |
 

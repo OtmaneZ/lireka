@@ -39,8 +39,8 @@ flowchart TB
         DS_T["Dataset Transporteurs"]
         DS_C["Dataset Commandes"]
         DS_U["Dataset Unifié (star schema)"]
-        R_T["Rapports Transporteurs x6"]
-        R_P["Rapports Profitabilité"]
+        R_T["Rapports transporteurs existants (x3)"]
+        R_P["Rapport Profitabilité (livrable J3)"]
     end
 
     subgraph IA["Intelligence"]
@@ -216,8 +216,8 @@ Coût Moyen Colis = DIVIDE([Coût Transport Réel], [Nb Commandes], 0)
 
 | Workspace | Contenu | Accès |
 |-----------|---------|-------|
-| `Lireka - Transport` | Dashboards transporteurs (x6) | Logistique, Direction |
-| `Lireka - Profitabilité` | Dashboards marge brute | Direction, Finance |
+| `Lireka - Transport` | Dashboards transporteurs existants (DHL, FedEx, UPS) + données intégrées La Poste / Colis Privé / Chronopost | Logistique, Direction |
+| `Lireka - Profitabilité` | Dashboard profitabilité *(1 rapport, 2 axes : pays + type de commande)* | Direction, Finance |
 | `Lireka - Formation` | Sandbox utilisateurs | Tous |
 
 ### 6.2 Stratégie de refresh

@@ -15,10 +15,9 @@ Voici le bilan de la mission (**4 jours**, forfait 1 800 € HT) :
 | 1 | Intégration La Poste, Colis Privé, Chronopost | ✅ / 🔄 / ⬜ |
 | 2 | CSV commandes structuré dans Power BI | ✅ / 🔄 / ⬜ |
 | 3 | Jointure factures ↔ commandes (n° suivi) | ✅ / 🔄 / ⬜ |
-| 4 | Dashboard profitabilité — par pays | ✅ / 🔄 / ⬜ |
-| 5 | Dashboard profitabilité — par type de commande | ✅ / 🔄 / ⬜ |
-| 6 | Formation utilisateurs | ✅ / 🔄 / ⬜ / reportée |
-| 7 | Documentation du processus | ✅ / 🔄 / ⬜ |
+| 4 | Dashboard profitabilité — marge brute par pays et par type de commande | ✅ / 🔄 / ⬜ |
+| 5 | Formation utilisateurs | ✅ / 🔄 / ⬜ / reportée |
+| 6 | Documentation du processus | ✅ / 🔄 / ⬜ |
 
 ### Points d'attention
 
