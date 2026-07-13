@@ -1,0 +1,53 @@
+/// Dimension — transporteurs (référentiel canonique).
+/// Table statique. Reliée à fact_transport[transporteur] et
+/// fact_factures_transport[transporteur]. Les libellés doivent correspondre
+/// aux sorties de fnNormaliserTransporteur / fnCanonTransporteur.
+table dim_transporteur
+	lineageTag: 99491c1f-173e-40d2-9f04-2935d264cfdf
+
+	column transporteur
+		dataType: string
+		lineageTag: 4eeac454-b1df-4c96-9c66-4b7ab7e61e46
+		summarizeBy: none
+		sourceColumn: transporteur
+
+	/// Niveau de service indicatif (Express / Standard).
+	column type_service
+		dataType: string
+		lineageTag: 2c00fea7-1fb8-4bf3-be18-af5dfd95a1d0
+		summarizeBy: none
+		sourceColumn: type_service
+
+	/// Statut vis-à-vis du devis (existant de référence / nouveau intégré / autre).
+	column statut_integration
+		dataType: string
+		lineageTag: ca0e7c2e-ae31-48f1-8ea7-39951a1e297d
+		summarizeBy: none
+		sourceColumn: statut_integration
+
+	column actif
+		dataType: boolean
+		lineageTag: 2f7d8a06-995a-4563-9225-3ee413cd116d
+		summarizeBy: none
+		sourceColumn: actif
+
+	partition dim_transporteur = m
+		mode: import
+		source =
+				let
+					// Référentiel figé des transporteurs (alignés sur la normalisation)
+					Source = #table(
+						type table [transporteur = text, type_service = text, statut_integration = text, actif = logical],
+						{
+							{"La Poste", "Standard", "Nouveau (intégré)", true},
+							{"Colis Privé", "Standard", "Nouveau (intégré)", true},
+							{"Chronopost", "Express", "Nouveau (intégré)", true},
+							{"DHL", "Express", "Existant (référence)", true},
+							{"FedEx", "Express", "Existant (référence)", true},
+							{"UPS", "Express", "Existant (référence)", true},
+							{"Postes Canada", "Standard", "Autre", true},
+							{"INCONNU", "-", "Non identifié", false}
+						})
+				in
+					Source
+

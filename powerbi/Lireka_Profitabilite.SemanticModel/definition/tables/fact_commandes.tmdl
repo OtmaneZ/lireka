@@ -1,0 +1,172 @@
+/// Faits — commandes clients (grain : une ligne par commande).
+/// Source : Power_BI_Datawarehouse\Données_Backend\customer_order.csv
+/// Clé : id_commande (customer_order.id). Porte le CA, les coûts backend et
+/// la marge existante (gross_profit_eur) conservée comme référence de contrôle.
+table fact_commandes
+	lineageTag: 11fa5581-3c36-4afa-ae59-a9cc19e15f69
+
+	column id_commande
+		dataType: int64
+		lineageTag: 463339a0-5b78-4230-a496-61ef20b8aca3
+		summarizeBy: none
+		sourceColumn: id_commande
+
+	column origin_order_id
+		dataType: string
+		lineageTag: b5efc10c-9a0b-454a-962a-6e58acc360a1
+		summarizeBy: none
+		sourceColumn: origin_order_id
+
+	column state
+		dataType: string
+		lineageTag: d552aead-fcf3-4c76-852d-52f81f7ea027
+		summarizeBy: none
+		sourceColumn: state
+
+	column source
+		dataType: string
+		lineageTag: 196d52ee-a2ce-4dc7-98b2-827d28f8e4a8
+		summarizeBy: none
+		sourceColumn: source
+
+	/// Axe d'analyse "type de commande" — dérivé de customer_order.source
+	/// (canal de vente : WEBSITE, AMAZON_FR, ...). Interprétation à valider avec Lireka.
+	column type_commande
+		dataType: string
+		lineageTag: f217ab35-b208-4bf8-877a-7eac9a4cb025
+		summarizeBy: none
+		sourceColumn: type_commande
+
+	/// Code pays de livraison ISO 3166-1 alpha-2 (destination_country). "??" si absent.
+	column code_pays
+		dataType: string
+		lineageTag: f7d25057-6a3d-4a16-a18c-9d7405a8190b
+		summarizeBy: none
+		sourceColumn: code_pays
+
+	column currency
+		dataType: string
+		lineageTag: 49714872-95db-44f0-867a-8ecf6044a06c
+		summarizeBy: none
+		sourceColumn: currency
+
+	/// Chiffre d'affaires HT en EUR (order_amount_eur).
+	column ca_ht
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: da448a96-2d78-471b-a902-701f6b5826fc
+		summarizeBy: sum
+		sourceColumn: ca_ht
+
+	/// Frais de port facturés au client en EUR (shipping_fee_eur).
+	column shipping_fee_eur
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 52d273ed-6508-4932-bff1-838a5a742071
+		summarizeBy: sum
+		sourceColumn: shipping_fee_eur
+
+	/// Coût d'achat des livres en EUR (product_cost_eur).
+	column cout_achat
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 0303a735-7e7b-4bff-8814-6fd3cf44e57c
+		summarizeBy: sum
+		sourceColumn: cout_achat
+
+	/// Coût transport estimé par le backend (total_shipping_cost_to_delivery_country_eur).
+	column cout_transport_estime
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 79df602e-014e-4609-a7b7-a507fbd957bb
+		summarizeBy: sum
+		sourceColumn: cout_transport_estime
+
+	/// Marge brute calculée par le backend Lireka — RÉFÉRENCE de contrôle uniquement.
+	column gross_profit_eur
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: f936cdd0-712e-4107-a083-08085058721b
+		summarizeBy: sum
+		sourceColumn: gross_profit_eur
+
+	column gross_margin
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 284dce96-d29d-47cc-aa2e-4efe3a4de945
+		summarizeBy: none
+		sourceColumn: gross_margin
+
+	column contribution_profit_eur
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 3958fe58-b33f-4fae-9e18-9493fc0c905e
+		summarizeBy: sum
+		sourceColumn: contribution_profit_eur
+
+	column contribution_margin
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 423d5a02-6639-4ac1-bea1-21532a5f4993
+		summarizeBy: none
+		sourceColumn: contribution_margin
+
+	/// Date de la commande (origin_created tronqué au jour). Clé vers dim_date.
+	column date_commande
+		dataType: dateTime
+		formatString: yyyy-MM-dd
+		lineageTag: 420154ac-c0fc-48be-ba16-c422162d47db
+		summarizeBy: none
+		sourceColumn: date_commande
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition fact_commandes = m
+		mode: import
+		source =
+				let
+					// Lecture du CSV backend (séparateur virgule, UTF-8)
+					Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					// Typage des colonnes utiles (décimales au format anglo-saxon : point)
+					#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
+						{"id", Int64.Type},
+						{"origin_order_id", type text},
+						{"state", type text},
+						{"source", type text},
+						{"destination_country", type text},
+						{"currency", type text},
+						{"order_amount_eur", type number},
+						{"shipping_fee_eur", type number},
+						{"marketplace_fees_eur", type number},
+						{"product_cost_eur", type number},
+						{"total_shipping_cost_to_delivery_country_eur", type number},
+						{"duties_and_taxes_eur", type number},
+						{"gross_profit_eur", type number},
+						{"gross_margin", type number},
+						{"contribution_profit_eur", type number},
+						{"contribution_margin", type number}
+					}, "en-US"),
+					// Extraction de la date (jour) à partir de l'horodatage origin_created
+					#"Date commande ajoutee" = Table.AddColumn(#"Types appliques", "date_commande", each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null, type date),
+					// Normalisation du code pays de livraison (majuscules, valeur de repli "??")
+					#"Code pays normalise" = Table.AddColumn(#"Date commande ajoutee", "code_pays", each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??" else Text.Upper(Text.Trim([destination_country])), type text),
+					// Axe type de commande dérivé du canal de vente (source)
+					#"Type commande derive" = Table.AddColumn(#"Code pays normalise", "type_commande", each if [source] = null or Text.Trim([source]) = "" then "INCONNU" else Text.Trim([source]), type text),
+					// Renommage vers le schéma cible du modèle
+					#"Colonnes renommees" = Table.RenameColumns(#"Type commande derive", {
+						{"id", "id_commande"},
+						{"order_amount_eur", "ca_ht"},
+						{"product_cost_eur", "cout_achat"},
+						{"total_shipping_cost_to_delivery_country_eur", "cout_transport_estime"}
+					}),
+					// Sélection des colonnes conservées dans le modèle
+					#"Colonnes conservees" = Table.SelectColumns(#"Colonnes renommees", {
+						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
+						"ca_ht", "shipping_fee_eur", "cout_achat", "cout_transport_estime",
+						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
+						"date_commande"
+					})
+				in
+					#"Colonnes conservees"
+

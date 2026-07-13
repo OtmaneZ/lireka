@@ -1,0 +1,131 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1405.5725198485168,
+            "y": 147.04693439130529
+          },
+          "nodeIndex": "_Mesures",
+          "nodeLineageTag": "a2e58751-5502-46c6-95f8-1dc665aa31ec",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 379.92865352783923,
+            "y": -36.27912763351992
+          },
+          "nodeIndex": "dim_date",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 797.13371196835863,
+            "y": 508.09386878261057
+          },
+          "nodeIndex": "dim_pays",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 353.226703428222
+          },
+          "nodeIndex": "dim_transporteur",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 840.38863480049781,
+            "y": -50
+          },
+          "nodeIndex": "dim_type_commande",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 666.66801025928078,
+            "y": 154.97876082296784
+          },
+          "nodeIndex": "fact_commandes",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 82.442719407426011,
+            "y": 4.1645141733598621
+          },
+          "nodeIndex": "fact_factures_transport",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 983.23918651518352,
+            "y": 207.2585583336446
+          },
+          "nodeIndex": "fact_lignes",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 379.57714702349864,
+            "y": 320.10101848285024
+          },
+          "nodeIndex": "fact_transport",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Toutes les tables",
+      "zoomValue": 60,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Toutes les tables",
+  "defaultDiagram": "Toutes les tables"
+}

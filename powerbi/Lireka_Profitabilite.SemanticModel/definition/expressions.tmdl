@@ -1,0 +1,84 @@
+/// Dossier racine de l'entrepôt de données local (CSV bruts, hors versionnement Git).
+/// Modifier cette valeur dans Power BI Desktop (Transformer les données > Paramètres)
+/// si le dépôt est cloné sur un autre poste. Aucun CSV n'est commité (voir .gitignore).
+expression DossierDonnees = "C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 54fba0a6-374f-4253-8139-bb1310f751e3
+
+	annotation PBI_ResultType = Text
+
+/// Normalise un transporteur à partir du numéro de suivi (tracking_id).
+/// Méthode : inférence par motif, alignée sur l'analyse backend du 12/07/2026
+/// (rapport_backend.txt). Sorties canoniques : UPS, La Poste, Postes Canada,
+/// Chronopost, FedEx, DHL, Colis Privé, INCONNU.
+/// Limite connue : les identifiants purement numériques à 10 chiffres restent
+/// ambigus (DHL minoritaire vs INCONNU) et sont classés INCONNU — à valider.
+expression fnNormaliserTransporteur =
+		(tracking as nullable text) as text =>
+		let
+			// Nettoyage : majuscules + suppression des espaces parasites
+			#"Suivi nettoye" = if tracking = null then "" else Text.Upper(Text.Trim(tracking)),
+			longueur = Text.Length(#"Suivi nettoye"),
+			// Vrai si l'identifiant ne contient que des chiffres
+			estNumerique = #"Suivi nettoye" <> "" and Text.Select(#"Suivi nettoye", {"0".."9"}) = #"Suivi nettoye",
+			// Application des motifs identifiés lors de l'audit backend
+			#"Transporteur infere" =
+				if #"Suivi nettoye" = "" then "INCONNU"
+				else if Text.StartsWith(#"Suivi nettoye", "1Z") then "UPS"
+				else if longueur = 13 and Text.StartsWith(#"Suivi nettoye", "6A") then "La Poste"
+				else if Text.StartsWith(#"Suivi nettoye", "Q013") then "Postes Canada"
+				else if longueur = 13 and (Text.StartsWith(#"Suivi nettoye", "XW") or Text.StartsWith(#"Suivi nettoye", "XA") or Text.StartsWith(#"Suivi nettoye", "XS") or Text.StartsWith(#"Suivi nettoye", "XR")) then "Chronopost"
+				else if estNumerique and longueur = 18 then "FedEx"
+				else if estNumerique and longueur = 12 then "DHL"
+				else if Text.StartsWith(#"Suivi nettoye", "Z8") then "Colis Privé"
+				else if Text.StartsWith(#"Suivi nettoye", "1C") then "Colis Privé"
+				else if estNumerique and (longueur = 8 or longueur = 9) then "Colis Privé"
+				else "INCONNU"
+		in
+			#"Transporteur infere"
+	lineageTag: f6ad5b17-1ad0-46b8-9616-eba1433a28c5
+
+/// Réduit les alias textuels de transporteurs vers un libellé canonique.
+/// Couvre les alias identifiés le 12/07/2026 : My Delivengo/Delivengo/Colissimo -> La Poste,
+/// UPS Standard -> UPS, DHL EXPRESS -> DHL, Postes Canada/Canada Post -> Postes Canada.
+expression fnCanonTransporteur =
+		(libelle as nullable text) as text =>
+		let
+			#"Libelle nettoye" = if libelle = null then "" else Text.Upper(Text.Trim(libelle)),
+			#"Transporteur canon" =
+				if List.Contains({"DHL", "DHL EXPRESS"}, #"Libelle nettoye") then "DHL"
+				else if List.Contains({"UPS", "UPS STANDARD"}, #"Libelle nettoye") then "UPS"
+				else if List.Contains({"FEDEX"}, #"Libelle nettoye") then "FedEx"
+				else if List.Contains({"LA POSTE", "COLISSIMO", "MY DELIVENGO", "DELIVENGO"}, #"Libelle nettoye") then "La Poste"
+				else if List.Contains({"COLIS PRIVE", "COLIS PRIVÉ"}, #"Libelle nettoye") then "Colis Privé"
+				else if List.Contains({"CHRONOPOST"}, #"Libelle nettoye") then "Chronopost"
+				else if List.Contains({"POSTES CANADA", "CANADA POST"}, #"Libelle nettoye") then "Postes Canada"
+				else "INCONNU"
+		in
+			#"Transporteur canon"
+	lineageTag: 9274de39-62a4-4130-b72f-27746931dc50
+
+/// Staging (non chargé) — customer_order_item.csv nettoyé.
+/// Table de liaison item <-> package <-> commande + coûts unitaires backend.
+/// Non requise pour les 2 axes du dashboard (pays / type de commande) ; conservée
+/// pour la traçabilité et d'éventuels approfondissements par ligne.
+expression stg_Commande_Items =
+		let
+			Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order_item.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
+				{"id", Int64.Type},
+				{"item_group_id", Int64.Type},
+				{"order_id", Int64.Type},
+				{"package_id", Int64.Type},
+				{"internal_state", type text},
+				{"product_cost_eur", type number},
+				{"returns_and_refunds_cost_eur", type number},
+				{"freight_in_cost_eur", type number},
+				{"shipping_cost_to_delivery_country_eur", type number},
+				{"shipping_supplies_cost_eur", type number},
+				{"generic_costs_eur", type number}
+			}, "en-US")
+		in
+			#"Types appliques"
+	lineageTag: 0a8b65e4-a441-4c67-9c33-2084f7ea6296
+

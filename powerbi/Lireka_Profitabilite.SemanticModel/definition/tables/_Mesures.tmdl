@@ -1,0 +1,157 @@
+/// Table technique regroupant toutes les mesures du modèle (aucune donnée).
+table _Mesures
+	lineageTag: a2e58751-5502-46c6-95f8-1dc665aa31ec
+
+	/// Nombre de commandes (grain fact_commandes).
+	measure 'Nb Commandes' = COUNTROWS(fact_commandes)
+		formatString: #,##0
+		lineageTag: 2a5e017f-d3b9-4fc8-bc92-1f1b103b9945
+
+	/// Nombre de colis (grain fact_transport).
+	measure 'Nb Colis' = COUNTROWS(fact_transport)
+		formatString: #,##0
+		lineageTag: 7f531780-6ee8-4ea5-a56f-17fb98fca792
+
+	/// Nombre de lignes de facture transporteur (Colissimo + Chronopost).
+	measure 'Nb Colis Facturés' = COUNTROWS(fact_factures_transport)
+		formatString: #,##0
+		lineageTag: e8d8c253-ebbc-411c-a7c6-70f93389efb0
+
+	/// Nombre d'articles commandés (somme des quantités).
+	measure 'Nb Articles' = SUM(fact_lignes[quantity])
+		formatString: #,##0
+		lineageTag: 58c14c19-db5c-4284-aecc-b00079f4d9b6
+
+	/// Chiffre d'affaires HT (order_amount_eur).
+	measure 'CA Total HT' = SUM(fact_commandes[ca_ht])
+		formatString: #,##0.00 €
+		lineageTag: dda226fa-8e6c-4c56-acbd-56fa1c84d136
+
+	/// Coût d'achat total des livres (product_cost_eur).
+	measure 'Coût Achat Total' = SUM(fact_commandes[cout_achat])
+		formatString: #,##0.00 €
+		lineageTag: 494ae678-7bb6-4cd5-a3c8-0e49d6296417
+
+	/// Coût transport estimé par le backend (total_shipping_cost_to_delivery_country_eur).
+	measure 'Coût Transport Estimé' = SUM(fact_commandes[cout_transport_estime])
+		formatString: #,##0.00 €
+		lineageTag: d0af07eb-f680-4e05-bc4b-b69de2131850
+
+	/// Coût transport réel, issu des colis backend (package.shipping_cost_eur).
+	measure 'Coût Transport Réel' = SUM(fact_transport[cout_transport])
+		formatString: #,##0.00 €
+		lineageTag: c596d85e-75bd-4785-88ba-ca8931c8a1b0
+
+	/// Coût transport facturé par Colissimo/Chronopost (contrôle croisé).
+	measure 'Coût Transport Facturé' = SUM(fact_factures_transport[cout_transport])
+		formatString: #,##0.00 €
+		lineageTag: 0c73b641-d4e0-421c-af69-cdc593a9582e
+
+	/// Écart entre coût réel et coût estimé.
+	measure 'Écart Coût Transport' = [Coût Transport Réel] - [Coût Transport Estimé]
+		formatString: #,##0.00 €
+		lineageTag: f0b7ddaf-bbb7-42c0-9723-b40b9f621956
+
+	/// Écart coût transport en % de l'estimé.
+	measure 'Taux Écart Coût' = DIVIDE([Écart Coût Transport], [Coût Transport Estimé], 0)
+		formatString: 0.0%
+		lineageTag: 831022a0-57dc-4efe-b01b-6eee24553f25
+
+	/// Coût transport réel moyen par colis.
+	measure 'Coût Moyen Colis' = DIVIDE([Coût Transport Réel], [Nb Colis], 0)
+		formatString: #,##0.00 €
+		lineageTag: 82e52ba9-cea9-4b63-bbe3-1eac0361816e
+
+	/// MARGE BRUTE — FORMULE PROVISOIRE. CA HT - coût d'achat - coût transport réel.
+	/// Écart constaté le 12/07/2026 entre ce calcul simple et gross_profit_eur existant.
+	/// À VALIDER avec Marc / finance avant de considérer comme définitive.
+	measure 'Marge Brute (prov.)' = [CA Total HT] - [Coût Achat Total] - [Coût Transport Réel]
+		formatString: #,##0.00 €
+		lineageTag: 540144b1-b58e-46b7-8ca6-a31cc2c1da61
+
+	/// Taux de marge brute (provisoire) = Marge Brute (prov.) / CA HT.
+	measure 'Taux Marge Brute (prov.)' = DIVIDE([Marge Brute (prov.)], [CA Total HT], 0)
+		formatString: 0.0%
+		lineageTag: 55093196-dbb1-4824-bdbb-3de0469d326b
+
+	/// Marge brute calculée par le backend (gross_profit_eur) — RÉFÉRENCE de contrôle.
+	measure 'Marge Brute Backend (réf.)' = SUM(fact_commandes[gross_profit_eur])
+		formatString: #,##0.00 €
+		lineageTag: d5933b33-f893-4bba-862c-8a410050dbf1
+
+	/// Écart entre la marge provisoire et la marge backend (aide à la validation finance).
+	measure 'Écart Marge vs Backend' = [Marge Brute (prov.)] - [Marge Brute Backend (réf.)]
+		formatString: #,##0.00 €
+		lineageTag: 96da7a44-3aa5-400a-ae45-f6122da0451e
+
+	/// Nombre de commandes ayant au moins un colis avec coût transport réel renseigné.
+	measure 'Nb Commandes Matchées' = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[cout_transport] <> 0)
+		formatString: #,##0
+		lineageTag: baae1892-caaa-4c58-be8e-a24bbf35a559
+
+	/// Taux de matching = commandes avec coût réel / total commandes.
+	measure 'Taux Matching' = DIVIDE([Nb Commandes Matchées], [Nb Commandes], 0)
+		formatString: 0.0%
+		lineageTag: c9fe02d1-af86-4e43-b409-66721938de41
+
+	/// Commandes sans coût transport réel rattaché.
+	measure 'Nb Commandes Non Matchées' = [Nb Commandes] - [Nb Commandes Matchées]
+		formatString: #,##0
+		lineageTag: e49b07fe-49a0-4f51-8316-32d54fe32163
+
+	/// Coût facturé (Colissimo/Chronopost) rapproché des colis via numero_suivi.
+	/// Rapprochement virtuel (TREATAS) : robuste même si un numéro de suivi se répète.
+	measure 'Coût Facturé Rapproché' = CALCULATE([Coût Transport Facturé], TREATAS(VALUES(fact_transport[numero_suivi]), fact_factures_transport[numero_suivi]))
+		formatString: #,##0.00 €
+		lineageTag: c96ba0bc-9091-4ace-8974-29e4ffe02b25
+
+	/// Écart entre le coût réel backend et le coût facturé transporteur (contrôle).
+	measure 'Écart Réel vs Facturé' = [Coût Transport Réel] - [Coût Facturé Rapproché]
+		formatString: #,##0.00 €
+		lineageTag: e8bd1f63-4bcc-46c4-940e-133635ca4aac
+
+	/// Nombre de colis rapprochés à une facture Colissimo/Chronopost.
+	measure 'Nb Colis Avec Facture' = CALCULATE(DISTINCTCOUNT(fact_factures_transport[numero_suivi]), TREATAS(VALUES(fact_transport[numero_suivi]), fact_factures_transport[numero_suivi]))
+		formatString: #,##0
+		lineageTag: cf7eab3c-beff-47d9-a425-381d83e6a41a
+
+	/// Taux de rapprochement facture = colis avec facture / total colis.
+	measure 'Taux Matching Factures' = DIVIDE([Nb Colis Avec Facture], [Nb Colis], 0)
+		formatString: 0.0%
+		lineageTag: 83eb47a3-ddff-4106-a391-6f55c64f38f7
+
+	/// Panier moyen HT par commande.
+	measure 'Panier Moyen' = DIVIDE([CA Total HT], [Nb Commandes], 0)
+		formatString: #,##0.00 €
+		lineageTag: 1b392be4-7f29-413b-8881-e29c3d1c99ed
+
+	/// Poids total expédié (kg).
+	measure 'Poids Total (kg)' = SUM(fact_transport[poids_kg])
+		formatString: #,##0.000
+		lineageTag: 594bb787-db4c-4e44-b6d2-184b63c29975
+
+	/// Marge brute provisoire cumulée sur l'année (YTD).
+	measure 'Marge YTD (prov.)' = TOTALYTD([Marge Brute (prov.)], dim_date[date])
+		formatString: #,##0.00 €
+		lineageTag: 28cf665e-0ecc-4980-b6cd-40f0dd3b6f10
+
+	/// CA HT du mois précédent (time intelligence).
+	measure 'CA Mois Précédent' = CALCULATE([CA Total HT], DATEADD(dim_date[date], -1, MONTH))
+		formatString: #,##0.00 €
+		lineageTag: 0868e48b-09c3-46ed-a947-9930a529aedf
+
+	/// Évolution du CA vs mois précédent (%).
+	measure 'Évolution CA' = DIVIDE([CA Total HT] - [CA Mois Précédent], [CA Mois Précédent], 0)
+		formatString: 0.0%
+		lineageTag: 97de0e8d-69dd-49d3-8d74-7a8a41d51a9e
+
+	column Dummy
+		isHidden
+		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a
+		summarizeBy: none
+		sourceColumn: [Dummy]
+
+	partition _Mesures = calculated
+		mode: import
+		source = ROW("Dummy", BLANK())
+

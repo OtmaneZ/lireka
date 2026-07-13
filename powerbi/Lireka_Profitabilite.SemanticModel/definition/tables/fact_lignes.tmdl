@@ -1,0 +1,77 @@
+/// Faits — lignes d'articles par commande (grain : un groupe d'articles / titre).
+/// Source : Power_BI_Datawarehouse\Données_Backend\customer_order_item_group.csv
+/// Relié à fact_commandes par order_id. Alimente le nombre d'articles (quantités).
+table fact_lignes
+	lineageTag: 131fd8d8-579b-4f13-8a68-fe0b13ecbd52
+
+	column id_ligne
+		dataType: int64
+		lineageTag: 0839c18c-cc35-4d53-b62a-5c823590f387
+		summarizeBy: none
+		sourceColumn: id_ligne
+
+	/// Clé étrangère vers fact_commandes[id_commande].
+	column order_id
+		dataType: int64
+		isHidden
+		lineageTag: 35bb21ee-6213-469e-ac04-72f957d1bd74
+		summarizeBy: none
+		sourceColumn: order_id
+
+	column isbn
+		dataType: string
+		lineageTag: 541183b9-2cab-4530-ad10-04f7d28afb94
+		summarizeBy: none
+		sourceColumn: isbn
+
+	column quantity
+		dataType: int64
+		formatString: #,##0
+		lineageTag: e10b7d4e-d6a0-4680-90ec-dc59decb898e
+		summarizeBy: sum
+		sourceColumn: quantity
+
+	column list_price_eur
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 1c058ce0-d590-45c5-a549-70fb4896270f
+		summarizeBy: none
+		sourceColumn: list_price_eur
+
+	column customer_price_per_item_eur
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 28528d38-6aa6-4371-b63c-ffd0b98cb809
+		summarizeBy: none
+		sourceColumn: customer_price_per_item_eur
+
+	column group_type
+		dataType: string
+		lineageTag: dd7412c2-c668-46db-ae4a-86436f59146e
+		summarizeBy: none
+		sourceColumn: group_type
+
+	partition fact_lignes = m
+		mode: import
+		source =
+				let
+					// Lecture du CSV backend des lignes d'articles (séparateur virgule, UTF-8)
+					Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order_item_group.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
+						{"id", Int64.Type},
+						{"order_id", Int64.Type},
+						{"isbn", type text},
+						{"quantity", Int64.Type},
+						{"list_price_eur", type number},
+						{"customer_price_per_item_local", type number},
+						{"customer_price_per_item_eur", type number},
+						{"group_type", type text}
+					}, "en-US"),
+					#"Colonnes renommees" = Table.RenameColumns(#"Types appliques", {{"id", "id_ligne"}}),
+					#"Colonnes conservees" = Table.SelectColumns(#"Colonnes renommees", {
+						"id_ligne", "order_id", "isbn", "quantity", "list_price_eur", "customer_price_per_item_eur", "group_type"
+					})
+				in
+					#"Colonnes conservees"
+

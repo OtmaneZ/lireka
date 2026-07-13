@@ -1,0 +1,101 @@
+/// Faits — colis / coûts de transport réels (grain : une ligne par colis).
+/// Source : Power_BI_Datawarehouse\Données_Backend\package.csv
+/// Le coût réel provient de shipping_cost_eur (complétude vérifiée : 98,4 % sur Colis Privé).
+/// Le transporteur est inféré du numéro de suivi (aucune colonne transporteur en source).
+table fact_transport
+	lineageTag: b67fcf1f-7c50-495f-9b64-c93508b2f1cd
+
+	column id_package
+		dataType: int64
+		lineageTag: c3eb4b36-c475-4ae6-a15e-e6bdded84245
+		summarizeBy: none
+		sourceColumn: id_package
+
+	/// Clé étrangère vers fact_commandes[id_commande] (package.order_id).
+	column order_id
+		dataType: int64
+		isHidden
+		lineageTag: 31686b5d-6e9a-4d1b-9ecb-5345bdfd9759
+		summarizeBy: none
+		sourceColumn: order_id
+
+	/// Numéro de suivi nettoyé (tracking_id) — clé de jointure avec les factures.
+	column numero_suivi
+		dataType: string
+		lineageTag: e3d4aa94-26ca-4d04-9222-63a310117597
+		summarizeBy: none
+		sourceColumn: numero_suivi
+
+	/// Transporteur normalisé via fnNormaliserTransporteur (inférence par motif).
+	column transporteur
+		dataType: string
+		lineageTag: 0c555f96-e526-4c91-8b23-6ff714093994
+		summarizeBy: none
+		sourceColumn: transporteur
+
+	/// Poids du colis en kg (weight source en grammes / 1000).
+	column poids_kg
+		dataType: double
+		formatString: #,##0.000
+		lineageTag: 6a0acb3f-3b78-4f06-8f6b-08c2b8d1c786
+		summarizeBy: sum
+		sourceColumn: poids_kg
+
+	/// Coût transport réel en EUR (shipping_cost_eur).
+	column cout_transport
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 05fe8b41-606c-4237-9215-86371029809f
+		summarizeBy: sum
+		sourceColumn: cout_transport
+
+	column shipping_supply_cost_eur
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 35ba76db-bfc4-428f-854a-798998f08964
+		summarizeBy: sum
+		sourceColumn: shipping_supply_cost_eur
+
+	column duties_taxes_eur
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 33e2a80a-97b0-4611-9cf7-91e8adcc60ac
+		summarizeBy: sum
+		sourceColumn: duties_taxes_eur
+
+	partition fact_transport = m
+		mode: import
+		source =
+				let
+					// Lecture du CSV backend des colis (séparateur virgule, UTF-8)
+					Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\package.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					// Typage (poids en entier = grammes ; coûts décimaux au point)
+					#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
+						{"id", Int64.Type},
+						{"order_id", Int64.Type},
+						{"tracking_id", type text},
+						{"weight", Int64.Type},
+						{"shipping_cost_eur", type number},
+						{"shipping_supply_cost_eur", type number},
+						{"duties_taxes_eur", type number}
+					}, "en-US"),
+					// Numéro de suivi nettoyé (clé de jointure factures)
+					#"Suivi normalise" = Table.AddColumn(#"Types appliques", "numero_suivi", each Text.Upper(Text.Trim([tracking_id])), type text),
+					// Inférence du transporteur par motif du numéro de suivi
+					#"Transporteur infere" = Table.AddColumn(#"Suivi normalise", "transporteur", each fnNormaliserTransporteur([tracking_id]), type text),
+					// Conversion du poids grammes -> kg
+					#"Poids en kg" = Table.AddColumn(#"Transporteur infere", "poids_kg", each [weight] / 1000, type number),
+					// Renommage vers le schéma cible
+					#"Colonnes renommees" = Table.RenameColumns(#"Poids en kg", {
+						{"id", "id_package"},
+						{"shipping_cost_eur", "cout_transport"}
+					}),
+					// Sélection finale des colonnes du modèle
+					#"Colonnes conservees" = Table.SelectColumns(#"Colonnes renommees", {
+						"id_package", "order_id", "numero_suivi", "transporteur",
+						"poids_kg", "cout_transport", "shipping_supply_cost_eur", "duties_taxes_eur"
+					})
+				in
+					#"Colonnes conservees"
+

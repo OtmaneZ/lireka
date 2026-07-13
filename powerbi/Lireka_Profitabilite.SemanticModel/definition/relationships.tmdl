@@ -1,0 +1,37 @@
+relationship rel_transport_commandes
+	fromColumn: fact_transport.order_id
+	toColumn: fact_commandes.id_commande
+
+relationship rel_lignes_commandes
+	fromColumn: fact_lignes.order_id
+	toColumn: fact_commandes.id_commande
+
+relationship rel_commandes_pays
+	fromColumn: fact_commandes.code_pays
+	toColumn: dim_pays.code_pays
+
+relationship rel_commandes_type
+	fromColumn: fact_commandes.type_commande
+	toColumn: dim_type_commande.type_commande
+
+relationship rel_commandes_date
+	fromColumn: fact_commandes.date_commande
+	toColumn: dim_date.date
+
+relationship rel_transport_transporteur
+	fromColumn: fact_transport.transporteur
+	toColumn: dim_transporteur.transporteur
+
+relationship rel_factures_transporteur
+	fromColumn: fact_factures_transport.transporteur
+	toColumn: dim_transporteur.transporteur
+
+relationship rel_factures_date
+	fromColumn: fact_factures_transport.date_facture
+	toColumn: dim_date.date
+
+relationship f1d8ffe8-c753-4b41-80f9-40543dfa7228
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_date.date
+	toColumn: LocalDateTable_c0744f5f-1abb-4b7c-a087-39baa2c04a9d.Date
+

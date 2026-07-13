@@ -1,0 +1,116 @@
+/// Dimension — calendrier (2022-01-01 -> 2026-12-31), libellés en français.
+/// Table générée en Power Query (indépendante des sources). Reliée à
+/// fact_commandes[date_commande] et fact_factures_transport[date_facture].
+table dim_date
+	lineageTag: 1ae962f8-740f-448c-901d-b26c93c27570
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-MM-dd
+		lineageTag: 3bdec9d9-5d0e-4b61-a426-61abab59c3a6
+		summarizeBy: none
+		sourceColumn: date
+
+		variation Variation
+			isDefault
+			relationship: f1d8ffe8-c753-4b41-80f9-40543dfa7228
+			defaultHierarchy: LocalDateTable_c0744f5f-1abb-4b7c-a087-39baa2c04a9d.'Hiérarchie de dates'
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column annee
+		dataType: int64
+		formatString: 0
+		lineageTag: 36f972cc-209d-4bba-8196-46a3e30b97cc
+		summarizeBy: sum
+		sourceColumn: annee
+
+		annotation SummarizationSetBy = Automatic
+
+	column trimestre
+		dataType: int64
+		formatString: 0
+		lineageTag: 92a43465-a60e-4214-abec-6a90bae4198a
+		summarizeBy: sum
+		sourceColumn: trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column mois
+		dataType: int64
+		formatString: 0
+		lineageTag: 8c1e0563-4270-46b1-a859-64e95d0d0569
+		summarizeBy: sum
+		sourceColumn: mois
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nom du mois (français), trié par le numéro de mois.
+	column nom_mois
+		dataType: string
+		lineageTag: 92cf5609-1abe-4863-b0c7-29eb72b13909
+		summarizeBy: none
+		sourceColumn: nom_mois
+		sortByColumn: mois
+
+	/// Clé année-mois (AAAAMM) pour tri/filtre chronologique.
+	column annee_mois
+		dataType: int64
+		formatString: 0
+		lineageTag: ca110d35-f1c5-45a1-92d9-ec604bf863d1
+		summarizeBy: sum
+		sourceColumn: annee_mois
+
+		annotation SummarizationSetBy = Automatic
+
+	column semaine
+		dataType: int64
+		formatString: 0
+		lineageTag: 5357d0b5-e469-40a6-9c57-d1a8d30a07c0
+		summarizeBy: sum
+		sourceColumn: semaine
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Jour de la semaine (français), trié du lundi au dimanche.
+	column jour_semaine
+		dataType: string
+		lineageTag: b624f43d-b8ce-4ab6-97b3-b0ad628f6c98
+		summarizeBy: none
+		sourceColumn: jour_semaine
+		sortByColumn: num_jour_semaine
+
+	column num_jour_semaine
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: aab51cc0-e48f-4306-9b4a-50921e76ac13
+		summarizeBy: sum
+		sourceColumn: num_jour_semaine
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_date = m
+		mode: import
+		source =
+				let
+					// Bornes du calendrier (les données backend démarrent en 2022)
+					Debut = #date(2022, 1, 1),
+					Fin = #date(2026, 12, 31),
+					NbJours = Duration.Days(Fin - Debut) + 1,
+					// Génération de la liste continue de dates
+					ListeDates = List.Dates(Debut, NbJours, #duration(1, 0, 0, 0)),
+					#"Table des dates" = Table.FromList(ListeDates, Splitter.SplitByNothing(), {"date"}),
+					#"Date typee" = Table.TransformColumnTypes(#"Table des dates", {{"date", type date}}),
+					// Attributs calendaires (libellés fr-FR)
+					#"Annee ajoutee" = Table.AddColumn(#"Date typee", "annee", each Date.Year([date]), Int64.Type),
+					#"Trimestre ajoute" = Table.AddColumn(#"Annee ajoutee", "trimestre", each Date.QuarterOfYear([date]), Int64.Type),
+					#"Mois ajoute" = Table.AddColumn(#"Trimestre ajoute", "mois", each Date.Month([date]), Int64.Type),
+					#"Nom mois ajoute" = Table.AddColumn(#"Mois ajoute", "nom_mois", each Date.ToText([date], [Format = "MMMM", Culture = "fr-FR"]), type text),
+					#"Annee mois ajoutee" = Table.AddColumn(#"Nom mois ajoute", "annee_mois", each [annee] * 100 + [mois], Int64.Type),
+					#"Semaine ajoutee" = Table.AddColumn(#"Annee mois ajoutee", "semaine", each Date.WeekOfYear([date], Day.Monday), Int64.Type),
+					#"Jour semaine ajoute" = Table.AddColumn(#"Semaine ajoutee", "jour_semaine", each Date.ToText([date], [Format = "dddd", Culture = "fr-FR"]), type text),
+					#"Num jour semaine ajoute" = Table.AddColumn(#"Jour semaine ajoute", "num_jour_semaine", each Date.DayOfWeek([date], Day.Monday) + 1, Int64.Type)
+				in
+					#"Num jour semaine ajoute"
+

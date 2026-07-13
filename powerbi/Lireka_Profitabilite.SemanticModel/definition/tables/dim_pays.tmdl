@@ -1,0 +1,98 @@
+/// Dimension — pays de livraison (axe d'analyse du dashboard).
+/// Clés = codes ISO 3166-1 alpha-2 réellement présents dans customer_order
+/// (destination_country), enrichis d'un libellé et d'une zone. Les codes non
+/// mappés retombent sur le code lui-même (nom_pays) et "Autre / à classer".
+table dim_pays
+	lineageTag: 558c4b12-b228-4ccc-b432-5f25c225e488
+
+	column code_pays
+		dataType: string
+		lineageTag: f49c62ae-6b71-4157-be2f-108245ca2495
+		summarizeBy: none
+		sourceColumn: code_pays
+
+	column nom_pays
+		dataType: string
+		lineageTag: 13a14901-53a1-4294-a326-ca8b1de78b39
+		summarizeBy: none
+		sourceColumn: nom_pays
+
+	column zone_geo
+		dataType: string
+		lineageTag: fc874ea6-56b4-43e0-9677-bd3ec5912945
+		summarizeBy: none
+		sourceColumn: zone_geo
+
+	column continent
+		dataType: string
+		lineageTag: a1819b4f-b8ff-4ab1-9ba1-9748501ae966
+		summarizeBy: none
+		sourceColumn: continent
+
+	partition dim_pays = m
+		mode: import
+		source =
+				let
+					// Codes pays distincts présents dans les commandes
+					Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					#"Colonne pays" = Table.SelectColumns(#"En-tetes promus", {"destination_country"}),
+					#"Code pays normalise" = Table.AddColumn(#"Colonne pays", "code_pays", each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??" else Text.Upper(Text.Trim([destination_country])), type text),
+					#"Codes distincts" = Table.Distinct(Table.SelectColumns(#"Code pays normalise", {"code_pays"})),
+					// Table de correspondance code -> nom / zone / continent
+					Correspondance = #table(
+						type table [code_pays = text, nom_pays = text, zone_geo = text, continent = text],
+						{
+							{"FR", "France", "Europe de l'Ouest", "Europe"},
+							{"BE", "Belgique", "Europe de l'Ouest", "Europe"},
+							{"LU", "Luxembourg", "Europe de l'Ouest", "Europe"},
+							{"CH", "Suisse", "Europe de l'Ouest", "Europe"},
+							{"DE", "Allemagne", "Europe de l'Ouest", "Europe"},
+							{"NL", "Pays-Bas", "Europe de l'Ouest", "Europe"},
+							{"AT", "Autriche", "Europe de l'Ouest", "Europe"},
+							{"ES", "Espagne", "Europe du Sud", "Europe"},
+							{"IT", "Italie", "Europe du Sud", "Europe"},
+							{"PT", "Portugal", "Europe du Sud", "Europe"},
+							{"GB", "Royaume-Uni", "Europe du Nord", "Europe"},
+							{"IE", "Irlande", "Europe du Nord", "Europe"},
+							{"DK", "Danemark", "Europe du Nord", "Europe"},
+							{"SE", "Suède", "Europe du Nord", "Europe"},
+							{"NO", "Norvège", "Europe du Nord", "Europe"},
+							{"FI", "Finlande", "Europe du Nord", "Europe"},
+							{"PL", "Pologne", "Europe de l'Est", "Europe"},
+							{"CZ", "Tchéquie", "Europe de l'Est", "Europe"},
+							{"US", "États-Unis", "Amérique du Nord", "Amérique"},
+							{"CA", "Canada", "Amérique du Nord", "Amérique"},
+							{"MX", "Mexique", "Amérique du Nord", "Amérique"},
+							{"BR", "Brésil", "Amérique du Sud", "Amérique"},
+							{"AU", "Australie", "Océanie", "Océanie"},
+							{"NZ", "Nouvelle-Zélande", "Océanie", "Océanie"},
+							{"JP", "Japon", "Asie", "Asie"},
+							{"CN", "Chine", "Asie", "Asie"},
+							{"SG", "Singapour", "Asie", "Asie"},
+							{"HK", "Hong Kong", "Asie", "Asie"},
+							{"AE", "Émirats arabes unis", "Moyen-Orient", "Asie"},
+							{"MA", "Maroc", "Afrique du Nord", "Afrique"},
+							{"DZ", "Algérie", "Afrique du Nord", "Afrique"},
+							{"TN", "Tunisie", "Afrique du Nord", "Afrique"},
+							{"ZA", "Afrique du Sud", "Afrique subsaharienne", "Afrique"},
+							{"RE", "Réunion", "DOM-TOM", "France d'outre-mer"},
+							{"GP", "Guadeloupe", "DOM-TOM", "France d'outre-mer"},
+							{"MQ", "Martinique", "DOM-TOM", "France d'outre-mer"},
+							{"GF", "Guyane", "DOM-TOM", "France d'outre-mer"},
+							{"YT", "Mayotte", "DOM-TOM", "France d'outre-mer"},
+							{"NC", "Nouvelle-Calédonie", "DOM-TOM", "France d'outre-mer"},
+							{"PF", "Polynésie française", "DOM-TOM", "France d'outre-mer"}
+						}),
+					// Jointure des codes présents avec la correspondance
+					#"Codes enrichis" = Table.NestedJoin(#"Codes distincts", {"code_pays"}, Correspondance, {"code_pays"}, "corr", JoinKind.LeftOuter),
+					#"Correspondance etendue" = Table.ExpandTableColumn(#"Codes enrichis", "corr", {"nom_pays", "zone_geo", "continent"}, {"nom_pays", "zone_geo", "continent"}),
+					// Valeurs de repli pour les codes non référencés
+					#"Nom par defaut" = Table.AddColumn(#"Correspondance etendue", "nom_pays_final", each [nom_pays] ?? [code_pays], type text),
+					#"Zone par defaut" = Table.AddColumn(#"Nom par defaut", "zone_geo_final", each [zone_geo] ?? "Autre / à classer", type text),
+					#"Continent par defaut" = Table.AddColumn(#"Zone par defaut", "continent_final", each [continent] ?? "Autre", type text),
+					#"Colonnes finales" = Table.SelectColumns(#"Continent par defaut", {"code_pays", "nom_pays_final", "zone_geo_final", "continent_final"}),
+					#"Colonnes renommees" = Table.RenameColumns(#"Colonnes finales", {{"nom_pays_final", "nom_pays"}, {"zone_geo_final", "zone_geo"}, {"continent_final", "continent"}})
+				in
+					#"Colonnes renommees"
+

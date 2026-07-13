@@ -1,0 +1,136 @@
+/// Faits — factures transporteurs unifiées (récaps Colissimo + Chronopost).
+/// Sources (format français, séparateur ";", décimale virgule) :
+/// Dashboards_transporteurs\COLISSIMO Dashboard PowerBI\2025 & 2026 *.csv
+/// Dashboards_transporteurs\CHRONOPOST Dashboard PowerBI\2025 & 2026 *.csv
+/// Colissimo est un service La Poste (suivi 6A...). Sert au rapprochement
+/// factures <-> colis via numero_suivi (contrôle du coût réel backend).
+table fact_factures_transport
+	lineageTag: 3e48232a-1883-4a3e-bf86-44d0d480d1fa
+
+	/// Numéro de facture (Chronopost uniquement ; vide pour Colissimo).
+	column numero_facture
+		dataType: string
+		lineageTag: 456a2c4f-83b7-417a-a21c-27b78d735243
+		summarizeBy: none
+		sourceColumn: numero_facture
+
+	/// Date de la facture (clé vers dim_date).
+	column date_facture
+		dataType: dateTime
+		formatString: yyyy-MM-dd
+		lineageTag: ae273671-c725-47cd-abaa-2bb0e89acd27
+		summarizeBy: none
+		sourceColumn: date_facture
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Numéro de suivi nettoyé — clé de jointure vers fact_transport.
+	column numero_suivi
+		dataType: string
+		lineageTag: 038ff088-2d9d-4271-b72a-e91eb4d07ab5
+		summarizeBy: none
+		sourceColumn: numero_suivi
+
+	/// Transporteur canonique (La Poste pour Colissimo, Chronopost).
+	column transporteur
+		dataType: string
+		lineageTag: 4550186f-ae1e-4003-8ca0-6fe6f9300d5e
+		summarizeBy: none
+		sourceColumn: transporteur
+
+	column service
+		dataType: string
+		lineageTag: 10db3ac1-f9f1-4847-aa55-18b0d80f8724
+		summarizeBy: none
+		sourceColumn: service
+
+	/// Pays de destination (Colissimo : préfixe de la colonne Destination).
+	column pays_destination
+		dataType: string
+		lineageTag: 899d1dc8-28bb-492c-be09-bb1be241d2c9
+		summarizeBy: none
+		sourceColumn: pays_destination
+
+	column poids
+		dataType: double
+		formatString: #,##0.000
+		lineageTag: 1605cb0c-7a09-4959-9929-bbadb56a058a
+		summarizeBy: sum
+		sourceColumn: poids
+
+	/// Coût transport facturé HT en EUR (colonne TOTAL HT du récap).
+	column cout_transport
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 125e8180-2944-4f06-a00f-186548827da1
+		summarizeBy: sum
+		sourceColumn: cout_transport
+
+	column devise
+		dataType: string
+		lineageTag: cbbfc9cf-c110-481d-9dc7-c1eea172df42
+		summarizeBy: none
+		sourceColumn: devise
+
+	partition fact_factures_transport = m
+		mode: import
+		source =
+				let
+					// --- Colissimo (service La Poste) : 2025 + 2026 ---
+					ColisChemin2025 = DossierDonnees & "\Dashboards_transporteurs\COLISSIMO Dashboard PowerBI\2025_COLISSIMO_récap.csv",
+					ColisChemin2026 = DossierDonnees & "\Dashboards_transporteurs\COLISSIMO Dashboard PowerBI\2026_COLISSIMO_récap_au_30_juin_2026.csv",
+					ColisLire = (chemin as text) as table => Table.PromoteHeaders(Csv.Document(File.Contents(chemin), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]),
+					#"Colissimo combine" = Table.Combine({ColisLire(ColisChemin2025), ColisLire(ColisChemin2026)}),
+					// Typage avec la culture fr-FR (dates jj/mm/aaaa, décimale virgule)
+					#"Colissimo types" = Table.TransformColumnTypes(#"Colissimo combine", {
+						{"Date", type date},
+						{"Poids kg", type number},
+						{"TOTAL HT", type number}
+					}, "fr-FR"),
+					// Mise au schéma unifié + enrichissement transporteur/service/pays
+					#"Colissimo unifie" = Table.SelectColumns(
+						Table.AddColumn(
+							Table.AddColumn(
+								Table.AddColumn(
+									Table.AddColumn(
+										Table.AddColumn(
+											Table.RenameColumns(#"Colissimo types", {{"Date", "date_facture"}, {"Poids kg", "poids"}, {"TOTAL HT", "cout_transport"}}),
+											"numero_suivi", each Text.Upper(Text.Trim([#"N° de colis"])), type text),
+										"numero_facture", each null, type text),
+									"transporteur", each "La Poste", type text),
+								"service", each "Colissimo", type text),
+							"pays_destination", each try Text.BeforeDelimiter(Text.Trim([Destination]), " ") otherwise null, type text),
+						{"numero_facture", "date_facture", "numero_suivi", "transporteur", "service", "pays_destination", "poids", "cout_transport"}),
+					// --- Chronopost : fichier 2025 uniquement ---
+					// Audit 13/07/2026 : 2025_CHRONOPOST_récap.csv et 2026_CHRONOPOST_récap_au_30_juin_2026.csv
+					// sont strictement identiques byte à byte (SHA256 8231F2D7…, 138 359 octets, 2 142 lignes).
+					// Le fichier « 2026 » ne contient aucune date 2026 (plage 01/02/2025–31/12/2025) : copie du 2025.
+					// Table.Combine doublait l'intégralité des lignes. En attente clarification Marc sur l'origine.
+					ChronoChemin2025 = DossierDonnees & "\Dashboards_transporteurs\CHRONOPOST Dashboard PowerBI\2025_CHRONOPOST_récap.csv",
+					ChronoLire = (chemin as text) as table => Table.PromoteHeaders(Csv.Document(File.Contents(chemin), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]),
+					#"Chronopost source" = ChronoLire(ChronoChemin2025),
+					#"Chronopost types" = Table.TransformColumnTypes(#"Chronopost source", {
+						{"Date", type date},
+						{"Poids (kg)", type number},
+						{"TOTAL HT", type number}
+					}, "fr-FR"),
+					#"Chronopost unifie" = Table.SelectColumns(
+						Table.AddColumn(
+							Table.AddColumn(
+								Table.AddColumn(
+									Table.AddColumn(
+										Table.RenameColumns(#"Chronopost types", {{"Facture", "numero_facture"}, {"Date", "date_facture"}, {"Poids (kg)", "poids"}, {"TOTAL HT", "cout_transport"}}),
+										"numero_suivi", each Text.Upper(Text.Trim([#"N° de colis"])), type text),
+									"transporteur", each "Chronopost", type text),
+								"service", each "Chronopost", type text),
+							"pays_destination", each null, type text),
+						{"numero_facture", "date_facture", "numero_suivi", "transporteur", "service", "pays_destination", "poids", "cout_transport"}),
+					// --- Union des deux transporteurs + devise ---
+					#"Factures combinees" = Table.Combine({#"Colissimo unifie", #"Chronopost unifie"}),
+					#"Devise ajoutee" = Table.AddColumn(#"Factures combinees", "devise", each "EUR", type text),
+					// Exclusion des lignes sans coût exploitable
+					#"Lignes valides" = Table.SelectRows(#"Devise ajoutee", each [cout_transport] <> null),
+					#"Facture en texte" = Table.TransformColumnTypes(#"Lignes valides", {{"numero_facture", type text}})
+				in
+					#"Facture en texte"
+
