@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Lireka_Profitabilite"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "dfd962d8-dd70-422f-bf67-319a490f17d8"
+  }
+}
