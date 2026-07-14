@@ -29,12 +29,12 @@ gantt
 | Activité | Livrable |
 |----------|----------|
 | Kick-off Marc Bordier (30–45 min) | CR kick-off |
-| Obtention accès Power BI + dépôt des CSV | Checklist accès complétée |
+| Obtention accès Power BI + SharePoint (`Power_BI_Datawarehouse/`) | Checklist accès complétée |
 | Analyse rapide formats factures (La Poste, Colis Privé, Chronopost) | Mapping champs documenté |
-| Réception export commandes backend | Fichier dans `data/raw/` |
-| Lancement scripts ETL sur données réelles | Fichiers `data/processed/` |
+| Réception export commandes backend sur SharePoint | CSV `Données_Backend/` disponibles |
+| Premier refresh Power BI Desktop (`.pbip`) sur données réelles | Modèle chargé sans erreur bloquante |
 
-**Jalon J1** : ✅ Accès obtenus, données reçues, ETL exécuté sans blocage majeur
+**Jalon J1** : ✅ Accès obtenus, données sur SharePoint, refresh PBIX réussi
 
 ---
 
@@ -67,7 +67,7 @@ gantt
 | Activité | Livrable |
 |----------|----------|
 | Session formation utilisateurs *(si disponibilité équipes Lireka)* | CR formation |
-| Documentation du processus (import CSV, refresh, limites) | `docs/04-processus/processus-etl-gouvernance.md` |
+| Documentation du processus (refresh SharePoint, limites) | `docs/04-processus/processus-etl-gouvernance.md` |
 | Point de clôture avec Marc Bordier | Mission livrée |
 
 **Jalon J4** : ✅ Forfait livré et validé

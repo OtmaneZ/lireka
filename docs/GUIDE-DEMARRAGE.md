@@ -9,40 +9,29 @@
 
 - [ ] Personnaliser et envoyer l'email de kick-off → `communications/emails/01-kickoff.md`
 - [ ] Kick-off Marc Bordier (30–45 min)
-- [ ] Obtenir accès Power BI + tous les CSV → `docs/01-cadrage/checklist-acces-donnees.md`
-- [ ] Déposer les fichiers dans `data/raw/`
-- [ ] Lancer les scripts ETL :
-
-```bash
-# Factures (exemple La Poste)
-python scripts/etl/etl_factures_transporteur.py \
-  --transporteur la-poste \
-  --fichier data/raw/transporteurs/la-poste/la-poste_factures_YYYYMM.csv
-
-# Commandes
-python scripts/etl/etl_commandes.py \
-  --fichier data/raw/commandes/commandes_YYYYMM.csv
-
-# Validation matching
-python scripts/validation/validate_data.py --type matching
-```
-
+- [ ] Obtenir accès Power BI + SharePoint (`Power_BI_Datawarehouse/`) → `docs/01-cadrage/checklist-acces-donnees.md`
+- [ ] Vérifier que les CSV sont présents sur SharePoint :
+  - `Données_Backend/customer_order.csv`, `package.csv`, `customer_order_item_group.csv`
+  - Récaps Colissimo et Chronopost dans `Dashboards_transporteurs/`
+- [ ] Ouvrir `powerbi/Lireka_Profitabilite.pbip` dans Power BI Desktop
+- [ ] Configurer le paramètre **SharePointSiteURL** (*Transformer les données* → *Gérer les paramètres*)
+- [ ] Lancer un **refresh** et vérifier l'absence d'erreur sur les requêtes M
 - [ ] Compléter l'inventaire des sources → `docs/01-cadrage/inventaire-sources.md`
 
 ---
 
 ## Jour 2 — Intégration Power BI
 
-- [ ] Intégrer La Poste, Colis Privé, Chronopost dans Power BI
-- [ ] Publier le dataset commandes structuré
-- [ ] S'appuyer sur le modèle DHL/FedEx/UPS existant (référence, pas refonte)
+- [ ] Intégrer La Poste, Colis Privé, Chronopost dans le modèle (récaps factures via Power Query M)
+- [ ] Vérifier le chargement des tables backend (`fact_commandes`, `fact_transport`, `fact_lignes`)
+- [ ] S'appuyer sur le modèle DHL/FedEx/UPS existant comme référence (pas de refonte)
 
 ---
 
 ## Jour 3 — Jointure & dashboards profitabilité
 
-- [ ] Jointure factures ↔ commandes par `numero_suivi`
-- [ ] Mesures marge brute (coût transport réel)
+- [ ] Vérifier le rapprochement factures ↔ colis (`rel_factures_colis` via `id_package`)
+- [ ] Mesures marge brute provisoire et contrôles qualité
 - [ ] Dashboard profitabilité — marge brute par **pays** et par **type de commande** *(1 rapport, structure au choix du prestataire)*
 
 ---
@@ -56,24 +45,15 @@ python scripts/validation/validate_data.py --type matching
 
 ---
 
-## Commandes utiles
+## Refresh du modèle (étapes réelles)
 
-```bash
-# Tous les transporteurs d'un dossier
-python scripts/etl/etl_factures_transporteur.py \
-  --transporteur all \
-  --dossier data/raw/transporteurs/
+1. Ouvrir `powerbi/Lireka_Profitabilite.pbip` dans Power BI Desktop
+2. Vérifier **SharePointSiteURL** (site Lireka contenant `Power_BI_Datawarehouse/`)
+3. **Actualiser** le modèle — Power Query M relit les CSV SharePoint et reconstruit les tables
+4. Contrôler les volumes clés (`Nb Commandes`, `Nb Colis`, `Nb Colis Facturés`)
+5. Après publication : refresh manuel ou planifié dans Power BI Service *(fréquence au choix Lireka)*
 
-# Valider les factures
-python scripts/validation/validate_data.py \
-  --type factures \
-  --fichier data/processed/transporteurs/factures_unifiees.csv
-
-# Valider les commandes
-python scripts/validation/validate_data.py \
-  --type commandes \
-  --fichier data/processed/commandes/commandes_clean.csv
-```
+Documentation détaillée : [`docs/04-processus/processus-etl-gouvernance.md`](04-processus/processus-etl-gouvernance.md)
 
 ---
 
@@ -82,7 +62,7 @@ python scripts/validation/validate_data.py \
 | Jour | Documents |
 |------|-----------|
 | J1 | `devis.md`, `checklist-acces-donnees.md`, `inventaire-sources.md` |
-| J2 | `schema-unifie-factures.md`, `schema-export-commandes.md` |
+| J2 | `modeles-semanticques.md`, `architecture-data.md` |
 | J3 | `mesures-dax.md`, `livrables.md` |
 | J4 | `processus-etl-gouvernance.md`, `programme-formation.md` |
 

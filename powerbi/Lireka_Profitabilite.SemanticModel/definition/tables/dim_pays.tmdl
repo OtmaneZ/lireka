@@ -88,7 +88,10 @@ table dim_pays
 							{"GF", "Guyane", "DOM-TOM", "France d'outre-mer"},
 							{"YT", "Mayotte", "DOM-TOM", "France d'outre-mer"},
 							{"NC", "Nouvelle-Calédonie", "DOM-TOM", "France d'outre-mer"},
-							{"PF", "Polynésie française", "DOM-TOM", "France d'outre-mer"}
+							{"PF", "Polynésie française", "DOM-TOM", "France d'outre-mer"},
+							// Résidu volontairement marqué : commandes sans destination_country conservées
+							// (non-CANCELLED) pour ne pas faire disparaître leur CA/volume — décision 14/07/2026.
+							{"??", "Pays non attribué", "Non attribué", "Non attribué"}
 						}),
 					// Jointure des codes présents avec la correspondance
 					#"Codes enrichis" = Table.NestedJoin(#"Codes distincts", {"code_pays"}, Correspondance, {"code_pays"}, "corr", JoinKind.LeftOuter),

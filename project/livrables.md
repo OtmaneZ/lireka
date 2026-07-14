@@ -28,24 +28,6 @@
 
 ---
 
-## Livrables techniques associés
-
-| ID | Livrable | Statut | Notes |
-|----|----------|--------|-------|
-| T01 | Scripts ETL transporteurs (La Poste, Colis Privé, Chronopost) | ⬜ | `scripts/etl/etl_factures_transporteur.py` |
-| T02 | Script ETL commandes | ⬜ | `scripts/etl/etl_commandes.py` |
-| T03 | Validation qualité / matching | ⬜ | `scripts/validation/validate_data.py` |
-| T04 | Mesures DAX marge brute | ⬜ | `powerbi/models/mesures-dax.md` |
-
-### Existant Lireka (hors livraison, référence uniquement)
-
-| Élément | Statut |
-|---------|--------|
-| Dashboards DHL, FedEx, UPS | ✅ Existant |
-| Connexion Claude AI | ✅ Existant |
-
----
-
 ## Hors périmètre devis (ne pas livrer sauf accord écrit)
 
 | Élément | Raison |
@@ -57,12 +39,15 @@
 | Dictionnaire de données exhaustif | Non mentionné au devis |
 | Dossier de clôture / architecture complète | Non mentionné au devis |
 
+> **Postes Canada** : les données colis backend sont **dans le périmètre** du modèle profitabilité (confirmé Marc). Seuls les dashboards transporteurs **dédiés** (un par transporteur) sont hors périmètre — pas l'intégration des données Postes Canada.
+
 ---
 
 ## Critères d'acceptation
 
 ### Transporteurs
 - [ ] La Poste, Colis Privé et Chronopost intégrés dans Power BI
+- [ ] Postes Canada : colis backend (`package.csv`) intégrés au modèle profitabilité *(dans le périmètre — confirmé Marc ; coût estimé, pas de dashboard dédié)*
 - [ ] Données importées depuis CSV sur au moins 1 mois de factures
 
 ### Commandes
@@ -87,4 +72,4 @@
 
 ---
 
-*Mis à jour le 12 juillet 2026*
+*Mis à jour le 14 juillet 2026*

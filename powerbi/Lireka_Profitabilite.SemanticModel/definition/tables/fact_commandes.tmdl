@@ -158,7 +158,10 @@ table fact_commandes
 				let
 					// Source partagée (stg_customer_order) — une seule lecture du CSV
 					#"Date commande ajoutee" = Table.AddColumn(stg_customer_order, "date_commande", each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null, type date),
-					// Normalisation du code pays de livraison (majuscules, valeur de repli "??")
+					// Normalisation du code pays de livraison (majuscules, valeur de repli "??").
+					// "??" est libellé "Pays non attribué" dans dim_pays : le résidu de commandes
+					// non-CANCELLED sans pays (12 lignes, audit 14/07/2026) reste visible dans le
+					// CA/volume au lieu d'être exclu.
 					#"Code pays normalise" = Table.AddColumn(#"Date commande ajoutee", "code_pays", each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??" else Text.Upper(Text.Trim([destination_country])), type text),
 					// Axe type de commande dérivé du canal de vente (source)
 					#"Type commande derive" = Table.AddColumn(#"Code pays normalise", "type_commande", each if [source] = null or Text.Trim([source]) = "" then "INCONNU" else Text.Trim([source]), type text),
@@ -175,7 +178,10 @@ table fact_commandes
 						"ca_ht", "shipping_fee_eur", "cout_achat", "cout_transport_estime",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande"
-					})
+					}),
+					// Exclusion CANCELLED retirée le 14/07/2026 — statut ambigu, décision métier en attente de Marc.
+					// Voir note : 59% des CANCELLED ont gross_profit_eur positif normal, 0,29% expédiées seulement.
+					// Ne pas réintroduire l'exclusion sans validation explicite.
 				in
 					#"Colonnes conservees"
 

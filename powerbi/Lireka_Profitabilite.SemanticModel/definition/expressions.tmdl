@@ -162,3 +162,71 @@ expression fnSharePointLireCsvRecap =
 			Table.PromoteHeaders(Source, [PromoteAllScalars = true])
 	lineageTag: e8a3b4c5-2d6f-4a9b-8e3c-7f1d8b2e5c93
 
+/// Staging (non chargé) — factures Colissimo/Chronopost unifiées avec résolution facture -> colis
+/// par proximité de date (évite la dépendance circulaire fact_transport <-> fact_factures_transport).
+/// Consommé par fact_factures_transport et fact_transport (colonne source_cout).
+expression stg_factures_transport_resolu =
+		let
+			fnChronoUnifie = (src as table, facCol as text, suiviCol as text) as table =>
+				let
+					t = Table.TransformColumnTypes(src, {{"Date", type date}, {"Poids (kg)", type number}, {"TOTAL HT", type number}}, "fr-FR"),
+					r = Table.RenameColumns(t, {{"Date", "date_facture"}, {"Poids (kg)", "poids"}, {"TOTAL HT", "cout_transport"}}),
+					f = Table.AddColumn(r, "numero_facture", each try Text.From(Record.Field(_, facCol)) otherwise null, type text),
+					s = Table.AddColumn(f, "numero_suivi", each Text.Upper(Text.Trim(Record.Field(_, suiviCol))), type text),
+					tr = Table.AddColumn(s, "transporteur", each fnCanonTransporteur("Chronopost"), type text),
+					sv = Table.AddColumn(tr, "service", each "Chronopost", type text),
+					pdst = Table.AddColumn(sv, "pays_destination", each null, type text)
+				in
+					Table.SelectColumns(pdst, {"numero_facture", "date_facture", "numero_suivi", "transporteur", "service", "pays_destination", "poids", "cout_transport"}),
+			ColisDossier = "Dashboards_transporteurs\COLISSIMO Dashboard PowerBI",
+			#"Colissimo combine" = Table.Combine({
+				fnSharePointLireCsvRecap(ColisDossier, "2025_COLISSIMO_récap.csv"),
+				fnSharePointLireCsvRecap(ColisDossier, "2026_COLISSIMO_récap_au_30_juin_2026.csv")
+			}),
+			#"Colissimo types" = Table.TransformColumnTypes(#"Colissimo combine", {
+				{"Date", type date},
+				{"Poids kg", type number},
+				{"TOTAL HT", type number}
+			}, "fr-FR"),
+			#"Colissimo unifie" = Table.SelectColumns(
+				Table.AddColumn(
+					Table.AddColumn(
+						Table.AddColumn(
+							Table.AddColumn(
+								Table.AddColumn(
+									Table.RenameColumns(#"Colissimo types", {{"Date", "date_facture"}, {"Poids kg", "poids"}, {"TOTAL HT", "cout_transport"}}),
+									"numero_suivi", each Text.Upper(Text.Trim([#"N° de colis"])), type text),
+								"numero_facture", each null, type text),
+							"transporteur", each fnCanonTransporteur("Colissimo"), type text),
+						"service", each "Colissimo", type text),
+					"pays_destination", each try Text.BeforeDelimiter(Text.Trim([Destination]), " ") otherwise null, type text),
+				{"numero_facture", "date_facture", "numero_suivi", "transporteur", "service", "pays_destination", "poids", "cout_transport"}),
+			ChronoDossier = "Dashboards_transporteurs\CHRONOPOST Dashboard PowerBI",
+			#"Chronopost 2025" = fnChronoUnifie(fnSharePointLireCsvRecap(ChronoDossier, "2025_CHRONOPOST_récap.csv"), "Facture", "N° de colis"),
+			#"Chronopost 2026" = fnChronoUnifie(fnSharePointLireCsvRecap(ChronoDossier, "2026_CHRONOPOST_V2.csv"), "N° Facture", "N° de colis (N° objet)"),
+			#"Chronopost unifie" = Table.Combine({#"Chronopost 2025", #"Chronopost 2026"}),
+			#"Factures combinees" = Table.Combine({#"Colissimo unifie", #"Chronopost unifie"}),
+			#"Lignes valides" = Table.SelectRows(#"Factures combinees", each [cout_transport] <> null),
+			#"Facture en texte" = Table.TransformColumnTypes(#"Lignes valides", {{"numero_facture", type text}}),
+			#"Pkg source" = fnSharePointLireCsv("Données_Backend", "package.csv"),
+			#"Pkg types" = Table.TransformColumnTypes(#"Pkg source", {{"id", Int64.Type}, {"order_id", Int64.Type}, {"tracking_id", type text}}, "en-US"),
+			#"Pkg suivi" = Table.AddColumn(#"Pkg types", "numero_suivi", each Text.Upper(Text.Trim([tracking_id])), type text),
+			#"Cmd dates" = Table.AddColumn(Table.SelectColumns(stg_customer_order, {"id", "origin_created"}), "date_commande", each try Date.FromText(Text.Start([origin_created], 10)) otherwise null, type date),
+			#"Colis dates" = Table.ExpandTableColumn(
+				Table.NestedJoin(Table.SelectColumns(Table.RenameColumns(#"Pkg suivi", {{"id", "id_package"}}), {"id_package", "order_id", "numero_suivi"}), {"order_id"}, #"Cmd dates", {"id"}, "cmd", JoinKind.LeftOuter),
+				"cmd", {"date_commande"}, {"date_commande"}),
+			#"Factures + candidats" = Table.NestedJoin(#"Facture en texte", {"numero_suivi"}, #"Colis dates", {"numero_suivi"}, "candidats", JoinKind.LeftOuter),
+			#"Colis resolu" = Table.AddColumn(#"Factures + candidats", "resolu", each
+				let candidats = [candidats], dfac = [date_facture] in
+					if Table.RowCount(candidats) = 0 then null
+					else if Table.RowCount(candidats) = 1 then candidats{0}
+					else Table.First(Table.Sort(
+						Table.AddColumn(candidats, "delta", each if [date_commande] = null or dfac = null then 1000000000.0 else Number.Abs(Duration.TotalDays([date_commande] - dfac)), type number),
+						{{"delta", Order.Ascending}}))),
+			#"order_id ajoute" = Table.AddColumn(#"Colis resolu", "order_id", each if [resolu] = null then null else Record.Field([resolu], "order_id"), Int64.Type),
+			#"id_package ajoute" = Table.AddColumn(#"order_id ajoute", "id_package", each if [resolu] = null then null else Record.Field([resolu], "id_package"), Int64.Type),
+			#"Colonnes finales" = Table.RemoveColumns(#"id_package ajoute", {"candidats", "resolu"})
+		in
+			#"Colonnes finales"
+	lineageTag: f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c
+

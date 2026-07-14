@@ -12,6 +12,21 @@ table _Mesures
 		formatString: #,##0
 		lineageTag: 7f531780-6ee8-4ea5-a56f-17fb98fca792
 
+	/// Colis dont le coût provient d'une facture Colissimo/Chronopost rapprochée.
+	measure 'Nb Colis (coût réel)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "reel")
+		formatString: #,##0
+		lineageTag: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
+
+	/// Colis dont le coût provient du backend (shipping_cost_eur) sans facture transporteur.
+	measure 'Nb Colis (coût estimé)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "estime")
+		formatString: #,##0
+		lineageTag: c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f
+
+	/// Colis sans facture ni coût backend renseigné (visibles en volume, exclus du coût).
+	measure 'Nb Colis (coût non disponible)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "non_disponible")
+		formatString: #,##0
+		lineageTag: d3e4f5a6-b7c8-4d9e-0f1a-2b3c4d5e6f7a
+
 	/// Nombre de lignes de facture transporteur (Colissimo + Chronopost).
 	measure 'Nb Colis Facturés' = COUNTROWS(fact_factures_transport)
 		formatString: #,##0
@@ -84,24 +99,26 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: 96da7a44-3aa5-400a-ae45-f6122da0451e
 
-	/// Nombre de commandes ayant au moins un colis avec coût transport réel renseigné.
-	measure 'Nb Commandes Matchées' = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[cout_transport] > 0)
+	/// Nombre de commandes ayant au moins un colis avec facture transporteur rapprochée (source_cout = reel).
+	measure 'Nb Commandes Matchées' = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[source_cout] = "reel")
 		formatString: #,##0
 		lineageTag: baae1892-caaa-4c58-be8e-a24bbf35a559
 
-	/// Taux de matching = commandes avec coût réel / total commandes.
+	/// Taux de matching facture = commandes avec coût réel (facture) / total commandes.
 	measure 'Taux Matching' = DIVIDE([Nb Commandes Matchées], [Nb Commandes], 0)
 		formatString: 0.0%
 		lineageTag: c9fe02d1-af86-4e43-b409-66721938de41
 
-	/// Commandes sans coût transport réel rattaché.
+	/// Commandes sans aucun colis rapproché à une facture transporteur.
 	measure 'Nb Commandes Non Matchées' = [Nb Commandes] - [Nb Commandes Matchées]
 		formatString: #,##0
 		lineageTag: e49b07fe-49a0-4f51-8316-32d54fe32163
 
-	/// Coût facturé (Colissimo/Chronopost) rapproché des colis via numero_suivi.
-	/// Rapprochement virtuel (TREATAS) : robuste même si un numéro de suivi se répète.
-	measure 'Coût Facturé Rapproché' = CALCULATE([Coût Transport Facturé], TREATAS(VALUES(fact_transport[numero_suivi]), fact_factures_transport[numero_suivi]))
+	/// Coût facturé (Colissimo/Chronopost) rapproché du colis via la relation rel_factures_colis
+	/// (fact_factures_transport[id_package] -> fact_transport[id_package]), clé RÉSOLUE PAR DATE
+	/// dans la partition. Remplace l'ancien TREATAS sur numero_suivi, qui rattachait la facture
+	/// aux 2 colis d'un numéro de suivi recyclé (382 cas) => surcomptage.
+	measure 'Coût Facturé Rapproché' = [Coût Transport Facturé]
 		formatString: #,##0.00 €
 		lineageTag: c96ba0bc-9091-4ace-8974-29e4ffe02b25
 
@@ -110,8 +127,8 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: e8bd1f63-4bcc-46c4-940e-133635ca4aac
 
-	/// Nombre de colis rapprochés à une facture Colissimo/Chronopost.
-	measure 'Nb Colis Avec Facture' = CALCULATE(DISTINCTCOUNT(fact_factures_transport[numero_suivi]), TREATAS(VALUES(fact_transport[numero_suivi]), fact_factures_transport[numero_suivi]))
+	/// Nombre de colis rapprochés à une facture Colissimo/Chronopost (aligné sur source_cout = reel).
+	measure 'Nb Colis Avec Facture' = [Nb Colis (coût réel)]
 		formatString: #,##0
 		lineageTag: cf7eab3c-beff-47d9-a425-381d83e6a41a
 
@@ -144,6 +161,85 @@ table _Mesures
 	measure 'Évolution CA' = DIVIDE([CA Total HT] - [CA Mois Précédent], [CA Mois Précédent], 0)
 		formatString: 0.0%
 		lineageTag: 97de0e8d-69dd-49d3-8d74-7a8a41d51a9e
+
+	/// Chronopost : lignes au-delà de la 1re par numero_facture (grain multi-colis, pas un doublon qualité).
+	measure 'Lignes Colis par Facture (hors 1re)' =
+			VAR T =
+				ADDCOLUMNS(
+					FILTER(
+						VALUES(fact_factures_transport[numero_facture]),
+						NOT ISBLANK(fact_factures_transport[numero_facture])
+							&& fact_factures_transport[numero_facture] <> ""
+					),
+					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+				)
+			RETURN
+				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+		formatString: #,##0
+		lineageTag: f1a2b3c4-d5e6-4789-a012-3456789abcde
+
+	/// Vrais doublons qualité : même numero_facture ET même numero_suivi sur plusieurs lignes.
+	measure 'Vrais Doublons (Facture + Suivi)' =
+			VAR T =
+				ADDCOLUMNS(
+					SUMMARIZE(
+						fact_factures_transport,
+						fact_factures_transport[numero_facture],
+						fact_factures_transport[numero_suivi]
+					),
+					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+				)
+			RETURN
+				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+		formatString: #,##0
+		lineageTag: e6f78901-2345-4567-f567-89abcdef0123
+
+	/// Lignes de facture dont numero_suivi apparaît plus d'une fois (surplus hors 1re occurrence).
+	measure 'Doublons Numero Suivi Factures' =
+			VAR T =
+				ADDCOLUMNS(
+					VALUES(fact_factures_transport[numero_suivi]),
+					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+				)
+			RETURN
+				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+		formatString: #,##0
+		lineageTag: a2b3c4d5-e6f7-4890-b123-456789abcdef
+
+	/// Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).
+	measure 'Commandes Sans Colis' =
+			COUNTROWS(
+				FILTER(
+					fact_commandes,
+					fact_commandes[state] <> "CANCELLED"
+						&& COUNTROWS(RELATEDTABLE(fact_transport)) = 0
+				)
+			)
+		formatString: #,##0
+		lineageTag: b3c4d5e6-f789-4012-c234-56789abcdef0
+
+	/// Colis dont order_id ne correspond à aucune commande (intégrité référentielle).
+	measure 'Colis Sans Commande' =
+			COUNTROWS(
+				FILTER(
+					fact_transport,
+					ISBLANK(RELATED(fact_commandes[id_commande]))
+				)
+			)
+		formatString: #,##0
+		lineageTag: c4d5e6f7-8901-4234-d345-6789abcdef01
+
+	/// Lignes de facture chargées avec cout_transport nul ou absent.
+	measure 'Lignes Facture Coût Transport Zero ou Null' =
+			COUNTROWS(
+				FILTER(
+					fact_factures_transport,
+					ISBLANK(fact_factures_transport[cout_transport])
+						|| fact_factures_transport[cout_transport] = 0
+				)
+			)
+		formatString: #,##0
+		lineageTag: d5e6f789-0123-4345-e456-789abcdef012
 
 	column Dummy
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a

@@ -42,9 +42,9 @@ lireka/
 │   ├── raci.md
 │   └── risques.md
 ├── docs/                              ← Documentation projet
-├── data/                              ← Données (gitignored sauf échantillons)
-├── scripts/etl/                       ← Pipelines d'import
-├── powerbi/                           ← Doc modèles & rapports Power BI
+├── data/samples/                      ← Échantillons anonymisés uniquement
+├── scripts/validation/                ← Audits et contrôles (hors pipeline ETL)
+├── powerbi/                           ← Modèle PBIP + doc mesures
 ├── communications/                    ← Emails & templates client
 └── templates/                         ← Schémas CSV cibles
 ```
@@ -58,16 +58,17 @@ Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates
 ### Prérequis (à obtenir dès J1)
 
 - Accès Power BI workspace Lireka (Contributor)
-- Factures CSV : La Poste, Colis Privé, Chronopost (1 mois)
-- Export CSV commandes backend (1 mois)
-- Accès lecture dashboards DHL / FedEx / UPS (référence modèle existant)
+- Accès SharePoint à l'entrepôt `Power_BI_Datawarehouse/` (CSV backend + récaps transporteurs)
+- Factures CSV : La Poste (Colissimo), Colis Privé, Chronopost
+- Export CSV commandes backend (`customer_order.csv`, `package.csv`, etc.)
 - Formule marge brute validée côté finance
 
 ### Checklist J1
 
 - [ ] Kick-off avec Marc Bordier → `communications/emails/01-kickoff.md`
 - [ ] Récupérer accès et données → `docs/01-cadrage/checklist-acces-donnees.md`
-- [ ] Lancer ETL sur les fichiers réels → `scripts/etl/`
+- [ ] Vérifier le paramètre `SharePointSiteURL` dans `powerbi/Lireka_Profitabilite.pbip`
+- [ ] Premier refresh Power BI Desktop sur les données réelles
 - [ ] Compléter l'inventaire des sources → `docs/01-cadrage/inventaire-sources.md`
 
 ---
@@ -93,5 +94,4 @@ Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates
 
 ---
 
-*Dernière mise à jour : 12 juillet 2026 — ZineInsights*
-# lireka
+*Dernière mise à jour : 14 juillet 2026 — ZineInsights*

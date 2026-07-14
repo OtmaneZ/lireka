@@ -1,160 +1,174 @@
 # Dictionnaire de données — Lireka
 
-> **⚠️ Hors périmètre devis** — Document de travail technique (référence ETL). Le livrable contractuel est la documentation du processus.  
+> **⚠️ Hors périmètre devis** — Document de travail technique décrivant le modèle livré dans  
+> `powerbi/Lireka_Profitabilite.pbip`. Le livrable contractuel L06 est  
+> [`processus-etl-gouvernance.md`](../04-processus/processus-etl-gouvernance.md).  
 > **Référence** : [`../../project/devis.md`](../../project/devis.md)  
-> **Dernière mise à jour** : 12 juillet 2026
+> **Dernière mise à jour** : 14 juillet 2026
 
 ---
 
-## 1. Factures transporteurs (schéma unifié)
+## 1. Sources et chargement
 
-**Table cible** : `fact_factures_transport`  
-**Fichier source** : `data/processed/transporteurs/factures_unifiees.csv`
+Les données ne passent **pas** par un dépôt `data/processed/` intermédiaire.  
+Power Query M lit les CSV directement depuis SharePoint (`Power_BI_Datawarehouse/`).
 
-| # | Champ | Type | Obligatoire | Source | Description | Exemple | Règles |
-|---|-------|------|-------------|--------|-------------|---------|--------|
-| 1 | `id_facture` | VARCHAR(50) | ✅ | Facture | Identifiant unique de la facture | `FAC-2026-001234` | Unique par transporteur |
-| 2 | `date_facture` | DATE | ✅ | Facture | Date d'émission de la facture | `2026-06-15` | Format ISO 8601 |
-| 3 | `numero_suivi` | VARCHAR(100) | ✅ | Facture | Numéro de suivi du colis | `1Z999AA10123456784` | Nettoyé (TRIM, UPPER) |
-| 4 | `transporteur` | VARCHAR(50) | ✅ | Dérivé | Nom du transporteur | `DHL` | Valeurs contrôlées |
-| 5 | `cout_transport` | DECIMAL(10,2) | ✅ | Facture | Montant facturé pour le transport | `12.50` | En EUR, ≥ 0 |
-| 6 | `poids` | DECIMAL(8,3) | ⬜ | Facture | Poids du colis en kg | `1.250` | > 0 si renseigné |
-| 7 | `pays_destination` | VARCHAR(3) | ⬜ | Facture | Code pays ISO 3166-1 alpha-3 | `FRA` | Code ISO valide |
-| 8 | `service` | VARCHAR(100) | ⬜ | Facture | Type de service transport | `Express Worldwide` | Libre |
-| 9 | `devise` | VARCHAR(3) | ⬜ | Facture | Devise de facturation | `EUR` | Défaut : EUR |
-| 10 | `date_import` | DATETIME | ✅ | Système | Date d'import dans le système | `2026-07-10T09:00:00` | Auto-généré |
+| Table modèle | Fichier SharePoint | Échantillon local (tests) |
+|--------------|-------------------|---------------------------|
+| `fact_commandes` | `Données_Backend/customer_order.csv` | — |
+| `fact_transport` | `Données_Backend/package.csv` | — |
+| `fact_factures_transport` | `Dashboards_transporteurs/COLISSIMO …/*.csv`, `…/CHRONOPOST …/*.csv` | `data/samples/transporteurs/*/` |
+| `fact_lignes` | `Données_Backend/customer_order_item_group.csv` | — |
 
-### Valeurs contrôlées — `transporteur`
-
-| Valeur | Statut |
-|--------|--------|
-| `DHL` | ✅ Existant |
-| `FedEx` | ✅ Existant |
-| `UPS` | ✅ Existant |
-| `La Poste` | ⬜ À intégrer |
-| `Colis Privé` | ⬜ À intégrer |
-| `Chronopost` | ⬜ À intégrer |
+Staging partagé (non chargé) : `stg_customer_order`, `stg_factures_transport_resolu` — voir `expressions.tmdl`.
 
 ---
 
-## 2. Commandes clients (schéma backend)
+## 2. Commandes — `fact_commandes`
 
-**Table cible** : `fact_commandes`  
-**Fichier source** : `data/processed/commandes/commandes_clean.csv`
+**Grain** : une ligne par commande.  
+**Source** : `Données_Backend/customer_order.csv` via `stg_customer_order`.
 
-| # | Champ | Type | Obligatoire | Source | Description | Exemple | Règles |
-|---|-------|------|-------------|--------|-------------|---------|--------|
-| 1 | `id_commande` | VARCHAR(50) | ✅ | Backend | Identifiant unique commande | `CMD-2026-78901` | Unique |
-| 2 | `date_commande` | DATETIME | ✅ | Backend | Date et heure de la commande | `2026-06-10T14:30:00` | |
-| 3 | `pays_livraison` | VARCHAR(3) | ✅ | Backend | Pays de livraison (ISO alpha-3) | `DEU` | Code ISO |
-| 4 | `type_commande` | VARCHAR(50) | ✅ | Backend | Type de commande | `B2C_standard` | Valeurs contrôlées |
-| 5 | `transporteur` | VARCHAR(50) | ✅ | Backend | Transporteur assigné | `DHL` | Valeurs contrôlées |
-| 6 | `numero_suivi` | VARCHAR(100) | ✅ | Backend | Numéro de suivi colis | `1Z999AA10123456784` | Clé de liaison |
-| 7 | `ca_ht` | DECIMAL(10,2) | ✅ | Backend | Chiffre d'affaires HT | `45.90` | ≥ 0 |
-| 8 | `ca_ttc` | DECIMAL(10,2) | ⬜ | Backend | Chiffre d'affaires TTC | `54.32` | ≥ 0 |
-| 9 | `cout_achat` | DECIMAL(10,2) | ✅ | Backend | Coût d'achat des livres | `22.00` | ≥ 0 |
-| 10 | `cout_transport_estime` | DECIMAL(10,2) | ✅ | Backend | Coût transport estimé | `8.50` | ≥ 0 |
-| 11 | `nombre_articles` | INT | ⬜ | Backend | Nombre de livres commandés | `3` | ≥ 1 |
-| 12 | `poids_total` | DECIMAL(8,3) | ⬜ | Backend | Poids total en kg | `2.100` | > 0 |
-| 13 | `date_import` | DATETIME | ✅ | Système | Date d'import | `2026-07-10T09:00:00` | Auto-généré |
+| Colonne modèle | Type | Source CSV (`customer_order.csv`) | Description |
+|----------------|------|-----------------------------------|-------------|
+| `id_commande` | int64 | `id` | Clé primaire commande |
+| `origin_order_id` | text | `origin_order_id` | Identifiant d'origine (marketplace, etc.) |
+| `state` | text | `state` | Statut commande (`SHIPPED`, `CANCELLED`, …) |
+| `source` | text | `source` | Canal de vente brut (`WEBSITE`, `AMAZON_FR`, …) |
+| `type_commande` | text | dérivé de `source` | Axe d'analyse dashboard ; repli `INCONNU` si vide |
+| `code_pays` | text | `destination_country` | Code pays ISO **alpha-2** normalisé ; repli `??` si absent |
+| `currency` | text | `currency` | Devise d'origine |
+| `ca_ht` | decimal | `order_amount_eur` | Chiffre d'affaires HT en EUR |
+| `shipping_fee_eur` | decimal | `shipping_fee_eur` | Frais de port facturés au client en EUR |
+| `cout_achat` | decimal | `product_cost_eur` | Coût d'achat des livres en EUR |
+| `cout_transport_estime` | decimal | `total_shipping_cost_to_delivery_country_eur` | Coût transport estimé backend en EUR |
+| `gross_profit_eur` | decimal | `gross_profit_eur` | Marge brute backend — **référence de contrôle** |
+| `gross_margin` | decimal | `gross_margin` | Taux de marge brute backend |
+| `contribution_profit_eur` | decimal | `contribution_profit_eur` | Marge contributive backend |
+| `contribution_margin` | decimal | `contribution_margin` | Taux de marge contributive |
+| `date_commande` | date | `origin_created` (tronqué au jour) | Date commande — clé vers `dim_date` |
 
-### Valeurs contrôlées — `type_commande`
-
-| Valeur | Description |
-|--------|-------------|
-| *À compléter avec Lireka* | |
-
----
-
-## 3. Champs calculés (Power BI)
-
-| # | Champ | Type | Formule | Description |
-|---|-------|------|---------|-------------|
-| 1 | `cout_transport_reel` | DECIMAL | LOOKUPVALUE depuis fact_factures_transport | Coût réel issu de la facture |
-| 2 | `marge_brute` | DECIMAL | `ca_ht - cout_achat - cout_transport_reel` | Marge brute réelle |
-| 3 | `taux_marge_brute` | DECIMAL | `marge_brute / ca_ht` | Taux de marge en % |
-| 4 | `ecart_cout_transport` | DECIMAL | `cout_transport_reel - cout_transport_estime` | Écart estimé vs réel |
-| 5 | `taux_ecart_cout` | DECIMAL | `ecart_cout_transport / cout_transport_estime` | Écart en % |
-| 6 | `est_matche` | BOOLEAN | `NOT(ISBLANK(cout_transport_reel))` | Commande liée à une facture |
+> **Note** : le numéro de suivi n'est **pas** sur `fact_commandes` ; il est porté par `fact_transport` (grain colis).
 
 ---
 
-## 4. Tables de dimensions
+## 3. Colis — `fact_transport`
+
+**Grain** : une ligne par colis.  
+**Source** : `Données_Backend/package.csv`.
+
+| Colonne modèle | Type | Source CSV (`package.csv`) | Description |
+|----------------|------|------------------------------|-------------|
+| `id_package` | int64 | `id` | Clé primaire colis |
+| `order_id` | int64 | `order_id` | FK vers `fact_commandes[id_commande]` |
+| `numero_suivi` | text | `tracking_id` | Numéro de suivi nettoyé (TRIM, UPPER) — clé jointure factures |
+| `transporteur` | text | inféré | Dérivé de `fnNormaliserTransporteur(tracking_id)` — pas de colonne transporteur en source |
+| `poids_kg` | decimal | `weight` | Poids en kg (`weight` grammes ÷ 1000) |
+| `cout_transport` | decimal | `shipping_cost_eur` | Coût transport en EUR (estimation backend ou coût saisi) |
+| `shipping_supply_cost_eur` | decimal | `shipping_supply_cost_eur` | Coût fourniture expédition |
+| `duties_taxes_eur` | decimal | `duties_taxes_eur` | Droits et taxes |
+| `source_cout` | text | calculé | `reel` (facture Colissimo/Chronopost rapprochée), `estime`, `non_disponible` |
+
+Jointure factures ↔ colis : table pont `rel_factures_colis` sur `id_package`.
+
+---
+
+## 4. Factures transporteurs — `fact_factures_transport`
+
+**Grain** : une ligne par ligne de récap facture.  
+**Sources** : récaps CSV français sur SharePoint (`;` séparateur, virgule décimale) — Colissimo (La Poste) et Chronopost.  
+Unifiées dans `stg_factures_transport_resolu` (résolution colis par proximité de date).
+
+| Colonne modèle | Type | Source récap | Description |
+|----------------|------|--------------|-------------|
+| `numero_facture` | text | Chronopost uniquement | Vide pour Colissimo |
+| `date_facture` | date | colonne date récap | Clé vers `dim_date` |
+| `numero_suivi` | text | numéro de suivi récap | Nettoyé — clé vers `fact_transport` |
+| `transporteur` | text | dérivé | `La Poste` (Colissimo) ou `Chronopost` |
+| `service` | text | colonne service | Type de prestation |
+| `pays_destination` | text | colonne destination | Pays de livraison (préfixe Colissimo) |
+| `poids` | decimal | colonne poids | Poids en kg |
+| `cout_transport` | decimal | `TOTAL HT` | Coût transport facturé HT en EUR |
+| `devise` | text | constante | `EUR` |
+| `order_id` | int64 | résolu | Commande rattachée (proximité date) — masqué |
+| `id_package` | int64 | résolu | Colis rattaché — masqué |
+
+Colis Privé et Postes Canada : pas de récap facture dans le périmètre ; coût via `fact_transport` (`source_cout = estime`).
+
+---
+
+## 5. Mesures DAX (dashboard profitabilité)
+
+Les indicateurs sont des **mesures** dans `_Mesures`, pas des colonnes calculées sur `fact_commandes`.  
+Référentiel complet : [`powerbi/models/mesures-dax.md`](../../powerbi/models/mesures-dax.md).
+
+| Mesure | Formule (résumé) | Description |
+|--------|------------------|-------------|
+| `Coût Transport Réel` | `SUM(fact_transport[cout_transport])` | Coût au grain colis — **pas** de colonne `cout_transport_reel` sur `fact_commandes` |
+| `Coût Transport Estimé` | `SUM(fact_commandes[cout_transport_estime])` | Estimation backend |
+| `Marge Brute (prov.)` | `CA - Coût Achat - Coût Transport Réel` | **Provisoire** — validation Marc en attente |
+| `Marge Brute Backend (réf.)` | `SUM(fact_commandes[gross_profit_eur])` | Référence de contrôle |
+
+---
+
+## 6. Tables de dimensions
 
 ### dim_date
 
-| Champ | Type | Description | Exemple |
-|-------|------|-------------|---------|
-| `date` | DATE | PK | `2026-06-15` |
-| `annee` | INT | Année | `2026` |
-| `trimestre` | INT | Trimestre (1-4) | `2` |
-| `mois` | INT | Mois (1-12) | `6` |
-| `nom_mois` | VARCHAR | Nom du mois | `Juin` |
-| `semaine` | INT | Numéro de semaine ISO | `24` |
-| `jour_semaine` | VARCHAR | Jour de la semaine | `Lundi` |
+Calendrier généré en M. Colonnes : `date`, `annee`, `trimestre`, `mois`, `nom_mois`, `semaine`, `jour_semaine`.
 
 ### dim_pays
 
-| Champ | Type | Description | Exemple |
-|-------|------|-------------|---------|
-| `code_pays` | VARCHAR(3) | PK — ISO 3166-1 alpha-3 | `FRA` |
-| `nom_pays` | VARCHAR | Nom du pays | `France` |
-| `zone_geo` | VARCHAR | Zone géographique | `Europe de l'Ouest` |
-| `continent` | VARCHAR | Continent | `Europe` |
+Dérivée des codes `destination_country` distincts (via `stg_customer_order`).
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| `code_pays` | text | PK — ISO 3166-1 **alpha-2** (`FR`, `DE`, … ; `??` = pays non attribué) |
+| `nom_pays` | text | Libellé pays |
+| `zone_geo` | text | Zone géographique |
+| `continent` | text | Continent |
 
 ### dim_transporteur
 
-| Champ | Type | Description | Exemple |
-|-------|------|-------------|---------|
-| `transporteur` | VARCHAR(50) | PK | `DHL` |
-| `type_service` | VARCHAR | Express / Standard / Économique | `Express` |
-| `actif` | BOOLEAN | Transporteur actif | `TRUE` |
+Référentiel statique (8 transporteurs). Colonnes : `transporteur`, `type_service`, `statut_integration`, `actif`.
+
+| Transporteur | Statut |
+|--------------|--------|
+| La Poste, Colis Privé, Chronopost | Nouveau (intégré) |
+| DHL, FedEx, UPS | Existant (référence) |
+| Postes Canada | Autre (colis backend) |
 
 ### dim_type_commande
 
-| Champ | Type | Description | Exemple |
-|-------|------|-------------|---------|
-| `type_commande` | VARCHAR(50) | PK | `B2C_standard` |
-| `categorie` | VARCHAR | B2C / B2B / Marketplace | `B2C` |
-| `libelle` | VARCHAR | Libellé affiché | `Commande standard B2C` |
+Dérivée des valeurs distinctes de `customer_order.source`.
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| `type_commande` | text | PK — valeur `source` normalisée |
+| `categorie` | text | Marketplace / B2C direct / B2B / Autre (règle M) |
+| `libelle` | text | Libellé affiché |
 
 ---
 
-## 5. Mapping par transporteur
+## 7. Échantillons locaux (`data/samples/`)
 
-> Section à compléter lors de l'analyse de chaque format de facture.
-
-### La Poste
-
-| Champ source (CSV brut) | Champ unifié | Transformation |
-|------------------------|-------------|----------------|
-| *À compléter* | | |
-
-### Colis Privé
-
-| Champ source (CSV brut) | Champ unifié | Transformation |
-|------------------------|-------------|----------------|
-| *À compléter* | | |
-
-### Chronopost
-
-| Champ source (CSV brut) | Champ unifié | Transformation |
-|------------------------|-------------|----------------|
-| *À compléter* | | |
+Fichiers anonymisés pour tests et validation hors SharePoint.  
+**Attention** : `data/samples/commandes/commandes_202606.csv` utilise des noms de colonnes **français simplifiés** (`id_commande`, `ca_ht`, …) — schéma cible historique, **pas** le format brut `customer_order.csv`.  
+Les échantillons factures (`data/samples/transporteurs/*/`) sont au format unifié simplifié pour `scripts/validation/validate_data.py`.
 
 ---
 
-## 6. Glossaire
+## 8. Glossaire
 
 | Terme | Définition |
 |-------|-----------|
-| **Marge brute** | CA HT − Coût d'achat − Coût transport réel |
-| **Coût transport estimé** | Montant calculé par le backend Lireka (tarifs estimés) |
-| **Coût transport réel** | Montant facturé par le transporteur |
-| **Numéro de suivi** | Identifiant unique du colis, commun entre backend et facture |
-| **Taux de matching** | % de commandes ayant un coût transport réel (liées à une facture) |
+| **Marge brute (prov.)** | CA HT − Coût d'achat − Coût transport réel (mesure DAX, en attente validation Marc) |
+| **Coût transport estimé** | `total_shipping_cost_to_delivery_country_eur` — estimation backend Lireka |
+| **Coût transport réel** | `fact_transport[cout_transport]` au grain colis (facture rapprochée ou coût backend) |
+| **Numéro de suivi** | `package.tracking_id` — clé de liaison factures ↔ colis |
+| **source_cout** | Origine du coût transport sur un colis : `reel`, `estime`, `non_disponible` |
 | **Star schema** | Modèle en étoile : tables de faits au centre, dimensions autour |
 
 ---
 
-*Dictionnaire vivant — mis à jour à chaque phase de la mission.*
+*Dictionnaire aligné sur le modèle PBIP livré — mis à jour à chaque évolution du `.pbip`.*

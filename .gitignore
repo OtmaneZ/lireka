@@ -45,4 +45,8 @@ secrets/
 # Power BI Datawarehouse
 Power_BI_Datawarehouse/**
 !Power_BI_Datawarehouse/.gitkeep
+
+# Sorties d'audit validation (données réelles — NDA)
+scripts/validation/*_output.json
+scripts/validation/*_output.txt
 scripts/validation/rapport_backend.txt

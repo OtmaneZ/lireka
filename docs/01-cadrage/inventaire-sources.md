@@ -1,55 +1,41 @@
 # Inventaire des sources de données
 
 > **Mission** : 4 jours — [`../../project/devis.md`](../../project/devis.md)  
-> **Statut** : 🟡 En attente de collecte  
-> **Dernière mise à jour** : 12 juillet 2026
+> **Statut** : 🟢 Données reçues et intégrées au modèle PBIP  
+> **Dernière mise à jour** : 14 juillet 2026
 
 ---
 
 ## Instructions
 
-Ce document recense toutes les sources de données nécessaires à la mission.  
-Chaque source doit être complétée avec un échantillon dans `data/samples/`.
+Ce document recense les sources consommées par le modèle `Lireka_Profitabilite.pbip`.  
+Les CSV réels sont sur **SharePoint** (`Power_BI_Datawarehouse/`), lus directement  
+par Power Query M — pas de pipeline Python intermédiaire.
 
-**Légende statut** : ⬜ Non reçu · 🔄 En analyse · ✅ Validé
+**Légende statut** : ⬜ Non reçu · 🔄 En analyse · ✅ Intégré au modèle
 
 ---
 
 ## 1. Transporteurs — Factures CSV
 
-### 1.1 Existants (référence)
+### 1.1 Existants (référence, hors modèle profitabilité)
 
-| Transporteur | Statut | Format | Fréquence | Emplacement | Contact Lireka |
-|-------------|--------|--------|-----------|-------------|----------------|
-| DHL | ✅ Existant | CSV | Mensuel | Power BI existant | *À compléter* |
-| FedEx | ✅ Existant | CSV | Mensuel | Power BI existant | *À compléter* |
-| UPS | ✅ Existant | CSV | Mensuel | Power BI existant | *À compléter* |
+| Transporteur | Statut | Format | Emplacement | Notes |
+|-------------|--------|--------|-------------|-------|
+| DHL | ✅ Existant | CSV | `Dashboards_transporteurs/DHL Dashboard PowerBI/` | Référence design |
+| FedEx | ✅ Existant | CSV | Entrepôt SharePoint | Référence design |
+| UPS | ✅ Existant | CSV | `Dashboards_transporteurs/UPS Dashboard PowerBI/` | Référence design |
 
-**Actions audit (J1, rapide)** :
-- [ ] Obtenir accès lecture aux 3 dashboards existants
-- [ ] Identifier le schéma CSV / modèle pour intégrer les 3 nouveaux transporteurs
-- [ ] Repérer le champ numéro de suivi et les mesures DAX utiles
+### 1.2 Intégrés au modèle profitabilité
 
-### 1.2 À intégrer
+| Transporteur | Statut | Fichiers source | Lignes valides (audit 14/07) | Notes |
+|-------------|--------|-----------------|------------------------------|-------|
+| La Poste (Colissimo) | ✅ Intégré | `COLISSIMO Dashboard PowerBI/2025 & 2026 récap.csv` | 113 075 | `numero_facture` vide (normal) |
+| Chronopost | ✅ Intégré | `CHRONOPOST Dashboard PowerBI/2025 + V2 2026` | 3 046 | Factures multi-colis |
+| Colis Privé | ✅ Colis backend | `package.csv` (coût estimé) | 516 836 colis | Pas de récap CSV intégré |
+| Postes Canada | ✅ Colis backend | `package.csv` (préfixe `Q013…`) | 3 788 colis | Coût estimé ; PDF factures non recoupés |
 
-| Transporteur | Statut | Format attendu | Fréquence | Échantillon reçu | Notes |
-|-------------|--------|---------------|-----------|-----------------|-------|
-| La Poste | ⬜ | CSV factures | Mensuel | ⬜ | *Format à analyser* |
-| Colis Privé | ⬜ | CSV factures | Mensuel | ⬜ | *Format à analyser* |
-| Chronopost | ⬜ | CSV factures | Mensuel | ⬜ | *Format à analyser* |
-
-**Champs attendus par facture (schéma cible)** :
-
-| Champ | Type | Obligatoire | Description |
-|-------|------|-------------|-------------|
-| `numero_facture` | string | ✅ | Identifiant facture transporteur |
-| `date_facture` | date | ✅ | Date d'émission |
-| `numero_suivi` | string | ✅ | **Clé de liaison** avec commandes |
-| `cout_transport` | decimal | ✅ | Montant facturé (HT ou TTC — à harmoniser) |
-| `poids` | decimal | ⬜ | Poids du colis (kg) |
-| `pays_destination` | string | ⬜ | Pays de livraison |
-| `service` | string | ⬜ | Type de service (express, standard…) |
-| `devise` | string | ⬜ | EUR par défaut |
+Chargement : requêtes M dans `stg_factures_transport_resolu` → `fact_factures_transport`.
 
 ---
 
@@ -58,75 +44,62 @@ Chaque source doit être complétée avec un échantillon dans `data/samples/`.
 | Élément | Détail |
 |---------|--------|
 | **Source** | Backend Lireka |
-| **Format** | CSV |
-| **Fréquence** | À définir (quotidien / hebdo / mensuel) |
-| **Statut** | ⬜ Non reçu |
-| **Contact** | *Référent technique Lireka* |
+| **Fichiers** | `customer_order.csv`, `package.csv`, `customer_order_item_group.csv` |
+| **Emplacement** | SharePoint `Données_Backend/` |
+| **Statut** | ✅ Reçu et intégré |
+| **Volumes (audit 14/07)** | 989 234 commandes · 946 483 colis |
 
-### Champs attendus (à valider avec Lireka)
+### Mapping backend → modèle
 
-| Champ | Type | Obligatoire | Description |
-|-------|------|-------------|-------------|
-| `id_commande` | string | ✅ | Identifiant unique commande |
-| `date_commande` | datetime | ✅ | Date de la commande |
-| `pays_livraison` | string | ✅ | Pays destination |
-| `type_commande` | string | ✅ | Type (B2C, B2B, marketplace…) |
-| `ca_ht` | decimal | ✅ | Chiffre d'affaires HT |
-| `ca_ttc` | decimal | ⬜ | Chiffre d'affaires TTC |
-| `cout_achat` | decimal | ✅ | Coût d'achat des livres |
-| `cout_transport_estime` | decimal | ✅ | Coût transport estimé (backend) |
-| `transporteur` | string | ✅ | Nom du transporteur utilisé |
-| `numero_suivi` | string | ✅ | **Clé de liaison** avec factures |
-| `nombre_articles` | int | ⬜ | Nombre de livres |
-| `poids_total` | decimal | ⬜ | Poids total commande |
+| Fichier backend | Colonne clé | Table Power BI |
+|-----------------|-------------|----------------|
+| `customer_order.csv` | `id` | `fact_commandes[id_commande]` |
+| `customer_order.csv` | `destination_country` | `fact_commandes[code_pays]` → `dim_pays` |
+| `customer_order.csv` | `source` | `fact_commandes[type_commande]` → `dim_type_commande` |
+| `package.csv` | `order_id` | `fact_transport[order_id]` → `fact_commandes` |
+| `package.csv` | `tracking_id` | `fact_transport[numero_suivi]` |
 
-### Questions ouvertes (à poser au kick-off)
+Le transporteur sur les colis est **inféré** du numéro de suivi (`fnNormaliserTransporteur`),  
+pas présent en colonne dans le backend.
 
-- [ ] Quel est le nom exact du champ numéro de suivi dans l'export ?
-- [ ] Le numéro de suivi est-il renseigné pour 100% des commandes expédiées ?
-- [ ] Format du numéro de suivi : identique à celui des factures transporteurs ?
-- [ ] Période d'historique disponible ?
-- [ ] Volumétrie : combien de commandes par mois ?
-- [ ] Le coût transport estimé : quelle est la formule de calcul ?
-- [ ] Données Arthaud Grenoble incluses ou séparées ?
+### Points connus (audit 14/07)
+
+- 83 481 commandes `CANCELLED` — décision métier en attente (Marc)
+- 162 commandes hors CANCELLED sans colis associé
+- Matching facture réel : ~12,7 % des commandes (Colissimo + Chronopost uniquement)
 
 ---
 
 ## 3. Outils & accès
 
-| Outil | Accès nécessaire | Statut | Contact |
-|-------|-----------------|--------|---------|
-| Power BI Service | Workspace Lireka — Contributor | ⬜ | Réf. technique |
-| Power BI Desktop | Licence (ZineInsights) | ✅ | — |
-| Claude AI ↔ Power BI | Lecture (audit connexion existante) | ⬜ | Réf. technique |
-| Partage fichiers | OneDrive / SharePoint / SFTP | ⬜ | Réf. technique |
+| Outil | Accès nécessaire | Statut | Notes |
+|-------|-----------------|--------|-------|
+| Power BI Service | Workspace Lireka — Contributor | 🔄 | À confirmer publication |
+| Power BI Desktop | Licence (ZineInsights) | ✅ | Développement `.pbip` |
+| SharePoint | `Power_BI_Datawarehouse/` | ✅ | Source unique des CSV |
+| Claude AI ↔ Power BI | Lecture (existant) | ⬜ | Hors périmètre mission |
 
 ---
 
-## 4. Volumétrie estimée
+## 4. Volumétrie constatée (entrepôt complet)
 
-| Source | Volume estimé | Période |
-|--------|--------------|---------|
-| Commandes | *À compléter* / mois | 1 mois minimum |
-| Factures DHL | Existant | Référence modèle |
-| Factures FedEx | Existant | Référence modèle |
-| Factures UPS | Existant | Référence modèle |
-| Factures La Poste | *À compléter* / mois | 1 mois minimum |
-| Factures Colis Privé | *À compléter* / mois | 1 mois minimum |
-| Factures Chronopost | *À compléter* / mois | 1 mois minimum |
+| Source | Volume | Période couverte |
+|--------|--------|------------------|
+| Commandes (`customer_order.csv`) | 989 234 | Historique backend complet |
+| Colis (`package.csv`) | 946 483 | Historique backend complet |
+| Factures Colissimo + Chronopost | 116 121 lignes valides | Récaps 2025–2026 |
 
 ---
 
-## 5. Checklist de collecte (J1)
+## 5. Checklist de collecte (J1) — statut
 
-- [ ] Factures La Poste (1 mois) → `data/raw/transporteurs/la-poste/`
-- [ ] Factures Colis Privé (1 mois) → `data/raw/transporteurs/colis-prive/`
-- [ ] Factures Chronopost (1 mois) → `data/raw/transporteurs/chronopost/`
-- [ ] Export commandes backend (1 mois) → `data/raw/commandes/`
-- [ ] Accès Power BI workspace (Contributor)
-- [ ] Accès dashboards DHL / FedEx / UPS (référence)
-- [ ] Formule marge brute validée (finance)
+- [x] Récaps Colissimo sur SharePoint
+- [x] Récaps Chronopost sur SharePoint
+- [x] Export backend (`customer_order.csv`, `package.csv`, etc.)
+- [x] Accès entrepôt SharePoint local / distant
+- [ ] Accès Power BI workspace (Contributor) — publication
+- [ ] Formule marge brute validée (finance / Marc)
 
 ---
 
-*À compléter au fil de la mission.*
+*Inventaire aligné sur le modèle livré — pas de dépôt `data/raw/` intermédiaire.*

@@ -4,9 +4,11 @@ Lireka — Validation qualité des données
 Contrôle la qualité des fichiers CSV avant import Power BI.
 
 Usage:
-    python scripts/validation/validate_data.py --type factures --fichier data/processed/transporteurs/factures_unifiees.csv
-    python scripts/validation/validate_data.py --type commandes --fichier data/processed/commandes/commandes_clean.csv
-    python scripts/validation/validate_data.py --type matching
+    python scripts/validation/validate_data.py --type factures --fichier data/samples/transporteurs/la-poste/la-poste_factures_202606.csv
+    python scripts/validation/validate_data.py --type commandes --fichier data/samples/commandes/commandes_202606.csv
+    python scripts/validation/validate_data.py --type matching \
+        --fichier-factures data/samples/transporteurs/la-poste/la-poste_factures_202606.csv \
+        --fichier-commandes data/samples/commandes/commandes_202606.csv
 
 Auteur: Otmane Boulahia — ZineInsights
 """
@@ -152,8 +154,8 @@ def main():
     parser = argparse.ArgumentParser(description="Validation qualité données Lireka")
     parser.add_argument("--type", required=True, choices=["factures", "commandes", "matching"])
     parser.add_argument("--fichier", help="Fichier à valider")
-    parser.add_argument("--fichier-factures", default="data/processed/transporteurs/factures_unifiees.csv")
-    parser.add_argument("--fichier-commandes", default="data/processed/commandes/commandes_clean.csv")
+    parser.add_argument("--fichier-factures", default="data/samples/transporteurs/la-poste/la-poste_factures_202606.csv")
+    parser.add_argument("--fichier-commandes", default="data/samples/commandes/commandes_202606.csv")
     args = parser.parse_args()
 
     if args.type == "factures":
