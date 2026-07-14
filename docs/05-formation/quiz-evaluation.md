@@ -70,11 +70,11 @@ C) Le numéro de suivi — présent à la fois dans l'export commandes et les fa
 - [ ] A) 3 (DHL, FedEx, UPS)
 - [ ] B) 4
 - [ ] C) 6 (DHL, FedEx, UPS, La Poste, Colis Privé, Chronopost)
-- [ ] D) 10
+- [ ] D) 7 (DHL, FedEx, UPS, La Poste, Colis Privé, Chronopost, Postes Canada)
 
 <details>
 <summary>Réponse</summary>
-C) 6 transporteurs au total après la mission.
+D) 7 transporteurs (dont Postes Canada), + une modalité `INCONNU` pour les colis dont le transporteur n'a pas pu être identifié à partir du numéro de suivi.
 </details>
 
 ---

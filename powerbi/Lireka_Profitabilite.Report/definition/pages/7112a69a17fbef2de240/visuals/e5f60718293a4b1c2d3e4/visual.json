@@ -42,11 +42,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Nb Commandes"
+                  "Property": "Marge Brute"
                 }
               },
-              "queryRef": "_Mesures.Nb Commandes",
-              "nativeQueryRef": "Nb Commandes"
+              "queryRef": "_Mesures.Marge Brute",
+              "nativeQueryRef": "Marge Brute"
             }
           ]
         }
@@ -66,7 +66,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Commandes par pays'"
+                  "Value": "'Marge brute par pays'"
                 }
               }
             },

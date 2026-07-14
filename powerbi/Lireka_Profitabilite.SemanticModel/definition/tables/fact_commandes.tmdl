@@ -73,13 +73,37 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
-	/// Frais de port facturés au client en EUR (shipping_fee_eur).
-	column shipping_fee_eur
+	/// Fix F-04 : frais de port encaissés auprès du client en EUR (shipping_fee_eur).
+	/// Renommé shipping_fee_eur -> frais_port_encaisse pour exposer le poste
+	/// "shipping revenue" de la formule Marc à la mesure [Frais Port Encaissés].
+	column frais_port_encaisse
 		dataType: double
 		formatString: #,##0.00 €
 		lineageTag: 52d273ed-6508-4932-bff1-838a5a742071
 		summarizeBy: sum
-		sourceColumn: shipping_fee_eur
+		sourceColumn: frais_port_encaisse
+
+		changedProperty = IsHidden
+
+	/// Fix F-04 : coût de transport amont (inbound_transportation_cost_eur) — poste
+	/// "inbound transportation costs" de la formule Marc.
+	column cout_transport_amont
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
+		summarizeBy: sum
+		sourceColumn: cout_transport_amont
+
+		changedProperty = IsHidden
+
+	/// Fix F-04 : commissions marketplace (marketplace_fees_eur) — poste
+	/// "marketplace commission fees (fixed and variable)" de la formule Marc.
+	column commissions_marketplace
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e
+		summarizeBy: sum
+		sourceColumn: commissions_marketplace
 
 		changedProperty = IsHidden
 
@@ -156,8 +180,14 @@ table fact_commandes
 		mode: import
 		source =
 				let
+					// Fix F-04 : typage des postes de marge manquants (inbound + commissions marketplace)
+					// avant de les exposer au modèle. shipping_fee_eur / duties / supplies déjà typés en amont.
+					#"Types postes marge" = Table.TransformColumnTypes(stg_customer_order, {
+						{"inbound_transportation_cost_eur", type number},
+						{"marketplace_fees_eur", type number}
+					}, "en-US"),
 					// Source partagée (stg_customer_order) — une seule lecture du CSV
-					#"Date commande ajoutee" = Table.AddColumn(stg_customer_order, "date_commande", each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null, type date),
+					#"Date commande ajoutee" = Table.AddColumn(#"Types postes marge", "date_commande", each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null, type date),
 					// Normalisation du code pays de livraison (majuscules, valeur de repli "??").
 					// "??" est libellé "Pays non attribué" dans dim_pays : le résidu de commandes
 					// non-CANCELLED sans pays (12 lignes, audit 14/07/2026) reste visible dans le
@@ -170,12 +200,18 @@ table fact_commandes
 						{"id", "id_commande"},
 						{"order_amount_eur", "ca_ht"},
 						{"product_cost_eur", "cout_achat"},
-						{"total_shipping_cost_to_delivery_country_eur", "cout_transport_estime"}
+						{"total_shipping_cost_to_delivery_country_eur", "cout_transport_estime"},
+						// Fix F-04 : renommages des postes de marge vers le schéma cible du modèle
+						{"shipping_fee_eur", "frais_port_encaisse"},
+						{"inbound_transportation_cost_eur", "cout_transport_amont"},
+						{"marketplace_fees_eur", "commissions_marketplace"}
 					}),
 					// Sélection des colonnes conservées dans le modèle
 					#"Colonnes conservees" = Table.SelectColumns(#"Colonnes renommees", {
 						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
-						"ca_ht", "shipping_fee_eur", "cout_achat", "cout_transport_estime",
+						"ca_ht", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
+						// Fix F-04 : postes de marge nouvellement importés
+						"cout_transport_amont", "commissions_marketplace",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande"
 					}),

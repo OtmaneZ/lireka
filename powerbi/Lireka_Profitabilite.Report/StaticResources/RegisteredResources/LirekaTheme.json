@@ -1,0 +1,56 @@
+{
+  "name": "LirekaProfitabilite",
+  "dataColors": [
+    "#1B3A5C",
+    "#2E7DA6",
+    "#3FA7A0",
+    "#E08A3C",
+    "#8C5DA8",
+    "#C0504D",
+    "#6FA84B",
+    "#A6B1BC"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#1B3A5C",
+  "tableAccent": "#2E7DA6",
+  "good": "#6FA84B",
+  "neutral": "#E08A3C",
+  "bad": "#C0504D",
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#E0E0E0"
+              }
+            },
+            "radius": 4
+          }
+        ],
+        "title": [
+          {
+            "fontColor": {
+              "solid": {
+                "color": "#1B3A5C"
+              }
+            },
+            "fontSize": 12
+          }
+        ]
+      }
+    }
+  }
+}

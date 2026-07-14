@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Taux Écart Coût"
+                  "Property": "Écart Coût Outbound vs Estimé Backend"
                 }
               },
-              "queryRef": "_Mesures.Taux Écart Coût",
-              "nativeQueryRef": "Taux Écart Coût"
+              "queryRef": "_Mesures.Écart Coût Outbound vs Estimé Backend",
+              "nativeQueryRef": "Écart Coût Outbound vs Estimé Backend"
             }
           ]
         }
@@ -47,7 +47,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Écart coût transport'"
+                  "Value": "'Écart coût outbound vs estimé backend'"
                 }
               }
             },
@@ -137,7 +137,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Taux écart coût transport'"
+                  "Value": "'Écart coût outbound vs estimé backend'"
                 }
               }
             }

@@ -10,31 +10,77 @@
     "tabOrder": 4000
   },
   "visual": {
-    "visualType": "textbox",
-    "objects": {
-      "general": [
-        {
-          "properties": {
-            "paragraphs": [
-              {
-                "textRuns": [
-                  {
-                    "value": "Marge Brute — EN ATTENTE VALIDATION MARC",
-                    "textStyle": {
-                      "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "18px",
-                      "color": "#1B3A5C"
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "center"
-              }
-            ]
-          }
+                  },
+                  "Property": "Taux Marge Brute"
+                }
+              },
+              "queryRef": "_Mesures.Taux Marge Brute",
+              "nativeQueryRef": "Taux Marge Brute"
+            }
+          ]
         }
-      ]
+      }
     },
     "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Taux de marge brute'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Formule confirmée le 15/07/2026 — shipping revenue: périmètre en attente'"
+                }
+              }
+            }
+          }
+        }
+      ],
       "background": [
         {
           "properties": {
@@ -50,7 +96,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#FFF3CD'"
+                      "Value": "'#FFFFFF'"
                     }
                   }
                 }
@@ -74,7 +120,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#FFC107'"
+                      "Value": "'#E0E0E0'"
                     }
                   }
                 }
@@ -100,6 +146,24 @@
                 }
               }
             }
+          }
+        }
+      ]
+    },
+    "objects": {
+      "label": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Taux de marge brute'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
           }
         }
       ]

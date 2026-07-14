@@ -13,17 +13,17 @@ table _Mesures
 		lineageTag: 7f531780-6ee8-4ea5-a56f-17fb98fca792
 
 	/// Colis dont le coût provient d'une facture Colissimo/Chronopost rapprochée.
-	measure 'Nb Colis (coût réel)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "reel")
+	measure 'Nb Colis (coût réel)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "facture_rapprochee")
 		formatString: #,##0
 		lineageTag: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
 
 	/// Colis dont le coût provient du backend (shipping_cost_eur) sans facture transporteur.
-	measure 'Nb Colis (coût estimé)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "estime")
+	measure 'Nb Colis (coût estimé)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "backend_seul")
 		formatString: #,##0
 		lineageTag: c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f
 
 	/// Colis sans facture ni coût backend renseigné (visibles en volume, exclus du coût).
-	measure 'Nb Colis (coût non disponible)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "non_disponible")
+	measure 'Nb Colis (coût non disponible)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "aucun")
 		formatString: #,##0
 		lineageTag: d3e4f5a6-b7c8-4d9e-0f1a-2b3c4d5e6f7a
 
@@ -58,17 +58,30 @@ table _Mesures
 		lineageTag: c596d85e-75bd-4785-88ba-ca8931c8a1b0
 
 	/// Coût transport facturé par Colissimo/Chronopost (contrôle croisé).
-	measure 'Coût Transport Facturé' = SUM(fact_factures_transport[cout_transport])
+	/// Fix F-06 : total facturé attribué au transporteur et à la date de la FACTURE elle-même
+	/// (chemin direct). Comme rel_factures_transporteur / rel_factures_date sont inactives, on
+	/// les active explicitement via USERELATIONSHIP et on coupe le chemin indirect (id_package)
+	/// avec CROSSFILTER pour éviter toute ambiguïté.
+	measure 'Coût Transport Facturé' =
+			CALCULATE(
+				SUM(fact_factures_transport[cout_transport]),
+				USERELATIONSHIP(fact_factures_transport[transporteur], dim_transporteur[transporteur]),
+				USERELATIONSHIP(fact_factures_transport[date_facture], dim_date[date]),
+				CROSSFILTER(fact_factures_transport[id_package], fact_transport[id_package], None)
+			)
 		formatString: #,##0.00 €
 		lineageTag: 0c73b641-d4e0-421c-af69-cdc593a9582e
 
-	/// Écart entre coût réel et coût estimé.
-	measure 'Écart Coût Transport' = [Coût Transport Réel] - [Coût Transport Estimé]
+	/// Fix F-05 : écart entre le coût transport RETENU (facturé si dispo, sinon estimé) et
+	/// l'estimation backend commande. Remplace l'ancien [Écart Coût Transport] qui comparait
+	/// deux estimations backend (coût colis vs coût commande), sans valeur de pilotage.
+	measure 'Écart Coût Outbound vs Estimé Backend' =
+			[Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
 		formatString: #,##0.00 €
 		lineageTag: f0b7ddaf-bbb7-42c0-9723-b40b9f621956
 
-	/// Écart coût transport en % de l'estimé.
-	measure 'Taux Écart Coût' = DIVIDE([Écart Coût Transport], [Coût Transport Estimé], 0)
+	/// Fix F-05 : écart coût outbound en % de l'estimé backend.
+	measure 'Taux Écart Coût' = DIVIDE([Écart Coût Outbound vs Estimé Backend], [Coût Transport Estimé], 0)
 		formatString: 0.0%
 		lineageTag: 831022a0-57dc-4efe-b01b-6eee24553f25
 
@@ -99,8 +112,66 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: 96da7a44-3aa5-400a-ae45-f6122da0451e
 
-	/// Nombre de commandes ayant au moins un colis avec facture transporteur rapprochée (source_cout = reel).
-	measure 'Nb Commandes Matchées' = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[source_cout] = "reel")
+	/// Fix F-04 : frais de port encaissés par le client (marketplace notamment).
+	/// Périmètre d'inclusion ("if relevant") non tranché par Marc — voir AUDIT.md Q1.
+	// TODO Marc: critère de pertinence du shipping revenue ("if relevant") à trancher.
+	measure 'Frais Port Encaissés' = SUM(fact_commandes[frais_port_encaisse])
+		formatString: #,##0.00 €
+		lineageTag: 5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a9b
+
+	/// Fix F-04 : coût de transport amont (inbound_transportation_cost_eur).
+	measure 'Coût Transport Amont' = SUM(fact_commandes[cout_transport_amont])
+		formatString: #,##0.00 €
+		lineageTag: 6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b0c
+
+	/// Fix F-02/F-04 : coût transport outbound RETENU (facturé si rapproché, sinon estimé backend).
+	measure 'Coût Transport Outbound (Retenu)' = SUM(fact_transport[cout_transport_retenu])
+		formatString: #,##0.00 €
+		lineageTag: 7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c1d
+
+	/// Fix F-04 : douanes et taxes (duties_taxes_eur) — poste "duties and taxes" de la formule Marc.
+	measure 'Douanes Taxes' = SUM(fact_transport[duties_taxes_eur])
+		formatString: #,##0.00 €
+		lineageTag: 8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d2e
+
+	/// Fix F-04 : commissions marketplace (marketplace_fees_eur).
+	measure 'Commissions Marketplace' = SUM(fact_commandes[commissions_marketplace])
+		formatString: #,##0.00 €
+		lineageTag: 9c0d1e2f-3a4b-4c5d-6e7f-8a9b0c1d2e3f
+
+	/// Fix F-04 : fournitures d'expédition (shipping_supply_cost_eur).
+	measure 'Fournitures Expédition' = SUM(fact_transport[shipping_supply_cost_eur])
+		formatString: #,##0.00 €
+		lineageTag: 0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a
+
+	/// Fix F-04/F-01 : MARGE BRUTE — conforme à la formule confirmée par Marc (appliquée le 15/07/2026).
+	/// Gross Margin = Revenue (incl. shipping revenue) - COGS - inbound - outbound - duties
+	///                - marketplace commissions - shipping supplies.
+	/// Shipping revenue (Frais Port Encaissés) inclus par défaut ; périmètre "if relevant" en attente.
+	// TODO Marc: confirmer l'inclusion inconditionnelle du shipping revenue (AUDIT.md Q1).
+	measure 'Marge Brute' =
+			[CA Total HT] + [Frais Port Encaissés]
+				- [Coût Achat Total]
+				- [Coût Transport Amont]
+				- [Coût Transport Outbound (Retenu)]
+				- [Douanes Taxes]
+				- [Commissions Marketplace]
+				- [Fournitures Expédition]
+		formatString: #,##0.00 €
+		lineageTag: 1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b
+
+	/// Fix F-04 : taux de marge brute = Marge Brute / (CA HT + frais de port encaissés).
+	measure 'Taux Marge Brute' = DIVIDE([Marge Brute], [CA Total HT] + [Frais Port Encaissés], 0)
+		formatString: 0.0%
+		lineageTag: 2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b6c
+
+	/// Fix F-04 : écart entre la marge conforme Marc et la marge backend (contrôle v2).
+	measure 'Écart Marge vs Backend (v2)' = [Marge Brute] - [Marge Brute Backend (réf.)]
+		formatString: #,##0.00 €
+		lineageTag: 3a4b5c6d-7e8f-4a9b-0c1d-2e3f4a5b6c7d
+
+	/// Nombre de commandes ayant au moins un colis avec facture transporteur rapprochée (source_cout = facture_rapprochee).
+	measure 'Nb Commandes Matchées' = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[source_cout] = "facture_rapprochee")
 		formatString: #,##0
 		lineageTag: baae1892-caaa-4c58-be8e-a24bbf35a559
 
@@ -118,16 +189,26 @@ table _Mesures
 	/// (fact_factures_transport[id_package] -> fact_transport[id_package]), clé RÉSOLUE PAR DATE
 	/// dans la partition. Remplace l'ancien TREATAS sur numero_suivi, qui rattachait la facture
 	/// aux 2 colis d'un numéro de suivi recyclé (382 cas) => surcomptage.
-	measure 'Coût Facturé Rapproché' = [Coût Transport Facturé]
+	/// Fix F-06 : coût facturé attribué au COLIS via rel_factures_colis (clé id_package résolue
+	/// par date). Relation active épinglée explicitement par USERELATIONSHIP plutôt que de
+	/// compter sur une relation active implicite. Distinct de [Coût Transport Facturé] qui, lui,
+	/// suit le chemin direct facture -> transporteur/date.
+	measure 'Coût Facturé Rapproché' =
+			CALCULATE(
+				SUM(fact_factures_transport[cout_transport]),
+				USERELATIONSHIP(fact_factures_transport[id_package], fact_transport[id_package])
+			)
 		formatString: #,##0.00 €
 		lineageTag: c96ba0bc-9091-4ace-8974-29e4ffe02b25
 
 	/// Écart entre le coût réel backend et le coût facturé transporteur (contrôle).
+	/// Fix F-06 : le terme facturé passe par le chemin id_package (via [Coût Facturé Rapproché]),
+	/// aligné au grain colis avec [Coût Transport Réel].
 	measure 'Écart Réel vs Facturé' = [Coût Transport Réel] - [Coût Facturé Rapproché]
 		formatString: #,##0.00 €
 		lineageTag: e8bd1f63-4bcc-46c4-940e-133635ca4aac
 
-	/// Nombre de colis rapprochés à une facture Colissimo/Chronopost (aligné sur source_cout = reel).
+	/// Nombre de colis rapprochés à une facture Colissimo/Chronopost (aligné sur source_cout = facture_rapprochee).
 	measure 'Nb Colis Avec Facture' = [Nb Colis (coût réel)]
 		formatString: #,##0
 		lineageTag: cf7eab3c-beff-47d9-a425-381d83e6a41a

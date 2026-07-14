@@ -4,12 +4,15 @@ Réplique en pandas la logique M/TMDL (CSV bruts non modifiés).
 """
 from __future__ import annotations
 
+import os
+
 import json
 from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
+# Fix F-19 : racine de l'entrepôt paramétrable via la variable d'environnement LIREKA_DWH.
+ROOT = Path(os.environ.get("LIREKA_DWH", Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"))
 BACKEND = ROOT / "Données_Backend"
 COL_DIR = ROOT / "Dashboards_transporteurs" / "COLISSIMO Dashboard PowerBI"
 CHR_DIR = ROOT / "Dashboards_transporteurs" / "CHRONOPOST Dashboard PowerBI"

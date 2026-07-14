@@ -5,13 +5,16 @@ ne sont PAS modifiés). Sert uniquement à produire des comptages vérifiables.
 """
 from __future__ import annotations
 
+import os
+
 import hashlib
 import json
 from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
+# Fix F-19 : racine de l'entrepôt paramétrable via la variable d'environnement LIREKA_DWH.
+ROOT = Path(os.environ.get("LIREKA_DWH", Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"))
 BACKEND = ROOT / "Données_Backend"
 TRANSP = ROOT / "Dashboards_transporteurs"
 COL_DIR = TRANSP / "COLISSIMO Dashboard PowerBI"

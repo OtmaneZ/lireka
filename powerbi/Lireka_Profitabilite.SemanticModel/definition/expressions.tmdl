@@ -5,7 +5,8 @@
 /// La structure des dossiers sous cette racine doit reproduire l'entrepôt local :
 /// Données_Backend\, Dashboards_transporteurs\, etc.
 /// Renseigner dans Power BI Desktop : Transformer les données > Gérer les paramètres.
-expression SharePointSiteURL = "https://lirekacom.sharepoint.com/sites/Lireka" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+// Fix F-17 : valeur placeholder, pas d'URL tenant en dur. À renseigner par l'utilisateur au premier refresh.
+expression SharePointSiteURL = "https://VOTRE-TENANT.sharepoint.com/sites/VOTRE-SITE" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 54fba0a6-374f-4253-8139-bb1310f751e3
 
 	annotation PBI_ResultType = Text
@@ -19,8 +20,8 @@ expression SharePointSiteURL = "https://lirekacom.sharepoint.com/sites/Lireka" m
 expression fnNormaliserTransporteur =
 		(tracking as nullable text) as text =>
 		let
-			// Nettoyage : majuscules + suppression des espaces parasites
-			#"Suivi nettoye" = if tracking = null then "" else Text.Upper(Text.Trim(tracking)),
+			// Fix F-12 : nettoyage via fnNormaliserSuivi (majuscules + trim + NBSP).
+			#"Suivi nettoye" = fnNormaliserSuivi(tracking),
 			longueur = Text.Length(#"Suivi nettoye"),
 			// Vrai si l'identifiant ne contient que des chiffres
 			estNumerique = #"Suivi nettoye" <> "" and Text.Select(#"Suivi nettoye", {"0".."9"}) = #"Suivi nettoye",
@@ -47,7 +48,8 @@ expression fnNormaliserTransporteur =
 expression fnCanonTransporteur =
 		(libelle as nullable text) as text =>
 		let
-			#"Libelle nettoye" = if libelle = null then "" else Text.Upper(Text.Trim(libelle)),
+			// Fix F-12 : normalisation via fnNormaliserSuivi (clé de matching du libellé, NBSP inclus).
+			#"Libelle nettoye" = fnNormaliserSuivi(libelle),
 			#"Transporteur canon" =
 				if List.Contains({"DHL", "DHL EXPRESS"}, #"Libelle nettoye") then "DHL"
 				else if List.Contains({"UPS", "UPS STANDARD"}, #"Libelle nettoye") then "UPS"
@@ -60,6 +62,20 @@ expression fnCanonTransporteur =
 		in
 			#"Transporteur canon"
 	lineageTag: 9274de39-62a4-4130-b72f-27746931dc50
+
+/// Fix F-12 : normalisation robuste des clés textuelles de rapprochement.
+/// Supprime les espaces insécables (NBSP U+00A0) fréquents dans les exports Excel/CSV FR,
+/// applique Text.Trim puis passe en majuscules. Utilisée des DEUX côtés (colis ET factures,
+/// variantes Colissimo/Chronopost) pour garantir une symétrie stricte des clés de jointure.
+expression fnNormaliserSuivi =
+		(x as nullable text) as text =>
+		let
+			v = if x = null then "" else x,
+			sansNbsp = Text.Replace(v, Character.FromNumber(160), " "),
+			sansEspaces = Text.Trim(sansNbsp)
+		in
+			Text.Upper(sansEspaces)
+	lineageTag: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e
 
 /// Staging (non chargé) — customer_order_item.csv nettoyé.
 /// Table de liaison item <-> package <-> commande + coûts unitaires backend.
@@ -167,12 +183,17 @@ expression fnSharePointLireCsvRecap =
 /// Consommé par fact_factures_transport et fact_transport (colonne source_cout).
 expression stg_factures_transport_resolu =
 		let
+			// Fix F-11 : fenêtre de tolérance (en jours) pour accepter un rapprochement
+			// facture -> colis sur un numéro de suivi recyclé (branche >= 2 candidats).
+			// Au-delà de ce delta de dates, le rapprochement est rejeté (résolu = null).
+			// TODO Marc: seuil de tolérance à valider. Valeur par défaut conservatrice.
+			FenetreToleranceJours = 7,
 			fnChronoUnifie = (src as table, facCol as text, suiviCol as text) as table =>
 				let
 					t = Table.TransformColumnTypes(src, {{"Date", type date}, {"Poids (kg)", type number}, {"TOTAL HT", type number}}, "fr-FR"),
 					r = Table.RenameColumns(t, {{"Date", "date_facture"}, {"Poids (kg)", "poids"}, {"TOTAL HT", "cout_transport"}}),
 					f = Table.AddColumn(r, "numero_facture", each try Text.From(Record.Field(_, facCol)) otherwise null, type text),
-					s = Table.AddColumn(f, "numero_suivi", each Text.Upper(Text.Trim(Record.Field(_, suiviCol))), type text),
+					s = Table.AddColumn(f, "numero_suivi", each fnNormaliserSuivi(Record.Field(_, suiviCol)), type text),
 					tr = Table.AddColumn(s, "transporteur", each fnCanonTransporteur("Chronopost"), type text),
 					sv = Table.AddColumn(tr, "service", each "Chronopost", type text),
 					pdst = Table.AddColumn(sv, "pays_destination", each null, type text)
@@ -195,7 +216,7 @@ expression stg_factures_transport_resolu =
 							Table.AddColumn(
 								Table.AddColumn(
 									Table.RenameColumns(#"Colissimo types", {{"Date", "date_facture"}, {"Poids kg", "poids"}, {"TOTAL HT", "cout_transport"}}),
-									"numero_suivi", each Text.Upper(Text.Trim([#"N° de colis"])), type text),
+									"numero_suivi", each fnNormaliserSuivi([#"N° de colis"]), type text),
 								"numero_facture", each null, type text),
 							"transporteur", each fnCanonTransporteur("Colissimo"), type text),
 						"service", each "Colissimo", type text),
@@ -210,22 +231,32 @@ expression stg_factures_transport_resolu =
 			#"Facture en texte" = Table.TransformColumnTypes(#"Lignes valides", {{"numero_facture", type text}}),
 			#"Pkg source" = fnSharePointLireCsv("Données_Backend", "package.csv"),
 			#"Pkg types" = Table.TransformColumnTypes(#"Pkg source", {{"id", Int64.Type}, {"order_id", Int64.Type}, {"tracking_id", type text}}, "en-US"),
-			#"Pkg suivi" = Table.AddColumn(#"Pkg types", "numero_suivi", each Text.Upper(Text.Trim([tracking_id])), type text),
+			#"Pkg suivi" = Table.AddColumn(#"Pkg types", "numero_suivi", each fnNormaliserSuivi([tracking_id]), type text),
 			#"Cmd dates" = Table.AddColumn(Table.SelectColumns(stg_customer_order, {"id", "origin_created"}), "date_commande", each try Date.FromText(Text.Start([origin_created], 10)) otherwise null, type date),
 			#"Colis dates" = Table.ExpandTableColumn(
 				Table.NestedJoin(Table.SelectColumns(Table.RenameColumns(#"Pkg suivi", {{"id", "id_package"}}), {"id_package", "order_id", "numero_suivi"}), {"order_id"}, #"Cmd dates", {"id"}, "cmd", JoinKind.LeftOuter),
 				"cmd", {"date_commande"}, {"date_commande"}),
 			#"Factures + candidats" = Table.NestedJoin(#"Facture en texte", {"numero_suivi"}, #"Colis dates", {"numero_suivi"}, "candidats", JoinKind.LeftOuter),
 			#"Colis resolu" = Table.AddColumn(#"Factures + candidats", "resolu", each
-				let candidats = [candidats], dfac = [date_facture] in
+				let
+					candidats = [candidats],
+					dfac = [date_facture],
+					// delta = distance en jours entre date commande et date facture (1e9 si date manquante)
+					avecDelta = Table.AddColumn(candidats, "delta", each if [date_commande] = null or dfac = null then 1000000000.0 else Number.Abs(Duration.TotalDays([date_commande] - dfac)), type number),
+					// Fix F-11 : tri par delta croissant PUIS tie-break déterministe par id_package croissant
+					trie = Table.Sort(avecDelta, {{"delta", Order.Ascending}, {"id_package", Order.Ascending}}),
+					meilleur = if Table.RowCount(trie) = 0 then null else Table.First(trie)
+				in
 					if Table.RowCount(candidats) = 0 then null
 					else if Table.RowCount(candidats) = 1 then candidats{0}
-					else Table.First(Table.Sort(
-						Table.AddColumn(candidats, "delta", each if [date_commande] = null or dfac = null then 1000000000.0 else Number.Abs(Duration.TotalDays([date_commande] - dfac)), type number),
-						{{"delta", Order.Ascending}}))),
+					// Fix F-11 : rejet si le meilleur candidat dépasse la fenêtre de tolérance
+					else if meilleur[delta] > FenetreToleranceJours then null
+					else meilleur),
 			#"order_id ajoute" = Table.AddColumn(#"Colis resolu", "order_id", each if [resolu] = null then null else Record.Field([resolu], "order_id"), Int64.Type),
 			#"id_package ajoute" = Table.AddColumn(#"order_id ajoute", "id_package", each if [resolu] = null then null else Record.Field([resolu], "id_package"), Int64.Type),
-			#"Colonnes finales" = Table.RemoveColumns(#"id_package ajoute", {"candidats", "resolu"})
+			// Fix F-11 : traçabilité — nombre de candidats AVANT filtrage (audit des suivis recyclés).
+			#"nb candidats ajoute" = Table.AddColumn(#"id_package ajoute", "nb_candidats_resolution", each Table.RowCount([candidats]), Int64.Type),
+			#"Colonnes finales" = Table.RemoveColumns(#"nb candidats ajoute", {"candidats", "resolu"})
 		in
 			#"Colonnes finales"
 	lineageTag: f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c

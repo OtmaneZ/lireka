@@ -14,13 +14,13 @@ Le dataset commandes Lireka contient des informations précieuses pour le market
 
 | Donnée | Usage marketing |
 |--------|----------------|
-| `pays_livraison` | Ciblage géographique, expansion marchés |
+| `nom_pays` (`dim_pays`) | Ciblage géographique, expansion marchés |
 | `ca_ht` par pays | Priorisation des marchés rentables |
 | `type_commande` | Segmentation client B2C / B2B |
 | `nombre_articles` | Panier moyen, comportement d'achat |
 | `date_commande` | Saisonnalité, tendances |
 | `transporteur` | Corrélation service / satisfaction |
-| `marge_brute` par segment | ROI par canal / marché |
+| mesure `[Marge Brute]` par segment | ROI par canal / marché |
 
 ---
 
@@ -34,7 +34,7 @@ Exemple pédagogique : créer un **dashboard marketing** montrant la performance
 
 1. **Nouvelle page** : "Performance marchés"
 2. **Slicer Timeline** : `date_commande` — derniers 6 mois
-3. **Carte géographique** : `pays_livraison` + `CA Total` (mesure)
+3. **Carte géographique** : `nom_pays` (`dim_pays`) + `CA Total HT` (mesure)
 4. **Graphique courbe** : évolution mensuelle du CA
 5. **Graphique barres** : Top 10 pays par nombre de commandes
 6. **KPI** : Panier moyen = `CA Total / Nb Commandes`

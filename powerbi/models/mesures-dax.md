@@ -1,154 +1,527 @@
 # Mesures DAX — Lireka Power BI
 
 > **Référence** : [`../../project/devis.md`](../../project/devis.md)  
-> Référentiel des mesures DAX pour le dashboard profitabilité (J3).  
-> Copier-coller dans Power BI Desktop → Modélisation → Nouvelle mesure.
+> Référentiel des mesures DAX du dashboard profitabilité.  
+> **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
+> Ne pas éditer à la main : régénérer via le script one-shot (voir pied de page).
+
+> Total : **46 mesures**, dans l'ordre du modèle.
 
 ---
 
-## Coûts transport
+## Nb Commandes
+
+> Nombre de commandes (grain fact_commandes).  
 
 ```dax
-Coût Transport Réel =
-SUM(fact_transport[cout_transport])
+Nb Commandes = COUNTROWS(fact_commandes)
 ```
 
-> **Note** : le coût réel est porté par `fact_transport[cout_transport]` (grain colis).  
-> Il n'existe **pas** de colonne `cout_transport_reel` sur `fact_commandes`.
-
-```dax
-Coût Transport Estimé =
-SUM(fact_commandes[cout_transport_estime])
-```
-
-```dax
-Écart Coût Transport = [Coût Transport Réel] - [Coût Transport Estimé]
-```
-
-```dax
-Taux Écart Coût =
-DIVIDE([Écart Coût Transport], [Coût Transport Estimé], 0)
-```
-
-```dax
-Coût Moyen Colis =
-DIVIDE([Coût Transport Réel], [Nb Colis], 0)
-```
+*Format* : `#,##0`
 
 ---
 
-## Marge brute — PROVISOIRE (en attente validation Marc)
+## Nb Colis
 
-> **Ne pas utiliser comme formule définitive.**  
-> Écart constaté le 12/07/2026 entre ce calcul simple et `gross_profit_eur` backend.  
-> Décision métier requise avant branchement sur le rapport L04.
+> Nombre de colis (grain fact_transport).  
 
 ```dax
-Marge Brute (prov.) =
-[CA Total HT] - [Coût Achat Total] - [Coût Transport Réel]
+Nb Colis = COUNTROWS(fact_transport)
 ```
 
-```dax
-Taux Marge Brute (prov.) =
-DIVIDE([Marge Brute (prov.)], [CA Total HT], 0)
-```
-
-```dax
-Marge Brute Backend (réf.) =
-SUM(fact_commandes[gross_profit_eur])
-```
-
-```dax
-Écart Marge vs Backend =
-[Marge Brute (prov.)] - [Marge Brute Backend (réf.)]
-```
-
-```dax
-Marge YTD (prov.) =
-TOTALYTD([Marge Brute (prov.)], dim_date[date])
-```
+*Format* : `#,##0`
 
 ---
 
-## Volumes
+## Nb Colis (coût réel)
+
+> Colis dont le coût provient d'une facture Colissimo/Chronopost rapprochée.  
 
 ```dax
-Nb Commandes =
-COUNTROWS(fact_commandes)
+Nb Colis (coût réel) = CALCULATE([Nb Colis], fact_transport[source_cout] = "facture_rapprochee")
 ```
 
-```dax
-Nb Colis =
-COUNTROWS(fact_transport)
-```
-
-```dax
-Nb Colis Facturés =
-COUNTROWS(fact_factures_transport)
-```
-
-```dax
-Panier Moyen =
-DIVIDE([CA Total HT], [Nb Commandes], 0)
-```
+*Format* : `#,##0`
 
 ---
 
-## Qualité données — coût transport par source
+## Nb Colis (coût estimé)
+
+> Colis dont le coût provient du backend (shipping_cost_eur) sans facture transporteur.  
 
 ```dax
-Nb Colis (coût réel) =
-CALCULATE([Nb Colis], fact_transport[source_cout] = "reel")
+Nb Colis (coût estimé) = CALCULATE([Nb Colis], fact_transport[source_cout] = "backend_seul")
 ```
 
-```dax
-Nb Colis (coût estimé) =
-CALCULATE([Nb Colis], fact_transport[source_cout] = "estime")
-```
-
-```dax
-Nb Colis (coût non disponible) =
-CALCULATE([Nb Colis], fact_transport[source_cout] = "non_disponible")
-```
+*Format* : `#,##0`
 
 ---
 
-## Qualité données — matching factures
+## Nb Colis (coût non disponible)
+
+> Colis sans facture ni coût backend renseigné (visibles en volume, exclus du coût).  
 
 ```dax
-Nb Commandes Matchées =
+Nb Colis (coût non disponible) = CALCULATE([Nb Colis], fact_transport[source_cout] = "aucun")
+```
+
+*Format* : `#,##0`
+
+---
+
+## Nb Colis Facturés
+
+> Nombre de lignes de facture transporteur (Colissimo + Chronopost).  
+
+```dax
+Nb Colis Facturés = COUNTROWS(fact_factures_transport)
+```
+
+*Format* : `#,##0`
+
+---
+
+## Nb Articles
+
+> Nombre d'articles commandés (somme des quantités).  
+
+```dax
+Nb Articles = SUM(fact_lignes[quantity])
+```
+
+*Format* : `#,##0`
+
+---
+
+## CA Total HT
+
+> Chiffre d'affaires HT (order_amount_eur).  
+
+```dax
+CA Total HT = SUM(fact_commandes[ca_ht])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Achat Total
+
+> Coût d'achat total des livres (product_cost_eur).  
+
+```dax
+Coût Achat Total = SUM(fact_commandes[cout_achat])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Estimé
+
+> Coût transport estimé par le backend (total_shipping_cost_to_delivery_country_eur).  
+
+```dax
+Coût Transport Estimé = SUM(fact_commandes[cout_transport_estime])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Réel
+
+> Coût transport réel, issu des colis backend (package.shipping_cost_eur).  
+
+```dax
+Coût Transport Réel = SUM(fact_transport[cout_transport])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Facturé
+
+> Coût transport facturé par Colissimo/Chronopost (contrôle croisé).  
+> Fix F-06 : total facturé attribué au transporteur et à la date de la FACTURE elle-même  
+> (chemin direct). Comme rel_factures_transporteur / rel_factures_date sont inactives, on  
+> les active explicitement via USERELATIONSHIP et on coupe le chemin indirect (id_package)  
+> avec CROSSFILTER pour éviter toute ambiguïté.  
+
+```dax
+Coût Transport Facturé =
 CALCULATE(
-    DISTINCTCOUNT(fact_transport[order_id]),
-    fact_transport[source_cout] = "reel"
+    SUM(fact_factures_transport[cout_transport]),
+    USERELATIONSHIP(fact_factures_transport[transporteur], dim_transporteur[transporteur]),
+    USERELATIONSHIP(fact_factures_transport[date_facture], dim_date[date]),
+    CROSSFILTER(fact_factures_transport[id_package], fact_transport[id_package], None)
 )
 ```
 
-```dax
-Taux Matching =
-DIVIDE([Nb Commandes Matchées], [Nb Commandes], 0)
-```
-
-> **Critère** : une commande est « matchée » si elle possède au moins un colis  
-> avec `source_cout = "reel"` (facture Colissimo/Chronopost rapprochée via `id_package`).
-
-```dax
-Nb Commandes Non Matchées =
-[Nb Commandes] - [Nb Commandes Matchées]
-```
-
-```dax
-Nb Colis Avec Facture =
-[Nb Colis (coût réel)]
-```
-
-```dax
-Taux Matching Factures =
-DIVIDE([Nb Colis Avec Facture], [Nb Colis], 0)
-```
+*Format* : `#,##0.00 €`
 
 ---
 
-## Qualité données — intégrité et doublons
+## Écart Coût Outbound vs Estimé Backend
+
+> Fix F-05 : écart entre le coût transport RETENU (facturé si dispo, sinon estimé) et  
+> l'estimation backend commande. Remplace l'ancien [Écart Coût Transport] qui comparait  
+> deux estimations backend (coût colis vs coût commande), sans valeur de pilotage.  
+
+```dax
+Écart Coût Outbound vs Estimé Backend =             [Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Taux Écart Coût
+
+> Fix F-05 : écart coût outbound en % de l'estimé backend.  
+
+```dax
+Taux Écart Coût = DIVIDE([Écart Coût Outbound vs Estimé Backend], [Coût Transport Estimé], 0)
+```
+
+*Format* : `0.0%`
+
+---
+
+## Coût Moyen Colis
+
+> Coût transport réel moyen par colis.  
+
+```dax
+Coût Moyen Colis = DIVIDE([Coût Transport Réel], [Nb Colis], 0)
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Marge Brute (prov.)
+
+> MARGE BRUTE — FORMULE PROVISOIRE. CA HT - coût d'achat - coût transport réel.  
+> Écart constaté le 12/07/2026 entre ce calcul simple et gross_profit_eur existant.  
+> À VALIDER avec Marc / finance avant de considérer comme définitive.  
+
+```dax
+Marge Brute (prov.) = [CA Total HT] - [Coût Achat Total] - [Coût Transport Réel]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Taux Marge Brute (prov.)
+
+> Taux de marge brute (provisoire) = Marge Brute (prov.) / CA HT.  
+
+```dax
+Taux Marge Brute (prov.) = DIVIDE([Marge Brute (prov.)], [CA Total HT], 0)
+```
+
+*Format* : `0.0%`
+
+---
+
+## Marge Brute Backend (réf.)
+
+> Marge brute calculée par le backend (gross_profit_eur) — RÉFÉRENCE de contrôle.  
+
+```dax
+Marge Brute Backend (réf.) = SUM(fact_commandes[gross_profit_eur])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Écart Marge vs Backend
+
+> Écart entre la marge provisoire et la marge backend (aide à la validation finance).  
+
+```dax
+Écart Marge vs Backend = [Marge Brute (prov.)] - [Marge Brute Backend (réf.)]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Frais Port Encaissés
+
+```dax
+Frais Port Encaissés = SUM(fact_commandes[frais_port_encaisse])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Amont
+
+> Fix F-04 : coût de transport amont (inbound_transportation_cost_eur).  
+
+```dax
+Coût Transport Amont = SUM(fact_commandes[cout_transport_amont])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Outbound (Retenu)
+
+> Fix F-02/F-04 : coût transport outbound RETENU (facturé si rapproché, sinon estimé backend).  
+
+```dax
+Coût Transport Outbound (Retenu) = SUM(fact_transport[cout_transport_retenu])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Douanes Taxes
+
+> Fix F-04 : douanes et taxes (duties_taxes_eur) — poste "duties and taxes" de la formule Marc.  
+
+```dax
+Douanes Taxes = SUM(fact_transport[duties_taxes_eur])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Commissions Marketplace
+
+> Fix F-04 : commissions marketplace (marketplace_fees_eur).  
+
+```dax
+Commissions Marketplace = SUM(fact_commandes[commissions_marketplace])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Fournitures Expédition
+
+> Fix F-04 : fournitures d'expédition (shipping_supply_cost_eur).  
+
+```dax
+Fournitures Expédition = SUM(fact_transport[shipping_supply_cost_eur])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Marge Brute
+
+```dax
+Marge Brute =
+[CA Total HT] + [Frais Port Encaissés]
+    - [Coût Achat Total]
+    - [Coût Transport Amont]
+    - [Coût Transport Outbound (Retenu)]
+    - [Douanes Taxes]
+    - [Commissions Marketplace]
+    - [Fournitures Expédition]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Taux Marge Brute
+
+> Fix F-04 : taux de marge brute = Marge Brute / (CA HT + frais de port encaissés).  
+
+```dax
+Taux Marge Brute = DIVIDE([Marge Brute], [CA Total HT] + [Frais Port Encaissés], 0)
+```
+
+*Format* : `0.0%`
+
+---
+
+## Écart Marge vs Backend (v2)
+
+> Fix F-04 : écart entre la marge conforme Marc et la marge backend (contrôle v2).  
+
+```dax
+Écart Marge vs Backend (v2) = [Marge Brute] - [Marge Brute Backend (réf.)]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Nb Commandes Matchées
+
+> Nombre de commandes ayant au moins un colis avec facture transporteur rapprochée (source_cout = facture_rapprochee).  
+
+```dax
+Nb Commandes Matchées = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[source_cout] = "facture_rapprochee")
+```
+
+*Format* : `#,##0`
+
+---
+
+## Taux Matching
+
+> Taux de matching facture = commandes avec coût réel (facture) / total commandes.  
+
+```dax
+Taux Matching = DIVIDE([Nb Commandes Matchées], [Nb Commandes], 0)
+```
+
+*Format* : `0.0%`
+
+---
+
+## Nb Commandes Non Matchées
+
+> Commandes sans aucun colis rapproché à une facture transporteur.  
+
+```dax
+Nb Commandes Non Matchées = [Nb Commandes] - [Nb Commandes Matchées]
+```
+
+*Format* : `#,##0`
+
+---
+
+## Coût Facturé Rapproché
+
+> Coût facturé (Colissimo/Chronopost) rapproché du colis via la relation rel_factures_colis  
+> (fact_factures_transport[id_package] -> fact_transport[id_package]), clé RÉSOLUE PAR DATE  
+> dans la partition. Remplace l'ancien TREATAS sur numero_suivi, qui rattachait la facture  
+> aux 2 colis d'un numéro de suivi recyclé (382 cas) => surcomptage.  
+> Fix F-06 : coût facturé attribué au COLIS via rel_factures_colis (clé id_package résolue  
+> par date). Relation active épinglée explicitement par USERELATIONSHIP plutôt que de  
+> compter sur une relation active implicite. Distinct de [Coût Transport Facturé] qui, lui,  
+> suit le chemin direct facture -> transporteur/date.  
+
+```dax
+Coût Facturé Rapproché =
+CALCULATE(
+    SUM(fact_factures_transport[cout_transport]),
+    USERELATIONSHIP(fact_factures_transport[id_package], fact_transport[id_package])
+)
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Écart Réel vs Facturé
+
+> Écart entre le coût réel backend et le coût facturé transporteur (contrôle).  
+> Fix F-06 : le terme facturé passe par le chemin id_package (via [Coût Facturé Rapproché]),  
+> aligné au grain colis avec [Coût Transport Réel].  
+
+```dax
+Écart Réel vs Facturé = [Coût Transport Réel] - [Coût Facturé Rapproché]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Nb Colis Avec Facture
+
+> Nombre de colis rapprochés à une facture Colissimo/Chronopost (aligné sur source_cout = facture_rapprochee).  
+
+```dax
+Nb Colis Avec Facture = [Nb Colis (coût réel)]
+```
+
+*Format* : `#,##0`
+
+---
+
+## Taux Matching Factures
+
+> Taux de rapprochement facture = colis avec facture / total colis.  
+
+```dax
+Taux Matching Factures = DIVIDE([Nb Colis Avec Facture], [Nb Colis], 0)
+```
+
+*Format* : `0.0%`
+
+---
+
+## Panier Moyen
+
+> Panier moyen HT par commande.  
+
+```dax
+Panier Moyen = DIVIDE([CA Total HT], [Nb Commandes], 0)
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Poids Total (kg)
+
+> Poids total expédié (kg).  
+
+```dax
+Poids Total (kg) = SUM(fact_transport[poids_kg])
+```
+
+*Format* : `#,##0.000`
+
+---
+
+## Marge YTD (prov.)
+
+> Marge brute provisoire cumulée sur l'année (YTD).  
+
+```dax
+Marge YTD (prov.) = TOTALYTD([Marge Brute (prov.)], dim_date[date])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## CA Mois Précédent
+
+> CA HT du mois précédent (time intelligence).  
+
+```dax
+CA Mois Précédent = CALCULATE([CA Total HT], DATEADD(dim_date[date], -1, MONTH))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Évolution CA
+
+> Évolution du CA vs mois précédent (%).  
+
+```dax
+Évolution CA = DIVIDE([CA Total HT] - [CA Mois Précédent], [CA Mois Précédent], 0)
+```
+
+*Format* : `0.0%`
+
+---
+
+## Lignes Colis par Facture (hors 1re)
+
+> Chronopost : lignes au-delà de la 1re par numero_facture (grain multi-colis, pas un doublon qualité).  
 
 ```dax
 Lignes Colis par Facture (hors 1re) =
@@ -165,8 +538,13 @@ RETURN
     SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
-> **Lecture** : surplus de lignes par `numero_facture` (Chronopost multi-colis).  
-> Valeur attendue ~3 019 — structure normale, pas un doublon qualité.
+*Format* : `#,##0`
+
+---
+
+## Vrais Doublons (Facture + Suivi)
+
+> Vrais doublons qualité : même numero_facture ET même numero_suivi sur plusieurs lignes.  
 
 ```dax
 Vrais Doublons (Facture + Suivi) =
@@ -183,8 +561,13 @@ RETURN
     SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
-> **Lecture** : enregistrements réellement dupliqués sur la clé composite.  
-> Valeur attendue sur l'entrepôt actuel : **0**.
+*Format* : `#,##0`
+
+---
+
+## Doublons Numero Suivi Factures
+
+> Lignes de facture dont numero_suivi apparaît plus d'une fois (surplus hors 1re occurrence).  
 
 ```dax
 Doublons Numero Suivi Factures =
@@ -197,6 +580,14 @@ RETURN
     SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
+*Format* : `#,##0`
+
+---
+
+## Commandes Sans Colis
+
+> Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).  
+
 ```dax
 Commandes Sans Colis =
 COUNTROWS(
@@ -208,8 +599,13 @@ COUNTROWS(
 )
 ```
 
-> **Périmètre** : commandes hors statut `CANCELLED` sans aucun colis dans `fact_transport`.  
-> Valeur attendue sur l'entrepôt actuel : **162** (pas 83 402 qui inclut les CANCELLED).
+*Format* : `#,##0`
+
+---
+
+## Colis Sans Commande
+
+> Colis dont order_id ne correspond à aucune commande (intégrité référentielle).  
 
 ```dax
 Colis Sans Commande =
@@ -220,6 +616,14 @@ COUNTROWS(
     )
 )
 ```
+
+*Format* : `#,##0`
+
+---
+
+## Lignes Facture Coût Transport Zero ou Null
+
+> Lignes de facture chargées avec cout_transport nul ou absent.  
 
 ```dax
 Lignes Facture Coût Transport Zero ou Null =
@@ -232,30 +636,8 @@ COUNTROWS(
 )
 ```
 
----
-
-## Temporelles
-
-```dax
-CA Total HT =
-SUM(fact_commandes[ca_ht])
-```
-
-```dax
-Coût Achat Total =
-SUM(fact_commandes[cout_achat])
-```
-
-```dax
-CA Mois Précédent =
-CALCULATE([CA Total HT], DATEADD(dim_date[date], -1, MONTH))
-```
-
-```dax
-Évolution CA =
-DIVIDE([CA Total HT] - [CA Mois Précédent], [CA Mois Précédent], 0)
-```
+*Format* : `#,##0`
 
 ---
 
-*Mesures alignées sur `_Mesures.tmdl` — 14/07/2026.*
+*Mesures régénérées automatiquement depuis `_Mesures.tmdl` le 14/07/2026.*

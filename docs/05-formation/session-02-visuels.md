@@ -32,7 +32,7 @@
 ### Graphique en barres — Top pays par coût transport
 
 1. Dans le volet **Visualisations**, cliquer sur le graphique **Barres empilées**
-2. Glisser `pays_livraison` dans **Axe Y**
+2. Glisser `nom_pays` (table `dim_pays`) dans **Axe Y**
 3. Glisser `Coût Transport Réel` (mesure) dans **Axe X**
 4. Trier par coût décroissant (clic sur `...` → Trier)
 5. Limiter à Top 10 : Filtre sur le visuel → Top N → 10
@@ -46,8 +46,8 @@
 ### Tableau
 
 1. Cliquer sur le visuel **Table**
-2. Ajouter les colonnes : `id_commande`, `date_commande`, `pays_livraison`, `transporteur`, `ca_ht`, `marge_brute`
-3. Trier par `marge_brute` décroissant
+2. Ajouter les colonnes : `id_commande`, `date_commande`, `nom_pays` (`dim_pays`), `transporteur`, `ca_ht`, et la mesure `[Marge Brute]`
+3. Trier par `[Marge Brute]` décroissant
 
 ---
 

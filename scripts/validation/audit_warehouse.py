@@ -1,6 +1,8 @@
 """Audit Power_BI_Datawarehouse — données brutes (relançable)."""
 from __future__ import annotations
 
+import os
+
 import hashlib
 import json
 import re
@@ -10,7 +12,8 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
+# Fix F-19 : racine de l'entrepôt paramétrable via la variable d'environnement LIREKA_DWH.
+ROOT = Path(os.environ.get("LIREKA_DWH", Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"))
 BACKEND = ROOT / "Données_Backend"
 PYTHON = Path(r"C:\Users\Otmane\AppData\Local\Programs\Python\Python312\python.exe")
 

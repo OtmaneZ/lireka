@@ -12,13 +12,16 @@ Tâche 4 : origin_order_id / source comme discriminant CA transmis vs non transm
 """
 from __future__ import annotations
 
+import os
+
 import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
+# Fix F-19 : racine de l'entrepôt paramétrable via la variable d'environnement LIREKA_DWH.
+ROOT = Path(os.environ.get("LIREKA_DWH", Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"))
 BACKEND = ROOT / "Données_Backend"
 CO = BACKEND / "customer_order.csv"
 ITEM = BACKEND / "customer_order_item.csv"

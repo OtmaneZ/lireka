@@ -1,8 +1,11 @@
 /// Faits — colis / coûts de transport (grain : une ligne par colis).
 /// Source SharePoint : Données_Backend/package.csv
 /// cout_transport = shipping_cost_eur (estimation backend ou coût saisi).
-/// source_cout : "reel" (facture Colissimo/Chronopost rapprochée), "estime" (backend sans
-/// facture — Colis Privé, Postes Canada, autres), "non_disponible" (ni facture ni coût backend).
+/// Fix F-02 : cout_transport_facture = montant facturé rapproché ; cout_transport_retenu =
+/// facturé si disponible sinon estimé (poste "outbound" de la marge).
+/// Fix F-03 : source_cout : "facture_rapprochee" (facture Colissimo/Chronopost rapprochée dont
+/// la VALEUR est portée dans cout_transport_retenu), "backend_seul" (backend sans facture —
+/// Colis Privé, Postes Canada, autres), "aucun" (ni facture ni coût backend).
 /// Le transporteur est inféré du numéro de suivi (aucune colonne transporteur en source).
 table fact_transport
 	lineageTag: b67fcf1f-7c50-495f-9b64-c93508b2f1cd
@@ -51,13 +54,34 @@ table fact_transport
 
 		changedProperty = IsHidden
 
-	/// Coût transport en EUR (shipping_cost_eur backend).
+	/// Coût transport ESTIMÉ backend en EUR (shipping_cost_eur). Conservé tel quel pour les
+	/// mesures de contrôle (Écart Réel vs Facturé, Écart Coût...).
 	column cout_transport
 		dataType: double
 		formatString: #,##0.00 €
 		lineageTag: 05fe8b41-606c-4237-9215-86371029809f
 		summarizeBy: sum
 		sourceColumn: cout_transport
+
+		changedProperty = IsHidden
+
+	/// Fix F-02 : montant facturé par le transporteur, rapproché au colis (null si aucune facture).
+	column cout_transport_facture
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f
+		summarizeBy: sum
+		sourceColumn: cout_transport_facture
+
+		changedProperty = IsHidden
+
+	/// Fix F-02 : coût outbound RETENU pour la marge = facturé si disponible, sinon estimé backend.
+	column cout_transport_retenu
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: 4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a
+		summarizeBy: sum
+		sourceColumn: cout_transport_retenu
 
 		changedProperty = IsHidden
 
@@ -79,7 +103,7 @@ table fact_transport
 
 		changedProperty = IsHidden
 
-	/// Origine du coût transport : reel | estime | non_disponible.
+	/// Fix F-03 : origine du coût transport : facture_rapprochee | backend_seul | aucun.
 	column source_cout
 		dataType: string
 		lineageTag: a4b5c6d7-e8f9-4a0b-1c2d-3e4f5a6b7c8d
@@ -102,8 +126,8 @@ table fact_transport
 						{"shipping_supply_cost_eur", type number},
 						{"duties_taxes_eur", type number}
 					}, "en-US"),
-					// Numéro de suivi nettoyé (clé de jointure factures)
-					#"Suivi normalise" = Table.AddColumn(#"Types appliques", "numero_suivi", each Text.Upper(Text.Trim([tracking_id])), type text),
+					// Fix F-12 : numéro de suivi nettoyé via fnNormaliserSuivi (clé de jointure factures, NBSP inclus)
+					#"Suivi normalise" = Table.AddColumn(#"Types appliques", "numero_suivi", each fnNormaliserSuivi([tracking_id]), type text),
 					// Inférence du transporteur par motif du numéro de suivi
 					#"Transporteur infere" = Table.AddColumn(#"Suivi normalise", "transporteur", each fnNormaliserTransporteur([tracking_id]), type text),
 					// Conversion du poids grammes -> kg
@@ -113,18 +137,28 @@ table fact_transport
 						{"id", "id_package"},
 						{"shipping_cost_eur", "cout_transport"}
 					}),
-					// Colis ayant une facture Colissimo/Chronopost rapprochée (résolution par date)
-					#"Ids factures" = Table.Distinct(Table.SelectRows(Table.SelectColumns(stg_factures_transport_resolu, {"id_package"}), each [id_package] <> null)),
+					// Fix F-02 : colis ayant une facture rapprochée (résolution par date), en portant
+					// AUSSI le montant facturé (cout_transport) et pas seulement l'existence de la facture.
+					#"Ids factures" = Table.SelectRows(Table.SelectColumns(stg_factures_transport_resolu, {"id_package", "cout_transport"}), each [id_package] <> null),
 					#"Jointure facture" = Table.NestedJoin(#"Colonnes renommees", {"id_package"}, #"Ids factures", {"id_package"}, "fact", JoinKind.LeftOuter),
-					#"Source cout" = Table.AddColumn(#"Jointure facture", "source_cout", each
-						if Table.RowCount([fact]) > 0 then "reel"
-						else if [cout_transport] = null or [cout_transport] = 0 then "non_disponible"
-						else "estime", type text),
+					// Fix F-02 : montant total facturé pour ce colis (somme des lignes rapprochées), null si aucune.
+					#"Cout facture ajoute" = Table.AddColumn(#"Jointure facture", "cout_transport_facture", each
+						if Table.RowCount([fact]) > 0 then List.Sum(Table.Column([fact], "cout_transport"))
+						else null, type nullable number),
+					// Fix F-02 : coût outbound retenu = facturé si disponible, sinon estimé backend (conservé à part).
+					#"Cout retenu ajoute" = Table.AddColumn(#"Cout facture ajoute", "cout_transport_retenu", each
+						if [cout_transport_facture] <> null then [cout_transport_facture] else [cout_transport], type nullable number),
+					// Fix F-03 : modalités renommées (facture_rapprochee | backend_seul | aucun).
+					#"Source cout" = Table.AddColumn(#"Cout retenu ajoute", "source_cout", each
+						if Table.RowCount([fact]) > 0 then "facture_rapprochee"
+						else if [cout_transport] = null or [cout_transport] = 0 then "aucun"
+						else "backend_seul", type text),
 					#"Sans colonne jointure" = Table.RemoveColumns(#"Source cout", {"fact"}),
 					// Sélection finale des colonnes du modèle
 					#"Colonnes conservees" = Table.SelectColumns(#"Sans colonne jointure", {
 						"id_package", "order_id", "numero_suivi", "transporteur",
-						"poids_kg", "cout_transport", "shipping_supply_cost_eur", "duties_taxes_eur", "source_cout"
+						"poids_kg", "cout_transport", "cout_transport_facture", "cout_transport_retenu",
+						"shipping_supply_cost_eur", "duties_taxes_eur", "source_cout"
 					})
 				in
 					#"Colonnes conservees"
