@@ -39,3 +39,10 @@
 - `_Mesures.tmdl` : mesure `Marge Brute (prov.)` + commentaires « FORMULE PROVISOIRE » (mesure de contrôle)
 - `AUDIT.md` §1–§3 : constats historiques du 14/07 (bandeau explicite)
 - `mesures-dax.md` : sections `Marge Brute (prov.)` étiquetées contrôle/comparaison
+
+## Documents supprimés (15/07/2026 — hors périmètre devis)
+
+Les fichiers listés aux lignes 10–18 et 21–22 du tableau ci-dessus ont été retirés du dépôt
+(PM interne, cadrage, architecture, dictionnaire, sessions formation optionnelles, templates
+communication). Historique conservé via git. Références contractuelles : `project/devis.md`,
+`project/perimetre-verrouille.md`, `docs/04-processus/processus-etl-gouvernance.md`.

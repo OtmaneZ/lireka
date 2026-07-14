@@ -52,7 +52,7 @@
 
 ## Hors périmètre devis
 
-Les documents `session-02-visuels.md` et `session-03-marketing.md` sont des **supports optionnels** — non inclus dans le forfait 4 jours.
+Les sessions formation optionnelles (visuels avancés, marketing) ne font pas partie du forfait 4 jours — seule `session-01-bases.md` est le support de référence.
 
 ---
 

@@ -1,7 +1,7 @@
 # Documentation du processus — modèle profitabilité Lireka
 
 > **Livrable contractuel** : L06 — Documentation du processus  
-> **Référence** : [`communications/proposition-commerciale.md`](../../communications/proposition-commerciale.md)  
+> **Référence** : [`../../project/devis.md`](../../project/devis.md)  
 > **Date** : 14 juillet 2026
 
 Ce document décrit **comment le modèle livré se recharge**, tel qu'implémenté dans  

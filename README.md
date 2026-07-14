@@ -33,25 +33,31 @@ Trois tableaux de bord Power BI existent déjà pour les coûts transporteurs **
 
 ---
 
+## Calendrier indicatif (4 jours)
+
+- **J1** : kick-off Marc (30–45 min), accès Power BI + SharePoint, réception CSV
+- **J2** : intégration La Poste / Colis Privé / Chronopost + commandes backend
+- **J3** : jointure par n° de suivi, dashboard profitabilité L04
+- **J4** : formation utilisateurs (si dispo équipes), documentation processus L06, clôture
+- **Dépendances Lireka** : workspace Contributor, factures CSV (3 transporteurs), export commandes, disponibilité formation J4
+
+---
+
 ## Structure du dépôt
 
 ```
 lireka/
 ├── project/
 │   ├── devis.md                       ← Référence contractuelle (fait foi)
-│   ├── planning.md                    ← Planning 4 jours
-│   ├── livrables.md
-│   ├── raci.md
-│   └── risques.md
-├── docs/                              ← Documentation projet
+│   ├── perimetre-verrouille.md        ← Devis + formule marge actée
+│   └── livrables.md
+├── docs/
+│   ├── 04-processus/                  ← L06 — documentation processus
+│   └── 05-formation/                  ← Formation (session unique)
 ├── data/samples/                      ← Échantillons anonymisés uniquement
 ├── scripts/validation/                ← Audits et contrôles (hors pipeline ETL)
-├── powerbi/                           ← Modèle PBIP + doc mesures
-├── communications/                    ← Emails & templates client
-└── templates/                         ← Schémas CSV cibles
+└── powerbi/                           ← Modèle PBIP + doc mesures
 ```
-
-Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates mensuels…) est du **matériel de travail** utile mais **hors périmètre contractuel** sauf mention contraire dans le devis.
 
 ---
 
@@ -67,11 +73,10 @@ Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates
 
 ### Checklist J1
 
-- [ ] Kick-off avec Marc Bordier → `communications/emails/01-kickoff.md`
-- [ ] Récupérer accès et données → `docs/01-cadrage/checklist-acces-donnees.md`
+- [ ] Kick-off avec Marc Bordier
+- [ ] Récupérer accès Power BI (Contributor) et SharePoint `Power_BI_Datawarehouse/`
 - [ ] Vérifier le paramètre `SharePointSiteURL` dans `powerbi/Lireka_Profitabilite.pbip`
 - [ ] Premier refresh Power BI Desktop sur les données réelles
-- [ ] Compléter l'inventaire des sources → `docs/01-cadrage/inventaire-sources.md`
 
 ---
 
@@ -90,10 +95,9 @@ Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates
 
 - [**Périmètre verrouillé**](project/perimetre-verrouille.md) — devis + formule marge actée
 - [**Devis (référence contractuelle)**](project/devis.md)
-- [Cahier des charges](docs/01-cadrage/cahier-des-charges.md)
-- [Planning 4 jours](project/planning.md)
 - [Livrables](project/livrables.md)
-- [Guide de démarrage](docs/GUIDE-DEMARRAGE.md)
+- [Documentation processus L06](docs/04-processus/processus-etl-gouvernance.md)
+- [Formation](docs/05-formation/programme-formation.md)
 
 ---
 
