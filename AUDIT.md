@@ -6,6 +6,10 @@
 > documentation (989 234 / 946 483 / 12,7 % / 83 481 CANCELLED / 382 suivis recyclés)
 > sont traités comme des **affirmations de la doc**, non vérifiées sur données réelles.
 
+> **Note de périmètre (ajoutée le 15/07/2026)** : la formule de marge à 7 postes n'est pas
+> une extension d'audit — elle a été explicitement communiquée par Marc Bordier
+> (Slack, 13/07/2026). Voir `project/perimetre-verrouille.md` pour le périmètre exact.
+
 ---
 
 ## 1. Verdict exécutif
@@ -356,6 +360,11 @@ partout, ce qui protège partiellement le prestataire — mais ne rend pas L04 c
 ---
 
 ## 5. Plan de remédiation ordonné
+
+> **Note de périmètre (15/07/2026)** : la formule de marge à 7 postes a été confirmée par
+> Marc Bordier (Slack, 13/07/2026) — elle n'est pas une proposition d'audit. Voir
+> `project/perimetre-verrouille.md`. Les points ci-dessous restent ouverts (CANCELLED,
+> « if relevant », fenêtre de jointure, Colis Privé).
 
 **Bloc 0 — Décisions à arbitrer par Marc AVANT tout code (métier) :**
 1. **Formule de marge** définitive (postes inclus : shipping_fee, commissions, douanes, inbound, fournitures ?). — bloque F-01/F-02/F-04.

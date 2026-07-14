@@ -144,11 +144,9 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: 0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a
 
-	/// Fix F-04/F-01 : MARGE BRUTE — conforme à la formule confirmée par Marc (appliquée le 15/07/2026).
-	/// Gross Margin = Revenue (incl. shipping revenue) - COGS - inbound - outbound - duties
-	///                - marketplace commissions - shipping supplies.
-	/// Shipping revenue (Frais Port Encaissés) inclus par défaut ; périmètre "if relevant" en attente.
-	// TODO Marc: confirmer l'inclusion inconditionnelle du shipping revenue (AUDIT.md Q1).
+	/// MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).
+	/// Périmètre verrouillé : voir project/perimetre-verrouille.md.
+	/// Shipping revenue inclus par défaut ; "if relevant" non tranché (AUDIT.md Q1).
 	measure 'Marge Brute' =
 			[CA Total HT] + [Frais Port Encaissés]
 				- [Coût Achat Total]

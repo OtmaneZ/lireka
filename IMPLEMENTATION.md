@@ -24,6 +24,15 @@ la vérification finale à faire côté client (cf. `AUDIT.md` §4).
 
 ---
 
+## Source de légitimité de la formule de marge
+
+La formule à 7 postes implémentée dans les Blocs 1-3 provient d'un message Slack de
+Marc Bordier daté du 13/07/2026 16h09, adressé nommément à Otmane Boulahia, précisant
+le calcul du « Gross Margin » attendu pour le livrable L04. Ce n'est pas une initiative
+du prestataire au-delà du devis — voir `project/perimetre-verrouille.md`.
+
+---
+
 ## Tableau récapitulatif
 
 | Bloc | F-xx corrigé(s) | Fichiers modifiés | Vérification effectuée | Résultat |
