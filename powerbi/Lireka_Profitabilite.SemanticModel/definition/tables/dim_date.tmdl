@@ -3,6 +3,7 @@
 /// fact_commandes[date_commande] et fact_factures_transport[date_facture].
 table dim_date
 	lineageTag: 1ae962f8-740f-448c-901d-b26c93c27570
+	dataCategory: Time
 
 	column date
 		dataType: dateTime
@@ -11,10 +12,7 @@ table dim_date
 		summarizeBy: none
 		sourceColumn: date
 
-		variation Variation
-			isDefault
-			relationship: f1d8ffe8-c753-4b41-80f9-40543dfa7228
-			defaultHierarchy: LocalDateTable_c0744f5f-1abb-4b7c-a087-39baa2c04a9d.'Hiérarchie de dates'
+		changedProperty = IsHidden
 
 		annotation UnderlyingDateTimeDataType = Date
 
@@ -25,6 +23,8 @@ table dim_date
 		summarizeBy: sum
 		sourceColumn: annee
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column trimestre
@@ -34,6 +34,8 @@ table dim_date
 		summarizeBy: sum
 		sourceColumn: trimestre
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column mois
@@ -42,6 +44,8 @@ table dim_date
 		lineageTag: 8c1e0563-4270-46b1-a859-64e95d0d0569
 		summarizeBy: sum
 		sourceColumn: mois
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -53,6 +57,8 @@ table dim_date
 		sourceColumn: nom_mois
 		sortByColumn: mois
 
+		changedProperty = IsHidden
+
 	/// Clé année-mois (AAAAMM) pour tri/filtre chronologique.
 	column annee_mois
 		dataType: int64
@@ -60,6 +66,8 @@ table dim_date
 		lineageTag: ca110d35-f1c5-45a1-92d9-ec604bf863d1
 		summarizeBy: sum
 		sourceColumn: annee_mois
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -69,6 +77,8 @@ table dim_date
 		lineageTag: 5357d0b5-e469-40a6-9c57-d1a8d30a07c0
 		summarizeBy: sum
 		sourceColumn: semaine
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -80,13 +90,16 @@ table dim_date
 		sourceColumn: jour_semaine
 		sortByColumn: num_jour_semaine
 
+		changedProperty = IsHidden
+
 	column num_jour_semaine
 		dataType: int64
-		isHidden
 		formatString: 0
 		lineageTag: aab51cc0-e48f-4306-9b4a-50921e76ac13
 		summarizeBy: sum
 		sourceColumn: num_jour_semaine
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

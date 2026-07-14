@@ -11,12 +11,16 @@ table dim_transporteur
 		summarizeBy: none
 		sourceColumn: transporteur
 
+		changedProperty = IsHidden
+
 	/// Niveau de service indicatif (Express / Standard).
 	column type_service
 		dataType: string
 		lineageTag: 2c00fea7-1fb8-4bf3-be18-af5dfd95a1d0
 		summarizeBy: none
 		sourceColumn: type_service
+
+		changedProperty = IsHidden
 
 	/// Statut vis-à-vis du devis (existant de référence / nouveau intégré / autre).
 	column statut_integration
@@ -25,11 +29,15 @@ table dim_transporteur
 		summarizeBy: none
 		sourceColumn: statut_integration
 
+		changedProperty = IsHidden
+
 	column actif
 		dataType: boolean
 		lineageTag: 2f7d8a06-995a-4563-9225-3ee413cd116d
 		summarizeBy: none
 		sourceColumn: actif
+
+		changedProperty = IsHidden
 
 	partition dim_transporteur = m
 		mode: import

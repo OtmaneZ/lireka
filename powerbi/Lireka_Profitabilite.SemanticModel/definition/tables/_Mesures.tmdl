@@ -85,7 +85,7 @@ table _Mesures
 		lineageTag: 96da7a44-3aa5-400a-ae45-f6122da0451e
 
 	/// Nombre de commandes ayant au moins un colis avec coût transport réel renseigné.
-	measure 'Nb Commandes Matchées' = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[cout_transport] <> 0)
+	measure 'Nb Commandes Matchées' = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[cout_transport] > 0)
 		formatString: #,##0
 		lineageTag: baae1892-caaa-4c58-be8e-a24bbf35a559
 
@@ -146,7 +146,6 @@ table _Mesures
 		lineageTag: 97de0e8d-69dd-49d3-8d74-7a8a41d51a9e
 
 	column Dummy
-		isHidden
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a
 		summarizeBy: none
 		sourceColumn: [Dummy]

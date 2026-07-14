@@ -11,11 +11,15 @@ table dim_pays
 		summarizeBy: none
 		sourceColumn: code_pays
 
+		changedProperty = IsHidden
+
 	column nom_pays
 		dataType: string
 		lineageTag: 13a14901-53a1-4294-a326-ca8b1de78b39
 		summarizeBy: none
 		sourceColumn: nom_pays
+
+		changedProperty = IsHidden
 
 	column zone_geo
 		dataType: string
@@ -23,11 +27,15 @@ table dim_pays
 		summarizeBy: none
 		sourceColumn: zone_geo
 
+		changedProperty = IsHidden
+
 	column continent
 		dataType: string
 		lineageTag: a1819b4f-b8ff-4ab1-9ba1-9748501ae966
 		summarizeBy: none
 		sourceColumn: continent
+
+		changedProperty = IsHidden
 
 	partition dim_pays = m
 		mode: import

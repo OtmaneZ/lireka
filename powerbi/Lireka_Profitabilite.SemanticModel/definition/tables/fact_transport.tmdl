@@ -1,5 +1,5 @@
 /// Faits — colis / coûts de transport réels (grain : une ligne par colis).
-/// Source : Power_BI_Datawarehouse\Données_Backend\package.csv
+/// Source SharePoint : Données_Backend/package.csv
 /// Le coût réel provient de shipping_cost_eur (complétude vérifiée : 98,4 % sur Colis Privé).
 /// Le transporteur est inféré du numéro de suivi (aucune colonne transporteur en source).
 table fact_transport
@@ -7,6 +7,7 @@ table fact_transport
 
 	column id_package
 		dataType: int64
+		isHidden
 		lineageTag: c3eb4b36-c475-4ae6-a15e-e6bdded84245
 		summarizeBy: none
 		sourceColumn: id_package
@@ -14,10 +15,11 @@ table fact_transport
 	/// Clé étrangère vers fact_commandes[id_commande] (package.order_id).
 	column order_id
 		dataType: int64
-		isHidden
 		lineageTag: 31686b5d-6e9a-4d1b-9ecb-5345bdfd9759
 		summarizeBy: none
 		sourceColumn: order_id
+
+		changedProperty = IsHidden
 
 	/// Numéro de suivi nettoyé (tracking_id) — clé de jointure avec les factures.
 	column numero_suivi
@@ -26,12 +28,16 @@ table fact_transport
 		summarizeBy: none
 		sourceColumn: numero_suivi
 
+		changedProperty = IsHidden
+
 	/// Transporteur normalisé via fnNormaliserTransporteur (inférence par motif).
 	column transporteur
 		dataType: string
 		lineageTag: 0c555f96-e526-4c91-8b23-6ff714093994
 		summarizeBy: none
 		sourceColumn: transporteur
+
+		changedProperty = IsHidden
 
 	/// Poids du colis en kg (weight source en grammes / 1000).
 	column poids_kg
@@ -41,6 +47,8 @@ table fact_transport
 		summarizeBy: sum
 		sourceColumn: poids_kg
 
+		changedProperty = IsHidden
+
 	/// Coût transport réel en EUR (shipping_cost_eur).
 	column cout_transport
 		dataType: double
@@ -49,12 +57,16 @@ table fact_transport
 		summarizeBy: sum
 		sourceColumn: cout_transport
 
+		changedProperty = IsHidden
+
 	column shipping_supply_cost_eur
 		dataType: double
 		formatString: #,##0.00 €
 		lineageTag: 35ba76db-bfc4-428f-854a-798998f08964
 		summarizeBy: sum
 		sourceColumn: shipping_supply_cost_eur
+
+		changedProperty = IsHidden
 
 	column duties_taxes_eur
 		dataType: double
@@ -63,13 +75,14 @@ table fact_transport
 		summarizeBy: sum
 		sourceColumn: duties_taxes_eur
 
+		changedProperty = IsHidden
+
 	partition fact_transport = m
 		mode: import
 		source =
 				let
-					// Lecture du CSV backend des colis (séparateur virgule, UTF-8)
-					Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\package.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-					#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					// Lecture du CSV backend des colis depuis SharePoint (séparateur virgule, UTF-8)
+					#"En-tetes promus" = fnSharePointLireCsv("Données_Backend", "package.csv"),
 					// Typage (poids en entier = grammes ; coûts décimaux au point)
 					#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
 						{"id", Int64.Type},
@@ -98,4 +111,6 @@ table fact_transport
 					})
 				in
 					#"Colonnes conservees"
+
+	annotation PBI_ResultType = Table
 

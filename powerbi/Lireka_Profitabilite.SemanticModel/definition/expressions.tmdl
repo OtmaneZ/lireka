@@ -1,7 +1,11 @@
-/// Dossier racine de l'entrepôt de données local (CSV bruts, hors versionnement Git).
-/// Modifier cette valeur dans Power BI Desktop (Transformer les données > Paramètres)
-/// si le dépôt est cloné sur un autre poste. Aucun CSV n'est commité (voir .gitignore).
-expression DossierDonnees = "C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+/// URL du site SharePoint ou de la bibliothèque Documents contenant l'entrepôt CSV.
+/// Exemples :
+/// https://contoso.sharepoint.com/sites/Lireka
+/// https://contoso.sharepoint.com/sites/Lireka/Shared Documents/Power_BI_Datawarehouse
+/// La structure des dossiers sous cette racine doit reproduire l'entrepôt local :
+/// Données_Backend\, Dashboards_transporteurs\, etc.
+/// Renseigner dans Power BI Desktop : Transformer les données > Gérer les paramètres.
+expression SharePointSiteURL = "https://lirekacom.sharepoint.com/sites/Lireka" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 54fba0a6-374f-4253-8139-bb1310f751e3
 
 	annotation PBI_ResultType = Text
@@ -63,9 +67,8 @@ expression fnCanonTransporteur =
 /// pour la traçabilité et d'éventuels approfondissements par ligne.
 expression stg_Commande_Items =
 		let
-			Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order_item.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
+			Source = fnSharePointLireCsv("Données_Backend", "customer_order_item.csv"),
+			#"Types appliques" = Table.TransformColumnTypes(Source, {
 				{"id", Int64.Type},
 				{"item_group_id", Int64.Type},
 				{"order_id", Int64.Type},
@@ -86,9 +89,8 @@ expression stg_Commande_Items =
 /// Consommé par fact_commandes, dim_pays et dim_type_commande (évite 3 lectures du fichier 187 Mo).
 expression stg_customer_order =
 		let
-			Source = Csv.Document(File.Contents(DossierDonnees & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
+			Source = fnSharePointLireCsv("Données_Backend", "customer_order.csv"),
+			#"Types appliques" = Table.TransformColumnTypes(Source, {
 				{"id", Int64.Type},
 				{"origin_order_id", type text},
 				{"state", type text},
@@ -110,4 +112,53 @@ expression stg_customer_order =
 		in
 			#"Types appliques"
 	lineageTag: b3c8e1f2-4a5d-6e7f-8091-a2b3c4d5e6f7
+
+/// Résout un fichier CSV sur SharePoint (chemin relatif + nom) en contenu binaire.
+/// Utilise SharePoint.Files pour lister récursivement et filtrer par dossier/nom.
+expression fnSharePointContenuFichier =
+		(dossierRelatif as text, nomFichier as text) as binary =>
+		let
+			UrlSite = Text.Trim(SharePointSiteURL),
+			Url =
+				if UrlSite = "" then
+					error "Le paramètre SharePointSiteURL est vide : renseignez l'URL du site SharePoint ou de la bibliothèque contenant l'entrepôt CSV (Transformer les données > Gérer les paramètres)."
+				else
+					UrlSite,
+			TousFichiers = SharePoint.Files(Url, [ApiVersion = 15]),
+			Segments = List.Select(Text.Split(Text.Replace(dossierRelatif, "/", "\"), "\"), each _ <> ""),
+			Correspondances = Table.SelectRows(
+				TousFichiers,
+				each
+					[Name] = nomFichier
+					and List.Count(List.Select(Segments, (s) => Text.Contains([Folder Path], s))) = List.Count(Segments)
+			),
+			Nb = Table.RowCount(Correspondances)
+		in
+			if Nb = 0 then
+				error "Fichier SharePoint introuvable : '" & nomFichier & "' dans '" & dossierRelatif & "'. Vérifiez SharePointSiteURL et la structure des dossiers."
+			else if Nb > 1 then
+				error "Fichier SharePoint ambigu : " & Text.From(Nb) & " fichiers nommés '" & nomFichier & "' correspondent à '" & dossierRelatif & "'."
+			else
+				Correspondances{0}[Content]
+	lineageTag: c8e4f1a2-9b3d-4e7f-a1c6-2d8b5e0f3a91
+
+/// Lit un CSV backend (séparateur virgule, UTF-8) depuis SharePoint et promeut les en-têtes.
+expression fnSharePointLireCsv =
+		(dossierRelatif as text, nomFichier as text) as table =>
+		let
+			Binaire = fnSharePointContenuFichier(dossierRelatif, nomFichier),
+			Source = Csv.Document(Binaire, [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv])
+		in
+			Table.PromoteHeaders(Source, [PromoteAllScalars = true])
+	lineageTag: d7f2a3b4-1c5e-4f8a-9d2b-6e0c7a1f4b82
+
+/// Lit un CSV récap transporteur (séparateur point-virgule, UTF-8) depuis SharePoint.
+expression fnSharePointLireCsvRecap =
+		(dossierRelatif as text, nomFichier as text) as table =>
+		let
+			Binaire = fnSharePointContenuFichier(dossierRelatif, nomFichier),
+			Source = Csv.Document(Binaire, [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv])
+		in
+			Table.PromoteHeaders(Source, [PromoteAllScalars = true])
+	lineageTag: e8a3b4c5-2d6f-4a9b-8e3c-7f1d8b2e5c93
 

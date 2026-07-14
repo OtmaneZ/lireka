@@ -1,5 +1,5 @@
 /// Faits — commandes clients (grain : une ligne par commande).
-/// Source : Power_BI_Datawarehouse\Données_Backend\customer_order.csv
+/// Source SharePoint : Données_Backend/customer_order.csv
 /// Clé : id_commande (customer_order.id). Porte le CA, les coûts backend et
 /// la marge existante (gross_profit_eur) conservée comme référence de contrôle.
 table fact_commandes
@@ -7,6 +7,7 @@ table fact_commandes
 
 	column id_commande
 		dataType: int64
+		isHidden
 		lineageTag: 463339a0-5b78-4230-a496-61ef20b8aca3
 		summarizeBy: none
 		sourceColumn: id_commande
@@ -17,17 +18,23 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: origin_order_id
 
+		changedProperty = IsHidden
+
 	column state
 		dataType: string
 		lineageTag: d552aead-fcf3-4c76-852d-52f81f7ea027
 		summarizeBy: none
 		sourceColumn: state
 
+		changedProperty = IsHidden
+
 	column source
 		dataType: string
 		lineageTag: 196d52ee-a2ce-4dc7-98b2-827d28f8e4a8
 		summarizeBy: none
 		sourceColumn: source
+
+		changedProperty = IsHidden
 
 	/// Axe d'analyse "type de commande" — dérivé de customer_order.source
 	/// (canal de vente : WEBSITE, AMAZON_FR, ...). Interprétation à valider avec Lireka.
@@ -37,6 +44,8 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: type_commande
 
+		changedProperty = IsHidden
+
 	/// Code pays de livraison ISO 3166-1 alpha-2 (destination_country). "??" si absent.
 	column code_pays
 		dataType: string
@@ -44,11 +53,15 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: code_pays
 
+		changedProperty = IsHidden
+
 	column currency
 		dataType: string
 		lineageTag: 49714872-95db-44f0-867a-8ecf6044a06c
 		summarizeBy: none
 		sourceColumn: currency
+
+		changedProperty = IsHidden
 
 	/// Chiffre d'affaires HT en EUR (order_amount_eur).
 	column ca_ht
@@ -58,6 +71,8 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: ca_ht
 
+		changedProperty = IsHidden
+
 	/// Frais de port facturés au client en EUR (shipping_fee_eur).
 	column shipping_fee_eur
 		dataType: double
@@ -65,6 +80,8 @@ table fact_commandes
 		lineageTag: 52d273ed-6508-4932-bff1-838a5a742071
 		summarizeBy: sum
 		sourceColumn: shipping_fee_eur
+
+		changedProperty = IsHidden
 
 	/// Coût d'achat des livres en EUR (product_cost_eur).
 	column cout_achat
@@ -74,6 +91,8 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: cout_achat
 
+		changedProperty = IsHidden
+
 	/// Coût transport estimé par le backend (total_shipping_cost_to_delivery_country_eur).
 	column cout_transport_estime
 		dataType: double
@@ -81,6 +100,8 @@ table fact_commandes
 		lineageTag: 79df602e-014e-4609-a7b7-a507fbd957bb
 		summarizeBy: sum
 		sourceColumn: cout_transport_estime
+
+		changedProperty = IsHidden
 
 	/// Marge brute calculée par le backend Lireka — RÉFÉRENCE de contrôle uniquement.
 	column gross_profit_eur
@@ -90,12 +111,16 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: gross_profit_eur
 
+		changedProperty = IsHidden
+
 	column gross_margin
 		dataType: double
 		formatString: 0.0%
 		lineageTag: 284dce96-d29d-47cc-aa2e-4efe3a4de945
 		summarizeBy: none
 		sourceColumn: gross_margin
+
+		changedProperty = IsHidden
 
 	column contribution_profit_eur
 		dataType: double
@@ -104,12 +129,16 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: contribution_profit_eur
 
+		changedProperty = IsHidden
+
 	column contribution_margin
 		dataType: double
 		formatString: 0.0%
 		lineageTag: 423d5a02-6639-4ac1-bea1-21532a5f4993
 		summarizeBy: none
 		sourceColumn: contribution_margin
+
+		changedProperty = IsHidden
 
 	/// Date de la commande (origin_created tronqué au jour). Clé vers dim_date.
 	column date_commande
@@ -118,6 +147,8 @@ table fact_commandes
 		lineageTag: 420154ac-c0fc-48be-ba16-c422162d47db
 		summarizeBy: none
 		sourceColumn: date_commande
+
+		changedProperty = IsHidden
 
 		annotation UnderlyingDateTimeDataType = Date
 

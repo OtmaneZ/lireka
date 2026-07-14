@@ -11,17 +11,23 @@ table dim_type_commande
 		summarizeBy: none
 		sourceColumn: type_commande
 
+		changedProperty = IsHidden
+
 	column categorie
 		dataType: string
 		lineageTag: c4d80b3e-bab1-4dbd-b1ef-e50399ec9c0d
 		summarizeBy: none
 		sourceColumn: categorie
 
+		changedProperty = IsHidden
+
 	column libelle
 		dataType: string
 		lineageTag: 6026a2bd-9ca5-474c-8514-bf4b6cf47a48
 		summarizeBy: none
 		sourceColumn: libelle
+
+		changedProperty = IsHidden
 
 	partition dim_type_commande = m
 		mode: import
