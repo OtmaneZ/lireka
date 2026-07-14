@@ -113,8 +113,7 @@ table _Mesures
 		lineageTag: 96da7a44-3aa5-400a-ae45-f6122da0451e
 
 	/// Fix F-04 : frais de port encaissés par le client (marketplace notamment).
-	/// Périmètre d'inclusion ("if relevant") non tranché par Marc — voir AUDIT.md Q1.
-	// TODO Marc: critère de pertinence du shipping revenue ("if relevant") à trancher.
+	/// Périmètre d'inclusion ("if relevant") non tranché — inclus par défaut dans [Marge Brute].
 	measure 'Frais Port Encaissés' = SUM(fact_commandes[frais_port_encaisse])
 		formatString: #,##0.00 €
 		lineageTag: 5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a9b
@@ -145,8 +144,9 @@ table _Mesures
 		lineageTag: 0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a
 
 	/// MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).
-	/// Périmètre verrouillé : voir project/perimetre-verrouille.md.
-	/// Shipping revenue inclus par défaut ; "if relevant" non tranché (AUDIT.md Q1).
+	/// Revenue (incl. shipping revenue if relevant) - COGS - Inbound transportation costs
+	/// - Outbound transportation costs - Duties and Taxes - Marketplace commission fees
+	/// - Shipping supplies. Shipping revenue inclus par défaut ; "if relevant" non tranché.
 	measure 'Marge Brute' =
 			[CA Total HT] + [Frais Port Encaissés]
 				- [Coût Achat Total]

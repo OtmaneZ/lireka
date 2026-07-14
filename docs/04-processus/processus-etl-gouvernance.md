@@ -119,8 +119,8 @@ Après publication du dataset sur le workspace Lireka :
 
 ## 5. Points de vigilance connus
 
-- **Marge brute** : mesure de référence `[Marge Brute]` (formule 7 postes actée Slack 13/07/2026 —
-  voir [`project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md)).
+- **Marge brute** : mesure de référence `[Marge Brute]` — formule actée Marc Bordier
+  (Slack, 13/07/2026 16h09), documentée dans `_Mesures.tmdl`.
   `[Marge Brute (prov.)]` conservée comme contrôle/comparaison historique.
 - **Matching factures** : seules les factures Colissimo/Chronopost alimentent le coût  
   réel (`source_cout = "reel"`). Colis Privé et Postes Canada restent en coût estimé backend.

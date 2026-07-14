@@ -204,7 +204,7 @@ Coût Moyen Colis = DIVIDE([Coût Transport Réel], [Nb Colis], 0)
 ## Mesures de marge
 
 > **Mesure de référence** : `[Marge Brute]` — formule 7 postes **actée** par Marc Bordier
-> (Slack, 13/07/2026 16h09). Voir [`project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md).
+> (Slack, 13/07/2026 16h09), documentée dans `_Mesures.tmdl`.
 > `[Marge Brute (prov.)]` est conservée comme mesure de **contrôle/comparaison** historique (3 postes).
 
 ## Marge Brute (prov.)
@@ -329,8 +329,7 @@ Fournitures Expédition = SUM(fact_transport[shipping_supply_cost_eur])
 ## Marge Brute
 
 > MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).
-> Périmètre verrouillé : voir `project/perimetre-verrouille.md`.
-> Shipping revenue inclus par défaut ; « if relevant » non tranché (AUDIT.md §6 Q1).
+> Voir commentaire dans `_Mesures.tmdl`. Shipping revenue inclus par défaut.
 
 ```dax
 Marge Brute =

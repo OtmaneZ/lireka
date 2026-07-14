@@ -92,7 +92,7 @@ Voir le fichier complet : [`mesures-dax.md`](mesures-dax.md)
 | `Coût Transport Estimé` | `SUM(fact_commandes[cout_transport_estime])` |
 | `Écart Coût Transport` | Réel − Estimé |
 | `Taux Écart Coût` | Écart / Estimé |
-| `Marge Brute` | **Référence actée** (Slack 13/07/2026) — voir `project/perimetre-verrouille.md` |
+| `Marge Brute` | **Référence actée** (Slack 13/07/2026) — voir `_Mesures.tmdl` |
 | `Marge Brute (prov.)` | **Contrôle/comparaison** — formule 3 postes historique (pré-Slack) |
 | `Taux Matching` | % commandes avec au moins un colis `source_cout = "reel"` |
 | `Nb Commandes` | `COUNTROWS(fact_commandes)` |

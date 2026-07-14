@@ -22,7 +22,7 @@
 | L01 | Intégration La Poste, Colis Privé, Chronopost dans Power BI | J2 | ⬜ | Marc Bordier |
 | L02 | CSV commandes importé et structuré dans Power BI | J2 | ⬜ | Marc Bordier |
 | L03 | Jointure factures ↔ commandes par numéro de suivi | J3 | ⬜ | Marc Bordier |
-| L04 | Dashboard profitabilité — marge brute par pays et par type de commande *(1 rapport, 2 axes ; structure au choix du prestataire)* — définition « marge brute » : [`perimetre-verrouille.md`](perimetre-verrouille.md) | J3 | ⬜ | Marc Bordier |
+| L04 | Dashboard profitabilité — marge brute par pays et par type de commande *(1 rapport, 2 axes ; mesure `[Marge Brute]` dans `_Mesures.tmdl`)* | J3 | ⬜ | Marc Bordier |
 | L05 | Formation utilisateurs *(selon disponibilité)* | J4 | ⬜ | Participants |
 | L06 | Documentation du processus | J4 | ⬜ | Marc Bordier |
 
