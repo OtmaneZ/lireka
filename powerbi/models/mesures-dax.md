@@ -201,11 +201,16 @@ Coût Moyen Colis = DIVIDE([Coût Transport Réel], [Nb Colis], 0)
 
 ---
 
+## Mesures de marge
+
+> **Mesure de référence** : `[Marge Brute]` — formule 7 postes **actée** par Marc Bordier
+> (Slack, 13/07/2026 16h09). Voir [`project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md).
+> `[Marge Brute (prov.)]` est conservée comme mesure de **contrôle/comparaison** historique (3 postes).
+
 ## Marge Brute (prov.)
 
-> MARGE BRUTE — FORMULE PROVISOIRE. CA HT - coût d'achat - coût transport réel.  
-> Écart constaté le 12/07/2026 entre ce calcul simple et gross_profit_eur existant.  
-> À VALIDER avec Marc / finance avant de considérer comme définitive.  
+> **Mesure de contrôle/comparaison** — formule historique 3 postes (pré-Slack 13/07).
+> Ne pas utiliser comme mesure de référence ; voir `[Marge Brute]` (section ci-dessous, après les postes).
 
 ```dax
 Marge Brute (prov.) = [CA Total HT] - [Coût Achat Total] - [Coût Transport Réel]
@@ -241,7 +246,7 @@ Marge Brute Backend (réf.) = SUM(fact_commandes[gross_profit_eur])
 
 ## Écart Marge vs Backend
 
-> Écart entre la marge provisoire et la marge backend (aide à la validation finance).  
+> Écart entre la marge provisoire (3 postes) et la marge backend (contrôle historique).  
 
 ```dax
 Écart Marge vs Backend = [Marge Brute (prov.)] - [Marge Brute Backend (réf.)]
@@ -323,6 +328,10 @@ Fournitures Expédition = SUM(fact_transport[shipping_supply_cost_eur])
 
 ## Marge Brute
 
+> MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).
+> Périmètre verrouillé : voir `project/perimetre-verrouille.md`.
+> Shipping revenue inclus par défaut ; « if relevant » non tranché (AUDIT.md §6 Q1).
+
 ```dax
 Marge Brute =
 [CA Total HT] + [Frais Port Encaissés]
@@ -340,7 +349,7 @@ Marge Brute =
 
 ## Taux Marge Brute
 
-> Fix F-04 : taux de marge brute = Marge Brute / (CA HT + frais de port encaissés).  
+> Taux de marge brute = Marge Brute / (CA HT + frais de port encaissés).  
 
 ```dax
 Taux Marge Brute = DIVIDE([Marge Brute], [CA Total HT] + [Frais Port Encaissés], 0)
@@ -352,7 +361,7 @@ Taux Marge Brute = DIVIDE([Marge Brute], [CA Total HT] + [Frais Port Encaissés]
 
 ## Écart Marge vs Backend (v2)
 
-> Fix F-04 : écart entre la marge conforme Marc et la marge backend (contrôle v2).  
+> Écart entre la marge actée (7 postes) et la marge backend (contrôle v2).  
 
 ```dax
 Écart Marge vs Backend (v2) = [Marge Brute] - [Marge Brute Backend (réf.)]

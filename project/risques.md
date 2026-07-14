@@ -1,5 +1,7 @@
 # Registre des risques — Lireka × ZineInsights
 
+> **Formule de marge actée** (Slack Marc Bordier, 13/07/2026) — voir [`perimetre-verrouille.md`](perimetre-verrouille.md).
+
 > **Mission** : 4 jours — forfait 1 800 € HT  
 > **Référence** : [`devis.md`](devis.md)  
 > Dernière mise à jour : 12 juillet 2026
@@ -26,7 +28,7 @@
 | R02 | **Formats factures hétérogènes** — ETL plus long que prévu | 3 | 2 | 🔴 6 | Schéma unifié flexible, prioriser l'essentiel (suivi + coût) | ZineInsights |
 | R03 | **Taux de matching suivi faible** — Jointure incomplète | 2 | 3 | 🔴 6 | Nettoyage n° suivi, documenter le taux réel atteint | ZineInsights + Lireka |
 | R04 | **Accès Power BI insuffisant** | 2 | 3 | 🔴 6 | Demander Contributor dès J1 matin | Lireka |
-| R05 | **Formule marge brute non validée** | 2 | 2 | 🟡 4 | Obtenir validation finance avant J3 | Lireka |
+| R05 | ~~**Formule marge brute non validée**~~ | — | — | ✅ **Résolu** | Actée Slack 13/07/2026 — voir `perimetre-verrouille.md` | Marc Bordier |
 | R06 | **Participants formation indisponibles J4** | 2 | 1 | 🟡 2 | Proposer créneau en visio, documenter en remplacement | Lireka |
 | R07 | **Extension de périmètre en cours de mission** | 2 | 2 | 🟡 4 | Renvoyer au devis, tout extra = hors forfait | Marc Bordier |
 | R08 | **Données personnelles (RGPD)** | 1 | 3 | 🟡 3 | Pseudonymiser avant import si nécessaire | ZineInsights |
@@ -40,7 +42,7 @@
 | H01 | Factures La Poste, Colis Privé, Chronopost disponibles en CSV | ⬜ |
 | H02 | Export commandes backend contient un champ numéro de suivi | ⬜ |
 | H03 | Workspace Power BI Lireka accessible en Contributor | ⬜ |
-| H04 | Marge brute = CA − coût achat − coût transport réel *(à valider finance)* | ⬜ |
+| H04 | Marge brute = formule 7 postes actée Marc (Slack 13/07/2026) — voir `perimetre-verrouille.md` | ✅ |
 | H05 | Dashboards DHL/FedEx/UPS consultables comme référence de modèle | ⬜ |
 
 ---

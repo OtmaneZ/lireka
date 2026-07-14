@@ -1,5 +1,9 @@
 # Modèle — Email de demande d'accès
 
+> **Note (15/07/2026)** : la formule de marge brute est **actée** (Slack Marc Bordier, 13/07/2026) —
+> voir [`../../project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md).
+> La question 2 ci-dessous est conservée à titre historique (email pré-mission).
+
 > **Objet** : Lireka × ZineInsights — Accès et données nécessaires (J1)
 
 ---
@@ -28,7 +32,7 @@ Dans le cadre de la mission Power BI (**4 jours**), j'aurais besoin des élémen
 ### Questions techniques
 
 1. Nom du champ **numéro de suivi** dans l'export commandes ?
-2. Formule **marge brute** validée côté finance ?
+2. Formule **marge brute** — ✅ actée (Slack Marc, 13/07/2026) ; point ouvert : périmètre « if relevant » du shipping revenue
 3. Comment est calculé le **coût transport estimé** côté backend ?
 
 Merci de confirmer la faisabilité et le délai pour chaque élément.

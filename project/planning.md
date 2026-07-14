@@ -1,5 +1,7 @@
 # Planning de mission — Lireka × ZineInsights
 
+> **Formule de marge actée** (Slack Marc Bordier, 13/07/2026) — voir [`perimetre-verrouille.md`](perimetre-verrouille.md).
+
 > **Durée** : **4 jours** (forfait 1 800 € HT)  
 > **Référence contractuelle** : [`devis.md`](devis.md)  
 > **Chef de projet** : Otmane Boulahia (ZineInsights)
@@ -91,7 +93,7 @@ gantt
 | Accès workspace Power BI | Lireka | Bloque J2 |
 | Factures CSV (3 transporteurs) | Lireka | Bloque J1–J2 |
 | Export CSV commandes | Lireka | Bloque J2–J3 |
-| Formule marge brute | Lireka (finance) | Bloque J3 |
+| Formule marge brute | ✅ Actée (Slack Marc, 13/07/2026) — voir `perimetre-verrouille.md` | — |
 | Disponibilité participants formation | Lireka | Reporte formation J4 |
 
 ---

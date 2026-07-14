@@ -1,5 +1,7 @@
 # Lireka × ZineInsights — Pilotage économique & financier Power BI
 
+> **Formule de marge actée** (Slack Marc Bordier, 13/07/2026) — voir [`project/perimetre-verrouille.md`](project/perimetre-verrouille.md).
+
 > **Prestataire** : Otmane Boulahia — ZineInsights (SASU)  
 > **Client** : Lireka — Marc Bordier, Président  
 > **Site** : [lireka.com](https://www.lireka.com)  
@@ -61,7 +63,7 @@ Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates
 - Accès SharePoint à l'entrepôt `Power_BI_Datawarehouse/` (CSV backend + récaps transporteurs)
 - Factures CSV : La Poste (Colissimo), Colis Privé, Chronopost
 - Export CSV commandes backend (`customer_order.csv`, `package.csv`, etc.)
-- Formule marge brute validée côté finance
+- Formule marge brute : **actée** (Slack Marc, 13/07/2026) — voir [`project/perimetre-verrouille.md`](project/perimetre-verrouille.md)
 
 ### Checklist J1
 
@@ -86,6 +88,7 @@ Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates
 
 ## Liens utiles
 
+- [**Périmètre verrouillé**](project/perimetre-verrouille.md) — devis + formule marge actée
 - [**Devis (référence contractuelle)**](project/devis.md)
 - [Cahier des charges](docs/01-cadrage/cahier-des-charges.md)
 - [Planning 4 jours](project/planning.md)
@@ -94,4 +97,4 @@ Le reste du dépôt (architecture détaillée, sessions formation 2-3, templates
 
 ---
 
-*Dernière mise à jour : 14 juillet 2026 — ZineInsights*
+*Dernière mise à jour : 15 juillet 2026 — ZineInsights*

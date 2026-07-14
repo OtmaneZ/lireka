@@ -1,5 +1,7 @@
 # Checklist accès & données — J1
 
+> **Formule de marge actée** (Slack Marc Bordier, 13/07/2026) — voir [`../../project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md).
+
 > À valider avec Lireka **avant le démarrage** (J1).  
 > Référence : [`../../project/devis.md`](../../project/devis.md)
 
@@ -31,7 +33,7 @@
 | # | Question | Réponse | Date |
 |---|----------|---------|------|
 | 1 | Nom du champ numéro de suivi côté backend ? | | |
-| 2 | Formule marge brute validée finance ? | | |
+| 2 | Formule marge brute validée finance ? | ✅ Actée Slack 13/07/2026 — `perimetre-verrouille.md` | 13/07/2026 |
 | 3 | Formule coût transport estimé ? | | |
 
 ---

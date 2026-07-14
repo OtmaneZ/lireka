@@ -1,14 +1,15 @@
 # AUDIT TECHNIQUE ADVERSARIAL — Repo Lireka × ZineInsights
 
+> **Mise à jour 15/07/2026** : la formule de marge (F-04) est **actée** par Marc Bordier
+> (Slack, 13/07/2026 16h09) — voir [`project/perimetre-verrouille.md`](project/perimetre-verrouille.md).
+> Les références ci-dessous à « formule à valider » sont **historiques** (audit initial du 14/07,
+> avant réception de la confirmation) et corrigées dans cette révision.
+
 > Audit externe indépendant, **lecture seule**, réalisé le 14/07/2026.
 > Source de vérité contractuelle : `project/devis.md` et `project/livrables.md`.
 > Aucune modification de code effectuée dans cette passe. Les volumes cités dans la
 > documentation (989 234 / 946 483 / 12,7 % / 83 481 CANCELLED / 382 suivis recyclés)
 > sont traités comme des **affirmations de la doc**, non vérifiées sur données réelles.
-
-> **Note de périmètre (ajoutée le 15/07/2026)** : la formule de marge à 7 postes n'est pas
-> une extension d'audit — elle a été explicitement communiquée par Marc Bordier
-> (Slack, 13/07/2026). Voir `project/perimetre-verrouille.md` pour le périmètre exact.
 
 ---
 
@@ -65,7 +66,7 @@ partout, ce qui protège partiellement le prestataire — mais ne rend pas L04 c
 - `.../visuals/d4e5f60718293a4b1c2d3/visual.json` → textbox `"Marge Brute — EN ATTENTE VALIDATION MARC"` (aucune donnée).
 **Ce qui se passe** : La seule page du rapport (`page.json` → `displayName: "Profitabilité L04"`) contient un bar-chart pays et un bar-chart type-de-commande, mais tous deux tracent un **comptage de commandes**, pas une marge. Aucun visuel du rapport ne référence `[Marge Brute (prov.)]` ni `[Taux Marge Brute (prov.)]`.
 **Impact client** : Marc ouvre « le dashboard de profitabilité » et n'y voit aucune profitabilité. Il conclura, à raison, que le livrable central (L04) n'est pas là.
-**Correctif proposé** : Une fois la formule de marge arbitrée (F-04), remplacer la mesure `Y` des deux bar-charts pays/type par la mesure de marge validée, et remplacer la textbox par un visuel carte/matrice `pays × type × [Marge]`. En attendant l'arbitrage, brancher `[Marge Brute (prov.)]` avec un bandeau « provisoire ».
+**Correctif proposé** : Brancher `[Marge Brute]` (formule actée Slack 13/07 — cf. F-04) sur les bar-charts pays/type et remplacer la textbox par un visuel carte/matrice. **Appliqué** aux Blocs 4 (`IMPLEMENTATION.md`).
 **Effort** : S
 **Bloque un livrable ?** : L04 — **oui**
 
@@ -101,30 +102,25 @@ partout, ce qui protège partiellement le prestataire — mais ne rend pas L04 c
 
 ---
 
-### F-04 — Formule de marge incomplète vs formule validée par Marc (`margin_analysis.py`)
-**Sévérité** : MAJEUR
-**Nature** : Correction (décision métier)
-**Preuve** :
-- Formule Marc (`scripts/validation/margin_analysis.py`, `task2_recalc`) : `revenue + shipping_fee − COGS − inbound − outbound − duties − commissions − supplies`.
-- DAX (`_Mesures.tmdl:83`) : `CA HT − Coût Achat − Coût Transport Réel`.
+### F-04 — Formule de marge : actée (Slack 13/07), implémentée ; point ouvert sur le shipping revenue
+**Sévérité** : MAJEUR *(au 14/07)* → **RÉSOLU** sur la formule ; point mineur ouvert
+**Nature** : Correction — constat historique, corrigé aux Blocs 1-3 (`IMPLEMENTATION.md`)
+**Contexte audit initial (14/07)** :
+- Le DAX ne contenait que `[Marge Brute (prov.)]` à 3 postes (`CA HT − Coût Achat − Coût Transport Réel`).
+- La formule complète existait déjà dans `scripts/validation/margin_analysis.py` (outil de diagnostic).
 
-| Poste (formule Marc) | Colonne backend | Présent dans le DAX ? |
-|----------------------|-----------------|-----------------------|
-| revenue | `order_amount_eur` (`ca_ht`) | ✅ |
-| + shipping_fee | `shipping_fee_eur` (chargé, `fact_commandes`) | ❌ (colonne importée mais non utilisée) |
-| − COGS | `product_cost_eur` (`cout_achat`) | ✅ |
-| − inbound | `inbound_transportation_cost_eur` | ❌ (non importé) |
-| − outbound | `total_shipping_cost_to_delivery_country_eur` | ⚠️ remplacé par `package.shipping_cost_eur` |
-| − duties | `duties_taxes_eur` (importé dans `fact_transport`) | ❌ (importé mais jamais sommé) |
-| − commissions | `marketplace_fees_eur` | ❌ (non importé) |
-| − supplies | `shipping_supply_cost_eur` (importé) / `total_shipping_supplies_eur` | ❌ (importé mais jamais sommé) |
+**État actuel (révision 15/07)** :
+- Formule **actée** par Marc Bordier (Slack, 13/07/2026 16h09) — voir [`project/perimetre-verrouille.md`](project/perimetre-verrouille.md) :
+  `Revenue (incl. shipping revenue if relevant) − COGS − inbound − outbound − duties − commissions − supplies`.
+- Implémentée dans `[Marge Brute]` (`_Mesures.tmdl`), câblée sur L04 (Blocs 1-4, `IMPLEMENTATION.md`).
+- Les 7 postes sont importés et sommés ; `[Marge Brute (prov.)]` est conservée comme mesure de contrôle/comparaison.
 
-**Douanes/taxes** : `duties_taxes_eur` **existe** dans `fact_transport.tmdl` mais n'est référencé par **aucune mesure** (grep sur `_Mesures.tmdl` : 0 occurrence). Enjeu central pour Marc (FedEx Maroc/Tunisie). **Verdict : non exploité.**
-**Colonnes référencées / existence** : `ca_ht`, `cout_achat`, `cout_transport_estime`, `gross_profit_eur` existent bien dans `fact_commandes.tmdl` ; `cout_transport` existe dans `fact_transport.tmdl`. **Aucune mesure ne référence de colonne inexistante — pas d'erreur bloquante DAX de ce type.**
-**Impact client** : La marge affichée sera fausse pour Marc : ni frais de port encaissés, ni commissions marketplace, ni douanes, ni fournitures. Sur des flux hors-UE, l'omission des douanes surestime fortement la marge.
-**Correctif proposé** : Arbitrage Marc sur la formule cible, puis importer les postes manquants (`shipping_fee_eur` déjà là ; ajouter `marketplace_fees_eur`, `inbound_transportation_cost_eur`) et construire une mesure de marge complète. Alternative pragmatique : s'appuyer sur `gross_profit_eur` backend comme référence tant que la formule n'est pas arbitrée.
-**Effort** : M
-**Bloque un livrable ?** : L04 — **oui** (via F-01/F-02)
+**Seul point encore ouvert** : périmètre exact du « if relevant » sur le shipping revenue
+(`[Frais Port Encaissés]` inclus par défaut ; voir §6 Q1 révisée).
+
+**Correctif appliqué** : Blocs 1-4 de `IMPLEMENTATION.md`.
+**Effort** : M *(déjà réalisé)*
+**Bloque un livrable ?** : L04 — **non** *(formule)* ; oui si le point shipping revenue reste non tranché pour certains canaux
 
 ---
 
@@ -367,7 +363,7 @@ partout, ce qui protège partiellement le prestataire — mais ne rend pas L04 c
 > « if relevant », fenêtre de jointure, Colis Privé).
 
 **Bloc 0 — Décisions à arbitrer par Marc AVANT tout code (métier) :**
-1. **Formule de marge** définitive (postes inclus : shipping_fee, commissions, douanes, inbound, fournitures ?). — bloque F-01/F-02/F-04.
+1. **Périmètre exact du shipping revenue** (« if relevant ») — voir §6 Q1 révisée. — bloque affinage L04.
 2. **Coût transport** : marge sur coût **facturé** (quand dispo) ou **estimé** ? — bloque F-02.
 3. **Statut CANCELLED** : inclus ou exclu du périmètre analytique ? — bloque F-07.
 4. **Clé de jointure** : accepte-t-il la désambiguïsation par date, avec fenêtre plafonnée ? — bloque F-11.
@@ -396,12 +392,14 @@ partout, ce qui protège partiellement le prestataire — mais ne rend pas L04 c
 
 ---
 
-## 6. Questions à poser à Marc (prêtes à envoyer — max 6)
+## 6. Questions à poser à Marc (prêtes à envoyer — max 5)
 
-1. **Formule de marge** — « Confirmez-vous la marge brute cible =
-   *CA + frais de port encaissés − coût d'achat − transport − douanes − commissions marketplace − fournitures* (formule de `margin_analysis.py`) ? »
-   *Pourquoi ça bloque* : sans elle, L04 ne peut afficher une marge juste.
-   *Sans réponse* : on livre `[Marge Brute (prov.)]` étiquetée provisoire, non conforme.
+> La formule de marge à 7 postes est **actée** (Slack 13/07/2026) — voir [`project/perimetre-verrouille.md`](project/perimetre-verrouille.md).
+> Les questions ci-dessous portent uniquement sur les points encore ouverts.
+
+1. **Shipping revenue** — « *incl. shipping revenue if relevant* » : dans quels cas précisément le frais de port encaissé doit-il entrer dans le revenu (uniquement marketplace ? tous canaux ?) ? »
+   *Pourquoi ça bloque* : la formule Marc laisse le périmètre du shipping revenue ouvert ; `[Frais Port Encaissés]` est inclus par défaut dans `[Marge Brute]`.
+   *Sans réponse* : on conserve l'inclusion inconditionnelle documentée dans `perimetre-verrouille.md`.
 
 2. **Coût transport dans la marge** — « La marge doit-elle utiliser le montant **facturé** par le transporteur quand une facture est rapprochée, ou l'estimation backend ? »
    *Pourquoi ça bloque* : détermine si le critère « coût réel issu des factures » est satisfait.
@@ -418,10 +416,6 @@ partout, ce qui protège partiellement le prestataire — mais ne rend pas L04 c
 5. **Colis Privé** — « Colis Privé n'a pas de factures détaillées : ses coûts restent en **estimation backend** (`source_cout = "estime"`). Est-ce acceptable pour L01 ? »
    *Pourquoi ça bloque* : définit si L01 est « intégré » ou « partiel » pour ce transporteur.
    *Sans réponse* : ambiguïté sur le niveau d'intégration livré.
-
-6. **Douanes/taxes** — « Souhaitez-vous que `duties_taxes_eur` (colonne présente, aujourd'hui non utilisée) entre dans la marge, notamment pour FedEx Maroc/Tunisie ? »
-   *Pourquoi ça bloque* : impacte fortement la marge hors-UE.
-   *Sans réponse* : douanes ignorées → marge hors-UE surestimée.
 
 ---
 

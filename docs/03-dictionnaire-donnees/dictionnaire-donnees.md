@@ -1,5 +1,7 @@
 # Dictionnaire de données — Lireka
 
+> **Formule de marge actée** (Slack Marc Bordier, 13/07/2026) — voir [`../../project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md).
+
 > **⚠️ Hors périmètre devis** — Document de travail technique décrivant le modèle livré dans  
 > `powerbi/Lireka_Profitabilite.pbip`. Le livrable contractuel L06 est  
 > [`processus-etl-gouvernance.md`](../04-processus/processus-etl-gouvernance.md).  
@@ -104,10 +106,11 @@ Référentiel complet : [`powerbi/models/mesures-dax.md`](../../powerbi/models/m
 
 | Mesure | Formule (résumé) | Description |
 |--------|------------------|-------------|
-| `Coût Transport Réel` | `SUM(fact_transport[cout_transport])` | Coût au grain colis — **pas** de colonne `cout_transport_reel` sur `fact_commandes` |
+| **`Marge Brute`** | `CA + frais port − achat − inbound − outbound − douanes − commissions − fournitures` | **Référence actée** (Slack 13/07/2026) — voir `perimetre-verrouille.md` |
+| `Coût Transport Réel` | `SUM(fact_transport[cout_transport])` | Coût au grain colis — estimation backend |
 | `Coût Transport Estimé` | `SUM(fact_commandes[cout_transport_estime])` | Estimation backend |
-| `Marge Brute (prov.)` | `CA - Coût Achat - Coût Transport Réel` | **Provisoire** — validation Marc en attente |
-| `Marge Brute Backend (réf.)` | `SUM(fact_commandes[gross_profit_eur])` | Référence de contrôle |
+| `Marge Brute (prov.)` | `CA - Coût Achat - Coût Transport Réel` | **Contrôle/comparaison** — formule 3 postes historique (pré-Slack) |
+| `Marge Brute Backend (réf.)` | `SUM(fact_commandes[gross_profit_eur])` | Référence de contrôle backend |
 
 ---
 
@@ -162,7 +165,8 @@ Les échantillons factures (`data/samples/transporteurs/*/`) sont au format unif
 
 | Terme | Définition |
 |-------|-----------|
-| **Marge brute (prov.)** | CA HT − Coût d'achat − Coût transport réel (mesure DAX, en attente validation Marc) |
+| **Marge brute** | Formule 7 postes actée Marc (Slack 13/07/2026) — mesure DAX `[Marge Brute]` ; voir `perimetre-verrouille.md` |
+| **Marge brute (prov.)** | Ancienne formule 3 postes (CA HT − achat − transport) — mesure de contrôle/comparaison |
 | **Coût transport estimé** | `total_shipping_cost_to_delivery_country_eur` — estimation backend Lireka |
 | **Coût transport réel** | `fact_transport[cout_transport]` au grain colis (facture rapprochée ou coût backend) |
 | **Numéro de suivi** | `package.tracking_id` — clé de liaison factures ↔ colis |

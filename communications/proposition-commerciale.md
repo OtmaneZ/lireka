@@ -1,5 +1,7 @@
 # Proposition commerciale — Lireka × ZineInsights
 
+> **Formule de marge actée** (Slack Marc Bordier, 13/07/2026) — voir [`../project/perimetre-verrouille.md`](../project/perimetre-verrouille.md).
+
 > **Document** : Devis / proposition de prestation  
 > **Date** : Juillet 2026  
 > **Émetteur** : Otmane Boulahia — ZineInsights (SASU)  
@@ -55,7 +57,7 @@ Intégration des données transporteurs et commandes dans Power BI, jointure par
 - Factures CSV La Poste, Colis Privé, Chronopost (1 mois)
 - Export CSV commandes backend (1 mois)
 - Référent technique / logistique joignable pendant la mission
-- Formule marge brute validée côté finance
+- Formule marge brute : ✅ actée (Slack Marc, 13/07/2026) — `perimetre-verrouille.md`
 
 ---
 

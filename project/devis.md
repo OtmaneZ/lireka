@@ -43,3 +43,8 @@ Intégration des données transporteurs et commandes dans Power BI, jointure par
 ---
 
 *Référence devis — Juillet 2026*
+
+---
+
+*Précision de périmètre post-signature : voir [`perimetre-verrouille.md`](perimetre-verrouille.md)
+pour la formule de marge actée (Slack Marc Bordier, 13/07/2026).*

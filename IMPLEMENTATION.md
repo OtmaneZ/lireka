@@ -136,14 +136,12 @@ du prestataire au-delà du devis — voir `project/perimetre-verrouille.md`.
 
 ## Reste en attente de Marc
 
-> Reprise **verbatim** des 6 questions de `AUDIT.md` §6 (non reformulées), pour rester
-> cohérent avec ce qui a été envoyé au client. Aucune de ces décisions n'a été tranchée à la
-> place de Marc dans cette passe (voir « NE PAS TOUCHER »).
+> Reprise des **5 questions ouvertes** de `AUDIT.md` §6 (révision 15/07/2026).
+> La formule de marge à 7 postes est **actée** (Slack 13/07) — voir [`project/perimetre-verrouille.md`](project/perimetre-verrouille.md).
 
-1. **Formule de marge** — « Confirmez-vous la marge brute cible =
-   *CA + frais de port encaissés − coût d'achat − transport − douanes − commissions marketplace − fournitures* (formule de `margin_analysis.py`) ? »
-   *Pourquoi ça bloque* : sans elle, L04 ne peut afficher une marge juste.
-   *Sans réponse* : on livre `[Marge Brute (prov.)]` étiquetée provisoire, non conforme.
+1. **Shipping revenue** — « *incl. shipping revenue if relevant* » : dans quels cas précisément le frais de port encaissé doit-il entrer dans le revenu (uniquement marketplace ? tous canaux ?) ? »
+   *Pourquoi ça bloque* : la formule Marc laisse le périmètre du shipping revenue ouvert ; `[Frais Port Encaissés]` est inclus par défaut dans `[Marge Brute]`.
+   *Sans réponse* : on conserve l'inclusion inconditionnelle documentée dans `perimetre-verrouille.md`.
 
 2. **Coût transport dans la marge** — « La marge doit-elle utiliser le montant **facturé** par le transporteur quand une facture est rapprochée, ou l'estimation backend ? »
    *Pourquoi ça bloque* : détermine si le critère « coût réel issu des factures » est satisfait.
@@ -157,10 +155,6 @@ du prestataire au-delà du devis — voir `project/perimetre-verrouille.md`.
    *Pourquoi ça bloque* : le devis dit « par numéro de suivi » ; la désambiguïsation par date est un ajout à valider.
    *Sans réponse* : risque de coûts rattachés à la mauvaise commande.
 
-5. **Colis Privé** — « Colis Privé n'a pas de factures détaillées : ses coûts restent en **estimation backend** (`source_cout = "estime"`). Est-ce acceptable pour L01 ? »
+5. **Colis Privé** — « Colis Privé n'a pas de factures détaillées : ses coûts restent en **estimation backend** (`source_cout = "backend_seul"`). Est-ce acceptable pour L01 ? »
    *Pourquoi ça bloque* : définit si L01 est « intégré » ou « partiel » pour ce transporteur.
    *Sans réponse* : ambiguïté sur le niveau d'intégration livré.
-
-6. **Douanes/taxes** — « Souhaitez-vous que `duties_taxes_eur` (colonne présente, aujourd'hui non utilisée) entre dans la marge, notamment pour FedEx Maroc/Tunisie ? »
-   *Pourquoi ça bloque* : impacte fortement la marge hors-UE.
-   *Sans réponse* : douanes ignorées → marge hors-UE surestimée.

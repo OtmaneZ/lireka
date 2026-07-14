@@ -1,5 +1,7 @@
 # Cahier des charges — Pilotage économique & financier Lireka
 
+> **Formule de marge actée** (Slack Marc Bordier, 13/07/2026) — voir [`../../project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md).
+
 > **Version** : 2.0 — Aligné sur le devis  
 > **Date** : 12 juillet 2026  
 > **Rédacteur** : Otmane Boulahia — ZineInsights  
@@ -84,7 +86,7 @@ Voir [`../../project/planning.md`](../../project/planning.md)
 | Accès workspace Power BI (Contributor) | Réf. technique |
 | Factures CSV La Poste, Colis Privé, Chronopost (1 mois) | Réf. logistique |
 | Export CSV commandes (1 mois) | Réf. technique |
-| Formule marge brute validée | Réf. finance |
+| Formule marge brute validée | ✅ Actée Slack 13/07/2026 — `perimetre-verrouille.md` |
 | Référent joignable pendant les 4 jours | Marc Bordier |
 
 ---

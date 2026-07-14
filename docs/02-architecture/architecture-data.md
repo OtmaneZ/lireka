@@ -122,7 +122,8 @@ de date dans `stg_factures_transport_resolu`), pas une jointure directe sur
 
 - Mesures regroupées dans `_Mesures` — référentiel : [`powerbi/models/mesures-dax.md`](../../powerbi/models/mesures-dax.md)
 - Rapport profitabilité : `Lireka_Profitabilite.Report` (axes pays + type de commande)
-- `Marge Brute (prov.)` : formule provisoire, validation Marc en attente
+- **`Marge Brute`** : mesure de référence actée (formule 7 postes, Slack Marc 13/07/2026) — voir [`perimetre-verrouille.md`](../../project/perimetre-verrouille.md)
+- `Marge Brute (prov.)` : mesure de contrôle/comparaison historique (3 postes, pré-Slack)
 
 ---
 

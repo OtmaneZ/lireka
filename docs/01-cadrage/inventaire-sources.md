@@ -1,5 +1,7 @@
 # Inventaire des sources de données
 
+> **Formule de marge actée** (Slack Marc Bordier, 13/07/2026) — voir [`../../project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md).
+
 > **Mission** : 4 jours — [`../../project/devis.md`](../../project/devis.md)  
 > **Statut** : 🟢 Données reçues et intégrées au modèle PBIP  
 > **Dernière mise à jour** : 14 juillet 2026
@@ -98,7 +100,7 @@ pas présent en colonne dans le backend.
 - [x] Export backend (`customer_order.csv`, `package.csv`, etc.)
 - [x] Accès entrepôt SharePoint local / distant
 - [ ] Accès Power BI workspace (Contributor) — publication
-- [ ] Formule marge brute validée (finance / Marc)
+- [x] Formule marge brute validée (finance / Marc) — ✅ actée Slack 13/07/2026 (`perimetre-verrouille.md`)
 
 ---
 

@@ -46,7 +46,11 @@ B) Utiliser un Slicer ou cliquer sur un élément d'un visuel (cross-filter).
 
 <details>
 <summary>Réponse</summary>
-B) Marge brute = CA HT − Coût d'achat des livres − Coût transport réel (issu des factures).
+B) Réponse simplifiée à des fins pédagogiques (session bases).
+
+**Formule complète actée (7 postes)** — Slack Marc Bordier, 13/07/2026 :
+Revenue (incl. shipping revenue if relevant) − COGS − inbound transport − outbound transport − duties & taxes − marketplace commissions − shipping supplies.
+Voir [`project/perimetre-verrouille.md`](../../project/perimetre-verrouille.md).
 </details>
 
 ---
