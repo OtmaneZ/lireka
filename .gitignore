@@ -47,6 +47,6 @@ Power_BI_Datawarehouse/**
 !Power_BI_Datawarehouse/.gitkeep
 
 # Sorties d'audit validation (données réelles — NDA)
-scripts/validation/*_output.json
-scripts/validation/*_output.txt
-scripts/validation/rapport_backend.txt
+tools/audit-interne/*_output.json
+tools/audit-interne/*_output.txt
+tools/audit-interne/rapport_backend.txt

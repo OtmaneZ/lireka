@@ -22,7 +22,7 @@ lireka/
 │   ├── 04-processus/     processus-etl-gouvernance.md (L06)
 │   └── 05-formation/     programme-formation.md, session-01-bases.md (L05)
 ├── powerbi/              modèle PBIP + rapport profitabilité L04
-├── scripts/validation/   scripts de contrôle technique
+├── tools/audit-interne/  scripts de contrôle technique (usage interne)
 ├── data/samples/         échantillons anonymisés
 └── templates/            schémas CSV cibles
 ```
