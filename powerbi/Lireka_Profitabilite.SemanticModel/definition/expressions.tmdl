@@ -1,12 +1,13 @@
-/// URL du site SharePoint ou de la bibliothèque Documents contenant l'entrepôt CSV.
-/// Exemples :
-/// https://contoso.sharepoint.com/sites/Lireka
-/// https://contoso.sharepoint.com/sites/Lireka/Shared Documents/Power_BI_Datawarehouse
-/// La structure des dossiers sous cette racine doit reproduire l'entrepôt local :
-/// Données_Backend\, Dashboards_transporteurs\, etc.
-/// Renseigner dans Power BI Desktop : Transformer les données > Gérer les paramètres.
-// Fix F-17 : valeur placeholder, pas d'URL tenant en dur. À renseigner par l'utilisateur au premier refresh.
-expression SharePointSiteURL = "https://VOTRE-TENANT.sharepoint.com/sites/VOTRE-SITE" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+/// URL du tenant SharePoint Lireka. Donnée d'environnement (pas un secret), mais
+/// spécifique au client — à adapter si ce modèle est réutilisé pour un autre client.
+///
+/// Racine du site uniquement (pas l'URL de navigation avec ?id= / viewid=).
+/// Les chemins relatifs (Données_Backend\, Dashboards_transporteurs\, etc.) sont
+/// résolus par fnSharePointContenuFichier via SharePoint.Files sur cette racine.
+/// Exemple de structure côté bibliothèque :
+/// Documents partages/99_EXTERNE/OTMANE/Power_BI_Datawarehouse/Données_Backend/...
+/// Modifier dans Power BI Desktop : Transformer les données > Gérer les paramètres.
+expression SharePointSiteURL = "https://lirekacom.sharepoint.com/sites/Lireka" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 54fba0a6-374f-4253-8139-bb1310f751e3
 
 	annotation PBI_ResultType = Text
