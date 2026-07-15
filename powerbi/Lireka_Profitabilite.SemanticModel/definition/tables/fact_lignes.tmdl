@@ -1,15 +1,22 @@
-/// Faits — lignes d'articles par commande (grain : un groupe d'articles / titre).
-/// Source SharePoint : Données_Backend/customer_order_item_group.csv
-/// Relié à fact_commandes par order_id. Alimente le nombre d'articles (quantités).
+/// Faits — lignes d'articles par commande (grain : un article physique / customer_order_item).
+/// Source SharePoint : merge customer_order_item.csv + customer_order_item_group.csv.
+/// Relié à fact_commandes par order_id. Alimente le nombre d'articles (COUNTROWS).
 table fact_lignes
 	lineageTag: 131fd8d8-579b-4f13-8a68-fe0b13ecbd52
 
-	column id_ligne
+	column id_article
 		dataType: int64
 		isHidden
 		lineageTag: 0839c18c-cc35-4d53-b62a-5c823590f387
 		summarizeBy: none
-		sourceColumn: id_ligne
+		sourceColumn: id_article
+
+	column item_group_id
+		dataType: int64
+		isHidden
+		lineageTag: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+		summarizeBy: none
+		sourceColumn: item_group_id
 
 	/// Clé étrangère vers fact_commandes[id_commande].
 	column order_id
@@ -20,6 +27,7 @@ table fact_lignes
 
 		changedProperty = IsHidden
 
+	/// Dupliqué depuis le groupe (customer_order_item_group) — une valeur par article du même groupe.
 	column isbn
 		dataType: string
 		lineageTag: 541183b9-2cab-4530-ad10-04f7d28afb94
@@ -28,15 +36,17 @@ table fact_lignes
 
 		changedProperty = IsHidden
 
-	column quantity
+	/// Dupliqué depuis le groupe — conservé pour contrôle/audit uniquement, PAS utilisé dans [Nb Articles].
+	column quantity_groupe
 		dataType: int64
 		formatString: #,##0
 		lineageTag: e10b7d4e-d6a0-4680-90ec-dc59decb898e
 		summarizeBy: sum
-		sourceColumn: quantity
+		sourceColumn: quantity_groupe
 
 		changedProperty = IsHidden
 
+	/// Dupliqué depuis le groupe (customer_order_item_group) — une valeur par article du même groupe.
 	column list_price_eur
 		dataType: double
 		formatString: #,##0.00 €
@@ -46,6 +56,7 @@ table fact_lignes
 
 		changedProperty = IsHidden
 
+	/// Dupliqué depuis le groupe (customer_order_item_group) — une valeur par article du même groupe.
 	column customer_price_per_item_eur
 		dataType: double
 		formatString: #,##0.00 €
@@ -55,6 +66,7 @@ table fact_lignes
 
 		changedProperty = IsHidden
 
+	/// Dupliqué depuis le groupe (customer_order_item_group) — une valeur par article du même groupe.
 	column group_type
 		dataType: string
 		lineageTag: dd7412c2-c668-46db-ae4a-86436f59146e
@@ -63,13 +75,59 @@ table fact_lignes
 
 		changedProperty = IsHidden
 
+	column internal_state
+		dataType: string
+		lineageTag: b2c3d4e5-f6a7-8901-bcde-f23456789012
+		summarizeBy: none
+		sourceColumn: internal_state
+
+	column package_id
+		dataType: int64
+		lineageTag: c3d4e5f6-a7b8-9012-cdef-345678901234
+		summarizeBy: none
+		sourceColumn: package_id
+
+	column product_cost_eur
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: d4e5f6a7-b8c9-0123-defa-456789012345
+		summarizeBy: sum
+		sourceColumn: product_cost_eur
+
+	/// Proxy Bloc3 : package_id comme substitut du champ ETF/sous-statut annulation,
+	/// absent des exports backend (visible uniquement en interface backoffice à l'unité).
+	/// À valider avec Marc en fin de mission — voir docs/notes-techniques/limite-etf-annulation.md
+	column statut_annulation_ligne =
+			IF(
+				[internal_state] <> "CANCELLED",
+				"NON_ANNULE",
+				IF(
+					ISBLANK([package_id]),
+					"ANNULE_AVANT_EXPEDITION",
+					"ANNULE_APRES_EXPEDITION"
+				)
+			)
+		dataType: string
+		lineageTag: e5f6a7b8-c9d0-1234-efab-567890123456
+		summarizeBy: none
+
 	partition fact_lignes = m
 		mode: import
 		source =
 				let
-					// Lecture du CSV backend des lignes d'articles depuis SharePoint (séparateur virgule, UTF-8)
-					#"En-tetes promus" = fnSharePointLireCsv("Données_Backend", "customer_order_item_group.csv"),
-					#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
+					// Lecture des articles (grain cible : un customer_order_item par ligne)
+					#"Articles source" = fnSharePointLireCsv("Données_Backend", "customer_order_item.csv"),
+					#"Articles types" = Table.TransformColumnTypes(#"Articles source", {
+						{"id", Int64.Type},
+						{"item_group_id", Int64.Type},
+						{"order_id", Int64.Type},
+						{"package_id", Int64.Type},
+						{"internal_state", type text},
+						{"product_cost_eur", type number}
+					}, "en-US"),
+					// Lecture des groupes (attributs titre/prix dupliqués sur chaque article)
+					#"Groupes source" = fnSharePointLireCsv("Données_Backend", "customer_order_item_group.csv"),
+					#"Groupes types" = Table.TransformColumnTypes(#"Groupes source", {
 						{"id", Int64.Type},
 						{"order_id", Int64.Type},
 						{"isbn", type text},
@@ -79,10 +137,25 @@ table fact_lignes
 						{"customer_price_per_item_eur", type number},
 						{"group_type", type text}
 					}, "en-US"),
-					#"Colonnes renommees" = Table.RenameColumns(#"Types appliques", {{"id", "id_ligne"}}),
+					#"Jointure articles groupes" = Table.NestedJoin(
+						#"Articles types",
+						{"item_group_id"},
+						#"Groupes types",
+						{"id"},
+						"groupe",
+						JoinKind.LeftOuter
+					),
+					#"Colonnes groupe developpees" = Table.ExpandTableColumn(
+						#"Jointure articles groupes",
+						"groupe",
+						{"isbn", "quantity", "list_price_eur", "customer_price_per_item_eur", "group_type"},
+						{"isbn", "quantity_groupe", "list_price_eur", "customer_price_per_item_eur", "group_type"}
+					),
+					#"Colonnes renommees" = Table.RenameColumns(#"Colonnes groupe developpees", {{"id", "id_article"}}),
 					#"Colonnes conservees" = Table.SelectColumns(#"Colonnes renommees", {
-						"id_ligne", "order_id", "isbn", "quantity", "list_price_eur", "customer_price_per_item_eur", "group_type"
+						"id_article", "order_id", "item_group_id", "isbn", "list_price_eur",
+						"customer_price_per_item_eur", "group_type", "quantity_groupe",
+						"internal_state", "package_id", "product_cost_eur"
 					})
 				in
 					#"Colonnes conservees"
-

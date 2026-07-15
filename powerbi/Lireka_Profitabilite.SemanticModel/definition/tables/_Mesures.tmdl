@@ -32,10 +32,67 @@ table _Mesures
 		formatString: #,##0
 		lineageTag: e8d8c253-ebbc-411c-a7c6-70f93389efb0
 
-	/// Nombre d'articles commandés (somme des quantités).
-	measure 'Nb Articles' = SUM(fact_lignes[quantity])
+	/// Fix Bloc2 — grain passé de groupe/titre à article physique le 15/07/2026.
+	/// Ancienne mesure basée sur SUM(quantity_groupe) déduplicable en contrôle si besoin,
+	/// voir [Nb Articles (contrôle grain groupe)].
+	measure 'Nb Articles' = COUNTROWS(fact_lignes)
 		formatString: #,##0
 		lineageTag: 58c14c19-db5c-4284-aecc-b00079f4d9b6
+
+	/// Contrôle Bloc2 — recalcule l'ancien total par somme des quantity_groupe distincts par groupe.
+	measure 'Nb Articles (contrôle grain groupe)' =
+			SUMX(
+				VALUES(fact_lignes[item_group_id]),
+				CALCULATE(MAX(fact_lignes[quantity_groupe]))
+			)
+		formatString: #,##0
+		lineageTag: e1f2a3b4-c5d6-4789-a012-3456789abcde
+
+	/// Granularité Bloc2 — articles dont internal_state = CANCELLED (pas la logique de marge Bloc 3).
+	measure 'Nb Articles Annulés' = CALCULATE([Nb Articles], fact_lignes[internal_state] = "CANCELLED")
+		formatString: #,##0
+		lineageTag: f2a3b4c5-d6e7-4890-b123-456789abcdef
+
+	/// Bloc3 — CA HT au grain article, zéro sur les lignes annulées (avant ET après expédition).
+	/// Remplace fact_commandes[ca_ht] pour la logique de marge Bloc 3 : zéro appliqué au grain
+	/// article, pas commande, pour gérer les annulations partielles (~8 900 commandes, audit 15/07/2026).
+	measure 'CA Total HT (grain article, ajusté annulation)' =
+			SUMX(
+				fact_lignes,
+				IF(
+					fact_lignes[statut_annulation_ligne] = "NON_ANNULE",
+					fact_lignes[customer_price_per_item_eur],
+					0
+				)
+			)
+		formatString: #,##0.00 €
+		lineageTag: a3b4c5d6-e7f8-4901-c234-567890abcdef
+
+	/// Bloc3 — coût d'achat au grain article. Conservé dans TOUS les cas d'annulation
+	/// (avant ET après expédition, décision Marc) — contrôle vs [Coût Achat Total] (grain commande).
+	measure 'Coût Achat Total (grain article)' = SUM(fact_lignes[product_cost_eur])
+		formatString: #,##0.00 €
+		lineageTag: b4c5d6e7-f8a9-4012-d345-678901bcdef0
+
+	/// Bloc3 — articles annulés avant expédition (proxy package_id null).
+	measure 'Nb Articles Annulés Avant Expédition' =
+			CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_AVANT_EXPEDITION")
+		formatString: #,##0
+		lineageTag: c5d6e7f8-a9b0-4123-e456-789012cdef01
+
+	/// Bloc3 — articles annulés après expédition (proxy package_id non-null).
+	measure 'Nb Articles Annulés Après Expédition' =
+			CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_APRES_EXPEDITION")
+		formatString: #,##0
+		lineageTag: d6e7f8a9-b0c1-4234-f567-890123def012
+
+	/// Bloc3 — marge brute provisoire au grain article (contrôle/comparaison uniquement).
+	/// Ne remplace pas [Marge Brute] tant que les Blocs 5 (returns/generic costs) ne sont pas
+	/// intégrés au même grain. Ne pas publier dans le rapport final sans validation Marc.
+	measure 'Marge Brute (grain article, prov.)' =
+			[CA Total HT (grain article, ajusté annulation)] - [Coût Achat Total (grain article)]
+		formatString: #,##0.00 €
+		lineageTag: e7f8a9b0-c1d2-4345-a678-901234ef0123
 
 	/// Chiffre d'affaires HT (order_amount_eur).
 	measure 'CA Total HT' = SUM(fact_commandes[ca_ht])
