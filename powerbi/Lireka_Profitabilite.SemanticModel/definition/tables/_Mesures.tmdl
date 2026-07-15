@@ -289,8 +289,15 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: 1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b
 
-	/// Fix F-04 : taux de marge brute = Marge Brute / (CA HT + frais de port encaissés).
-	measure 'Taux Marge Brute' = DIVIDE([Marge Brute], [CA Total HT] + [Frais Port Encaissés], 0)
+	/// Fix F-04 / C-01 : taux = Marge Brute / revenu net annulation
+	/// ([CA HT Net Annulation] + frais port hors CANCELLED) — même périmètre que [Marge Brute].
+	measure 'Taux Marge Brute' =
+			DIVIDE(
+				[Marge Brute],
+				[CA HT Net Annulation]
+					+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED"),
+				0
+			)
 		formatString: 0.0%
 		lineageTag: 2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b6c
 

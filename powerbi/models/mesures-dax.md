@@ -3,9 +3,9 @@
 > **Référence** : [`../../project/devis.md`](../../project/devis.md)  
 > Référentiel des mesures DAX du dashboard profitabilité.  
 > **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
-> Ne pas éditer à la main : régénérer via le script one-shot (voir pied de page).
+> Ne pas éditer à la main : régénérer depuis `_Mesures.tmdl` (script one-shot).
 
-> Total : **46 mesures**, dans l'ordre du modèle.
+> Total : **59 mesures**, dans l'ordre du modèle.
 
 ---
 
@@ -83,13 +83,114 @@ Nb Colis Facturés = COUNTROWS(fact_factures_transport)
 
 ## Nb Articles
 
-> Nombre d'articles commandés (somme des quantités).  
+> Fix Bloc2 — grain passé de groupe/titre à article physique le 15/07/2026.  
+> Ancienne mesure basée sur SUM(quantity_groupe) déduplicable en contrôle si besoin,  
+> voir [Nb Articles (contrôle grain groupe)].  
 
 ```dax
-Nb Articles = SUM(fact_lignes[quantity])
+Nb Articles = COUNTROWS(fact_lignes)
 ```
 
 *Format* : `#,##0`
+
+---
+
+## Nb Articles (contrôle grain groupe)
+
+> Contrôle Bloc2 — recalcule l'ancien total par somme des quantity_groupe distincts par groupe.  
+
+```dax
+Nb Articles (contrôle grain groupe) = 			SUMX(
+				VALUES(fact_lignes[item_group_id]),
+				CALCULATE(MAX(fact_lignes[quantity_groupe]))
+			)
+```
+
+*Format* : `#,##0`
+
+---
+
+## Nb Articles Annulés
+
+> Granularité Bloc2 — articles dont internal_state = CANCELLED (pas la logique de marge Bloc 3).  
+
+```dax
+Nb Articles Annulés = CALCULATE([Nb Articles], fact_lignes[internal_state] = "CANCELLED")
+```
+
+*Format* : `#,##0`
+
+---
+
+## CA Total HT (grain article, ajusté annulation)
+
+> Bloc3 — CA HT au grain article, zéro sur les lignes annulées (avant ET après expédition).  
+> Remplace fact_commandes[ca_ht] pour la logique de marge Bloc 3 : zéro appliqué au grain  
+> article, pas commande, pour gérer les annulations partielles (~8 900 commandes, audit 15/07/2026).  
+
+```dax
+CA Total HT (grain article, ajusté annulation) = 			SUMX(
+				fact_lignes,
+				IF(
+					fact_lignes[statut_annulation_ligne] = "NON_ANNULE",
+					fact_lignes[customer_price_per_item_eur],
+					0
+				)
+			)
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Achat Total (grain article)
+
+> Bloc3 — coût d'achat au grain article. Conservé dans TOUS les cas d'annulation  
+> (avant ET après expédition, décision Marc) — contrôle vs [Coût Achat Total] (grain commande).  
+
+```dax
+Coût Achat Total (grain article) = SUM(fact_lignes[product_cost_eur])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Nb Articles Annulés Avant Expédition
+
+> Bloc3 — articles annulés avant expédition (proxy package_id null).  
+
+```dax
+Nb Articles Annulés Avant Expédition = 			CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_AVANT_EXPEDITION")
+```
+
+*Format* : `#,##0`
+
+---
+
+## Nb Articles Annulés Après Expédition
+
+> Bloc3 — articles annulés après expédition (proxy package_id non-null).  
+
+```dax
+Nb Articles Annulés Après Expédition = 			CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_APRES_EXPEDITION")
+```
+
+*Format* : `#,##0`
+
+---
+
+## Marge Brute (grain article, prov.)
+
+> Bloc3 — marge brute provisoire au grain article (contrôle/comparaison uniquement).  
+> Ne remplace pas [Marge Brute] tant que les Blocs 5 (returns/generic costs) ne sont pas  
+> intégrés au même grain. Ne pas publier dans le rapport final sans validation Marc.  
+
+```dax
+Marge Brute (grain article, prov.) = 			[CA Total HT (grain article, ajusté annulation)] - [Coût Achat Total (grain article)]
+```
+
+*Format* : `#,##0.00 €`
 
 ---
 
@@ -99,6 +200,80 @@ Nb Articles = SUM(fact_lignes[quantity])
 
 ```dax
 CA Total HT = SUM(fact_commandes[ca_ht])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## CA Total HT (reconstruit)
+
+> CA HT reconstruit — order_amount_eur natif si présent, sinon order_amount_local / taux mensuel moyen.  
+> Variante parallèle à [CA Total HT], sur le même modèle que [Marge Brute] vs [Marge Brute (prov.)].  
+> Voir docs/notes-techniques/reconstruction-ca-marketplace.md.  
+
+```dax
+CA Total HT (reconstruit) = SUM(fact_commandes[ca_ht_reconstruit])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## CA HT Net Annulation
+
+> Bloc3 (grain commande) — CA HT hors commandes annulées.  
+> Applique la règle Marc "CA=0 sur annulation" au grain commande.  
+> Ne capture PAS les annulations partielles (state <> CANCELLED, ~8 900 cmd,  
+> borne CA cf. limite-etf-annulation.md) — limite connue documentée.  
+
+```dax
+CA HT Net Annulation = 			CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## CA HT Net Annulation (reconstruit)
+
+> Bloc3 (grain commande) — CA HT reconstruit hors commandes annulées.  
+> Variante marketplace (Bloc 1) de [CA HT Net Annulation].  
+
+```dax
+CA HT Net Annulation (reconstruit) = 			CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## CA Commandes Annulation Partielle
+
+> Bloc3 (grain commande) — transparence : CA porté par les commandes en annulation  
+> partielle (state <> CANCELLED mais ≥1 article CANCELLED). Non ajusté faute de prix ligne.  
+> Identification via rel_lignes_commandes (pas de colonne calculée fact_commandes).  
+
+```dax
+CA Commandes Annulation Partielle = 			CALCULATE(
+				[CA Total HT],
+				FILTER(
+					fact_commandes,
+					fact_commandes[state] <> "CANCELLED"
+						&& COUNTROWS(
+							FILTER(
+								RELATEDTABLE(fact_lignes),
+								fact_lignes[internal_state] = "CANCELLED"
+							)
+						) > 0
+						&& COUNTROWS(
+							FILTER(
+								RELATEDTABLE(fact_lignes),
+								fact_lignes[internal_state] <> "CANCELLED"
+							)
+						) > 0
+				)
+			)
 ```
 
 *Format* : `#,##0.00 €`
@@ -150,13 +325,12 @@ Coût Transport Réel = SUM(fact_transport[cout_transport])
 > avec CROSSFILTER pour éviter toute ambiguïté.  
 
 ```dax
-Coût Transport Facturé =
-CALCULATE(
-    SUM(fact_factures_transport[cout_transport]),
-    USERELATIONSHIP(fact_factures_transport[transporteur], dim_transporteur[transporteur]),
-    USERELATIONSHIP(fact_factures_transport[date_facture], dim_date[date]),
-    CROSSFILTER(fact_factures_transport[id_package], fact_transport[id_package], None)
-)
+Coût Transport Facturé = 			CALCULATE(
+				SUM(fact_factures_transport[cout_transport]),
+				USERELATIONSHIP(fact_factures_transport[transporteur], dim_transporteur[transporteur]),
+				USERELATIONSHIP(fact_factures_transport[date_facture], dim_date[date]),
+				CROSSFILTER(fact_factures_transport[id_package], fact_transport[id_package], None)
+			)
 ```
 
 *Format* : `#,##0.00 €`
@@ -170,7 +344,7 @@ CALCULATE(
 > deux estimations backend (coût colis vs coût commande), sans valeur de pilotage.  
 
 ```dax
-Écart Coût Outbound vs Estimé Backend =             [Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
+Écart Coût Outbound vs Estimé Backend = 			[Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
 ```
 
 *Format* : `#,##0.00 €`
@@ -201,16 +375,11 @@ Coût Moyen Colis = DIVIDE([Coût Transport Réel], [Nb Colis], 0)
 
 ---
 
-## Mesures de marge
-
-> **Mesure de référence** : `[Marge Brute]` — formule 7 postes **actée** par Marc Bordier
-> (Slack, 13/07/2026 16h09), documentée dans `_Mesures.tmdl`.
-> `[Marge Brute (prov.)]` est conservée comme mesure de **contrôle/comparaison** historique (3 postes).
-
 ## Marge Brute (prov.)
 
-> **Mesure de contrôle/comparaison** — formule historique 3 postes (pré-Slack 13/07).
-> Ne pas utiliser comme mesure de référence ; voir `[Marge Brute]` (section ci-dessous, après les postes).
+> MARGE BRUTE — FORMULE PROVISOIRE. CA HT - coût d'achat - coût transport réel.  
+> Écart constaté le 12/07/2026 entre ce calcul simple et gross_profit_eur existant.  
+> À VALIDER avec Marc / finance avant de considérer comme définitive.  
 
 ```dax
 Marge Brute (prov.) = [CA Total HT] - [Coût Achat Total] - [Coût Transport Réel]
@@ -246,7 +415,7 @@ Marge Brute Backend (réf.) = SUM(fact_commandes[gross_profit_eur])
 
 ## Écart Marge vs Backend
 
-> Écart entre la marge provisoire (3 postes) et la marge backend (contrôle historique).  
+> Écart entre la marge provisoire et la marge backend (aide à la validation finance).  
 
 ```dax
 Écart Marge vs Backend = [Marge Brute (prov.)] - [Marge Brute Backend (réf.)]
@@ -257,6 +426,9 @@ Marge Brute Backend (réf.) = SUM(fact_commandes[gross_profit_eur])
 ---
 
 ## Frais Port Encaissés
+
+> Fix F-04 : frais de port encaissés par le client (marketplace notamment).  
+> Périmètre d'inclusion ("if relevant") non tranché — inclus par défaut dans [Marge Brute].  
 
 ```dax
 Frais Port Encaissés = SUM(fact_commandes[frais_port_encaisse])
@@ -326,20 +498,60 @@ Fournitures Expédition = SUM(fact_transport[shipping_supply_cost_eur])
 
 ---
 
-## Marge Brute
+## Retours Remboursements
 
-> MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).
-> Voir commentaire dans `_Mesures.tmdl`. Shipping revenue inclus par défaut.
+> Bloc5 (dette technique) — retours et remboursements (returns_and_refunds_cost_eur,  
+> agrégé par commande). Provisoire : Marc doit revoir le périmètre de son côté.  
 
 ```dax
-Marge Brute =
-[CA Total HT] + [Frais Port Encaissés]
-    - [Coût Achat Total]
-    - [Coût Transport Amont]
-    - [Coût Transport Outbound (Retenu)]
-    - [Douanes Taxes]
-    - [Commissions Marketplace]
-    - [Fournitures Expédition]
+Retours Remboursements = SUM(fact_commandes[retours_remboursements])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coûts Génériques
+
+> Bloc5 (dette technique) — coûts génériques (generic_costs_eur, agrégé par commande).  
+> Provisoire : Marc doit revoir total_generic_costs_eur de son côté.  
+
+```dax
+Coûts Génériques = SUM(fact_commandes[couts_generiques])
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Marge Brute
+
+> MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).  
+> Revenu = CA hors commandes annulées (règle Marc "CA=0 sur annulation", grain commande).  
+> Coûts conservés sur toutes commandes y compris annulées (décision Marc : coût produit  
+> + transport si après expédition). Frais de port encaissés exclus sur commandes CANCELLED  
+> (1 283 € sur l'entrepôt actuel, audit 15/07/2026). Annulations partielles non ajustées  
+> (~8 900 cmd, limite connue — voir docs/notes-techniques/limite-etf-annulation.md).  
+> Grain article [Marge Brute (grain article, prov.)] conservé comme contrôle et chemin de  
+> bascule si customer_price_per_item_eur devient disponible par ligne.  
+> Revenue (incl. shipping revenue if relevant) - COGS - Inbound transportation costs  
+> - Outbound transportation costs - Duties and Taxes - Marketplace commission fees  
+> - Shipping supplies - Returns/refunds - Generic costs.  
+> Retours/remboursements + coûts génériques inclus (Bloc 5, dette technique — Marc doit  
+> revoir total_generic_costs_eur). Grain commande (agrégés par order_id depuis  
+> customer_order_item).  
+
+```dax
+Marge Brute = 			[CA HT Net Annulation]
+				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
+				- [Coût Achat Total]
+				- [Coût Transport Amont]
+				- [Coût Transport Outbound (Retenu)]
+				- [Douanes Taxes]
+				- [Commissions Marketplace]
+				- [Fournitures Expédition]
+				- [Retours Remboursements]
+				- [Coûts Génériques]
 ```
 
 *Format* : `#,##0.00 €`
@@ -348,10 +560,16 @@ Marge Brute =
 
 ## Taux Marge Brute
 
-> Taux de marge brute = Marge Brute / (CA HT + frais de port encaissés).  
+> Fix F-04 / C-01 : taux = Marge Brute / revenu net annulation  
+> ([CA HT Net Annulation] + frais port hors CANCELLED) — même périmètre que [Marge Brute].  
 
 ```dax
-Taux Marge Brute = DIVIDE([Marge Brute], [CA Total HT] + [Frais Port Encaissés], 0)
+Taux Marge Brute = 			DIVIDE(
+				[Marge Brute],
+				[CA HT Net Annulation]
+					+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED"),
+				0
+			)
 ```
 
 *Format* : `0.0%`
@@ -360,7 +578,7 @@ Taux Marge Brute = DIVIDE([Marge Brute], [CA Total HT] + [Frais Port Encaissés]
 
 ## Écart Marge vs Backend (v2)
 
-> Écart entre la marge actée (7 postes) et la marge backend (contrôle v2).  
+> Fix F-04 : écart entre la marge conforme Marc et la marge backend (contrôle v2).  
 
 ```dax
 Écart Marge vs Backend (v2) = [Marge Brute] - [Marge Brute Backend (réf.)]
@@ -418,11 +636,10 @@ Nb Commandes Non Matchées = [Nb Commandes] - [Nb Commandes Matchées]
 > suit le chemin direct facture -> transporteur/date.  
 
 ```dax
-Coût Facturé Rapproché =
-CALCULATE(
-    SUM(fact_factures_transport[cout_transport]),
-    USERELATIONSHIP(fact_factures_transport[id_package], fact_transport[id_package])
-)
+Coût Facturé Rapproché = 			CALCULATE(
+				SUM(fact_factures_transport[cout_transport]),
+				USERELATIONSHIP(fact_factures_transport[id_package], fact_transport[id_package])
+			)
 ```
 
 *Format* : `#,##0.00 €`
@@ -532,18 +749,17 @@ CA Mois Précédent = CALCULATE([CA Total HT], DATEADD(dim_date[date], -1, MONTH
 > Chronopost : lignes au-delà de la 1re par numero_facture (grain multi-colis, pas un doublon qualité).  
 
 ```dax
-Lignes Colis par Facture (hors 1re) =
-VAR T =
-    ADDCOLUMNS(
-        FILTER(
-            VALUES(fact_factures_transport[numero_facture]),
-            NOT ISBLANK(fact_factures_transport[numero_facture])
-                && fact_factures_transport[numero_facture] <> ""
-        ),
-        "Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-    )
-RETURN
-    SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+Lignes Colis par Facture (hors 1re) = 			VAR T =
+				ADDCOLUMNS(
+					FILTER(
+						VALUES(fact_factures_transport[numero_facture]),
+						NOT ISBLANK(fact_factures_transport[numero_facture])
+							&& fact_factures_transport[numero_facture] <> ""
+					),
+					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+				)
+			RETURN
+				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
 *Format* : `#,##0`
@@ -555,18 +771,17 @@ RETURN
 > Vrais doublons qualité : même numero_facture ET même numero_suivi sur plusieurs lignes.  
 
 ```dax
-Vrais Doublons (Facture + Suivi) =
-VAR T =
-    ADDCOLUMNS(
-        SUMMARIZE(
-            fact_factures_transport,
-            fact_factures_transport[numero_facture],
-            fact_factures_transport[numero_suivi]
-        ),
-        "Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-    )
-RETURN
-    SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+Vrais Doublons (Facture + Suivi) = 			VAR T =
+				ADDCOLUMNS(
+					SUMMARIZE(
+						fact_factures_transport,
+						fact_factures_transport[numero_facture],
+						fact_factures_transport[numero_suivi]
+					),
+					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+				)
+			RETURN
+				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
 *Format* : `#,##0`
@@ -578,14 +793,13 @@ RETURN
 > Lignes de facture dont numero_suivi apparaît plus d'une fois (surplus hors 1re occurrence).  
 
 ```dax
-Doublons Numero Suivi Factures =
-VAR T =
-    ADDCOLUMNS(
-        VALUES(fact_factures_transport[numero_suivi]),
-        "Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-    )
-RETURN
-    SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+Doublons Numero Suivi Factures = 			VAR T =
+				ADDCOLUMNS(
+					VALUES(fact_factures_transport[numero_suivi]),
+					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+				)
+			RETURN
+				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
 *Format* : `#,##0`
@@ -597,14 +811,13 @@ RETURN
 > Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).  
 
 ```dax
-Commandes Sans Colis =
-COUNTROWS(
-    FILTER(
-        fact_commandes,
-        fact_commandes[state] <> "CANCELLED"
-            && COUNTROWS(RELATEDTABLE(fact_transport)) = 0
-    )
-)
+Commandes Sans Colis = 			COUNTROWS(
+				FILTER(
+					fact_commandes,
+					fact_commandes[state] <> "CANCELLED"
+						&& COUNTROWS(RELATEDTABLE(fact_transport)) = 0
+				)
+			)
 ```
 
 *Format* : `#,##0`
@@ -616,13 +829,12 @@ COUNTROWS(
 > Colis dont order_id ne correspond à aucune commande (intégrité référentielle).  
 
 ```dax
-Colis Sans Commande =
-COUNTROWS(
-    FILTER(
-        fact_transport,
-        ISBLANK(RELATED(fact_commandes[id_commande]))
-    )
-)
+Colis Sans Commande = 			COUNTROWS(
+				FILTER(
+					fact_transport,
+					ISBLANK(RELATED(fact_commandes[id_commande]))
+				)
+			)
 ```
 
 *Format* : `#,##0`
@@ -634,18 +846,17 @@ COUNTROWS(
 > Lignes de facture chargées avec cout_transport nul ou absent.  
 
 ```dax
-Lignes Facture Coût Transport Zero ou Null =
-COUNTROWS(
-    FILTER(
-        fact_factures_transport,
-        ISBLANK(fact_factures_transport[cout_transport])
-            || fact_factures_transport[cout_transport] = 0
-    )
-)
+Lignes Facture Coût Transport Zero ou Null = 			COUNTROWS(
+				FILTER(
+					fact_factures_transport,
+					ISBLANK(fact_factures_transport[cout_transport])
+						|| fact_factures_transport[cout_transport] = 0
+				)
+			)
 ```
 
 *Format* : `#,##0`
 
 ---
 
-*Mesures régénérées automatiquement depuis `_Mesures.tmdl` le 14/07/2026.*
+*Mesures régénérées automatiquement depuis `_Mesures.tmdl` le 15/07/2026.*

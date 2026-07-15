@@ -306,9 +306,10 @@ table fact_commandes
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande"
 					}),
-					// Exclusion CANCELLED retirée le 14/07/2026 — statut ambigu, décision métier en attente de Marc.
-					// Voir note : 59% des CANCELLED ont gross_profit_eur positif normal, 0,29% expédiées seulement.
-					// Ne pas réintroduire l'exclusion sans validation explicite.
+					// CANCELLED conservées en table (grain commande complet). La règle métier
+					// actée (CA=0 et frais port exclus sur annulation, décision Marc Slack 13/07)
+					// est appliquée dans les MESURES ([CA HT Net Annulation], [Marge Brute]),
+					// pas par un filtre de partition. Ne pas réintroduire d'exclusion ici.
 				in
 					#"Colonnes conservees"
 

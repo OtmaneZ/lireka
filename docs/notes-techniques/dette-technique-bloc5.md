@@ -46,7 +46,10 @@ Ces deux postes sont **provisoires** :
 - Marc doit valider le périmètre de `returns_and_refunds_cost_eur`
 - Marc doit revoir `total_generic_costs_eur` côté backend (définition comptable)
 
-Le terme **CA de `[Marge Brute]` n'a pas été modifié** (problème marketplace / reconstruction CA traité séparément).
+Le terme CA de `[Marge Brute]` reste le CA natif (non reconstruit marketplace).
+Le nettoyage des annulations (CA=0 sur CANCELLED) est traité séparément via
+`[CA HT Net Annulation]` — voir [limite-etf-annulation.md](./limite-etf-annulation.md).
+Bloc 5 n'ajoute que les 2 postes de coût (retours, génériques), sans toucher au terme CA.
 
 ---
 

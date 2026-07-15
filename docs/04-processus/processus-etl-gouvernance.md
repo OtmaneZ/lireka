@@ -42,6 +42,7 @@ L'arborescence SharePoint doit reproduire l'entrepôt local `Power_BI_Datawareho
 Power_BI_Datawarehouse/
 ├── Données_Backend/
 │   ├── customer_order.csv
+│   ├── customer_order_item.csv
 │   ├── package.csv
 │   └── customer_order_item_group.csv
 └── Dashboards_transporteurs/
@@ -59,18 +60,21 @@ Mode : **Import** (données chargées en mémoire à chaque refresh).
 
 ### Backend commandes et colis
 
-| Table Power BI | Fichier source | Rôle |
-|----------------|----------------|------|
+| Table Power BI | Fichier(s) source | Rôle |
+|----------------|-------------------|------|
 | `fact_commandes` | `customer_order.csv` | Commandes (CA, coûts, pays, type) |
 | `fact_transport` | `package.csv` | Colis (coût, suivi, transporteur inféré) |
-| `fact_lignes` | `customer_order_item_group.csv` | Lignes de commande |
+| `fact_lignes` | `customer_order_item.csv` + `customer_order_item_group.csv` | Lignes d'articles (grain : un article physique / `customer_order_item`) |
 | `dim_pays`, `dim_type_commande` | dérivées de `customer_order.csv` | Axes d'analyse |
 | `dim_date` | générée (calendrier) | Axe temporel |
 | `dim_transporteur` | table statique | Référentiel transporteurs |
 
 `customer_order.csv` (~187 Mo) est lu **une seule fois** via la requête partagée  
 `stg_customer_order`, puis réutilisée par `fact_commandes`, `dim_pays` et  
-`dim_type_commande`.
+`dim_type_commande`. Les coûts Bloc 5 (retours, génériques) passent par  
+`stg_couts_bloc5_commande` (agrégation depuis `stg_Commande_Items` /  
+`customer_order_item.csv`). `fact_lignes` merge `customer_order_item.csv` et  
+`customer_order_item_group.csv` pour le grain article.
 
 ### Factures transporteurs (La Poste / Colissimo, Chronopost)
 
@@ -88,9 +92,12 @@ dans les CSV backend.
 
 ### Relations principales
 
-- `fact_transport[order_id]` → `fact_commandes[id_commande]`
+- `fact_transport[order_id]` → `fact_commandes[id_commande]` (`rel_transport_commandes`)
+- `fact_lignes[order_id]` → `fact_commandes[id_commande]` (`rel_lignes_commandes`)
 - `fact_factures_transport[id_package]` → `fact_transport[id_package]` (`rel_factures_colis`)
 - `fact_commandes` → `dim_pays`, `dim_type_commande`, `dim_date`
+- `fact_transport` → `dim_transporteur`
+- Relations directes facture → `dim_transporteur` / `dim_date` : **inactives** (`isActive: false`) ; activables via `USERELATIONSHIP` dans les mesures de contrôle
 
 ---
 
@@ -122,10 +129,13 @@ Après publication du dataset sur le workspace Lireka :
 - **Marge brute** : mesure de référence `[Marge Brute]` — formule actée Marc Bordier
   (Slack, 13/07/2026 16h09), documentée dans `_Mesures.tmdl`.
   `[Marge Brute (prov.)]` conservée comme contrôle/comparaison historique.
-- **Matching factures** : seules les factures Colissimo/Chronopost alimentent le coût  
-  réel (`source_cout = "reel"`). Colis Privé et Postes Canada restent en coût estimé backend.
-- **Statut CANCELLED** : décision métier en attente — les commandes annulées restent  
-  dans le modèle pour l'instant.
+- **Matching factures** : seules les factures Colissimo/Chronopost alimentent le coût
+  rapproché (`source_cout = "facture_rapprochee"`). Les colis sans facture mais avec
+  coût backend utilisent `source_cout = "backend_seul"` ; sans les deux :
+  `source_cout = "aucun"`. Colis Privé et Postes Canada restent en coût estimé backend.
+- **Statut CANCELLED** : règle actée (CA=0 et frais de port exclus dans les mesures
+  `[CA HT Net Annulation]` / `[Marge Brute]` ; coûts conservés). Les commandes annulées
+  restent dans `fact_commandes` — pas de filtre partition.
 
 ---
 
