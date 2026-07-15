@@ -84,6 +84,48 @@ Audit Bloc 3 (reconstruction CA au grain article) :
 
 ---
 
+## Décision grain commande (livraison Bloc 3)
+
+> **Statut** : implémenté le 15/07/2026  
+> **Décision** : ZineInsights — mesure de référence `[Marge Brute]` au grain **commande**
+
+### Pourquoi le grain commande
+
+`customer_price_per_item_eur` est à **0 sur 94,6 %** des articles : impossible d'appliquer la règle Marc « CA = 0 sur annulation » via le grain article sans sous-estimer massivement le revenu. Le CA fiable est `order_amount_eur` au niveau `customer_order.csv`.
+
+### Règle livrée dans `[Marge Brute]`
+
+| Poste | Traitement grain commande |
+|-------|---------------------------|
+| CA (`order_amount_eur`) | **Zéro** sur `state = CANCELLED` via `[CA HT Net Annulation]` |
+| Frais de port encaissés | **Exclus** sur `state = CANCELLED` (1 283 €, audit 15/07/2026) |
+| Coût achat, commissions, transport amont | **Conservés** sur toutes commandes (y compris annulées) |
+| Transport sortant (`fact_transport`) | **Inchangé** — commande sans colis = pas de ligne transport (avant expédition) ; avec colis = coût conservé (après expédition) |
+
+### Ce qui n'est pas capturé
+
+| Limite | Volume audité |
+|--------|---------------|
+| Annulations partielles (`state <> CANCELLED`, ≥1 item `CANCELLED`) | **8 896 commandes** |
+| Borne haute CA non ajusté | **428 863 €** (`[CA Commandes Annulation Partielle]`) |
+
+### Couche de contrôle conservée (grain article)
+
+Inchangée — chemin de montée en charge si les prix ligne sont exportés un jour :
+
+- `fact_lignes[statut_annulation_ligne]`
+- `[CA Total HT (grain article, ajusté annulation)]`, `[Marge Brute (grain article, prov.)]`, etc.
+
+### Mesures grain commande ajoutées
+
+| Mesure | Rôle |
+|--------|------|
+| `[CA HT Net Annulation]` | CA HT hors commandes `CANCELLED` |
+| `[CA HT Net Annulation (reconstruit)]` | Variante marketplace |
+| `[CA Commandes Annulation Partielle]` | Transparence — CA des commandes partiellement annulées |
+
+---
+
 ## Coût transport — confirmation niveau item
 
 Sur les 100 501 items CANCELLED avec `package_id` null :
@@ -98,7 +140,7 @@ Sur les 100 501 items CANCELLED avec `package_id` null :
 | Fichier | Modification |
 |---------|--------------|
 | `definition/tables/fact_lignes.tmdl` | Colonne calculée `statut_annulation_ligne` |
-| `definition/tables/_Mesures.tmdl` | 5 mesures Bloc 3 (parallèles, existantes inchangées) |
+| `definition/tables/_Mesures.tmdl` | Mesures Bloc 3 grain article (contrôle) + grain commande (livraison) ; `[Marge Brute]` utilise `[CA HT Net Annulation]` |
 
 Aucun visuel dashboard ajouté.
 
@@ -109,5 +151,6 @@ Aucun visuel dashboard ajouté.
 - [ ] Valider le proxy `package_id` null / non-null comme substitut du sous-statut ETF
 - [ ] Trancher sur les 10 packages à états mixtes (classer item par item vs package entier)
 - [ ] Confirmer que le coût achat produit est conservé dans **tous** les cas d'annulation
-- [ ] Arbitrer sur l'export de `customer_price_per_item_eur` au grain article (prérequis CA ligne fiable)
+- [ ] Valider l'application grain **commande** de la règle CA=0 (`[Marge Brute]` livrée)
+- [ ] Arbitrer sur l'export de `customer_price_per_item_eur` au grain article (bascule future)
 - [ ] Décider si `[Marge Brute (grain article, prov.)]` peut un jour remplacer `[Marge Brute]`

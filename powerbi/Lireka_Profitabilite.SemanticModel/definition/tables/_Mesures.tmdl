@@ -106,6 +106,48 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: f8091234-5678-9abc-def0-123456789abc
 
+	/// Bloc3 (grain commande) — CA HT hors commandes annulées.
+	/// Applique la règle Marc "CA=0 sur annulation" au grain commande.
+	/// Ne capture PAS les annulations partielles (state <> CANCELLED, ~8 900 cmd,
+	/// borne CA cf. limite-etf-annulation.md) — limite connue documentée.
+	measure 'CA HT Net Annulation' =
+			CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
+		formatString: #,##0.00 €
+		lineageTag: f8091234-5678-9abc-def0-123456789abd
+
+	/// Bloc3 (grain commande) — CA HT reconstruit hors commandes annulées.
+	/// Variante marketplace (Bloc 1) de [CA HT Net Annulation].
+	measure 'CA HT Net Annulation (reconstruit)' =
+			CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
+		formatString: #,##0.00 €
+		lineageTag: f8091234-5678-9abc-def0-123456789abe
+
+	/// Bloc3 (grain commande) — transparence : CA porté par les commandes en annulation
+	/// partielle (state <> CANCELLED mais ≥1 article CANCELLED). Non ajusté faute de prix ligne.
+	/// Identification via rel_lignes_commandes (pas de colonne calculée fact_commandes).
+	measure 'CA Commandes Annulation Partielle' =
+			CALCULATE(
+				[CA Total HT],
+				FILTER(
+					fact_commandes,
+					fact_commandes[state] <> "CANCELLED"
+						&& COUNTROWS(
+							FILTER(
+								RELATEDTABLE(fact_lignes),
+								fact_lignes[internal_state] = "CANCELLED"
+							)
+						) > 0
+						&& COUNTROWS(
+							FILTER(
+								RELATEDTABLE(fact_lignes),
+								fact_lignes[internal_state] <> "CANCELLED"
+							)
+						) > 0
+				)
+			)
+		formatString: #,##0.00 €
+		lineageTag: f8091234-5678-9abc-def0-123456789abf
+
 	/// Coût d'achat total des livres (product_cost_eur).
 	measure 'Coût Achat Total' = SUM(fact_commandes[cout_achat])
 		formatString: #,##0.00 €
@@ -207,18 +249,43 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: 0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a
 
+	/// Bloc5 (dette technique) — retours et remboursements (returns_and_refunds_cost_eur,
+	/// agrégé par commande). Provisoire : Marc doit revoir le périmètre de son côté.
+	measure 'Retours Remboursements' = SUM(fact_commandes[retours_remboursements])
+		formatString: #,##0.00 €
+		lineageTag: e8f9a0b1-c2d3-4456-e789-0123def01234
+
+	/// Bloc5 (dette technique) — coûts génériques (generic_costs_eur, agrégé par commande).
+	/// Provisoire : Marc doit revoir total_generic_costs_eur de son côté.
+	measure 'Coûts Génériques' = SUM(fact_commandes[couts_generiques])
+		formatString: #,##0.00 €
+		lineageTag: f9a0b1c2-d3e4-4567-f890-1234ef012345
+
 	/// MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).
+	/// Revenu = CA hors commandes annulées (règle Marc "CA=0 sur annulation", grain commande).
+	/// Coûts conservés sur toutes commandes y compris annulées (décision Marc : coût produit
+	/// + transport si après expédition). Frais de port encaissés exclus sur commandes CANCELLED
+	/// (1 283 € sur l'entrepôt actuel, audit 15/07/2026). Annulations partielles non ajustées
+	/// (~8 900 cmd, limite connue — voir docs/notes-techniques/limite-etf-annulation.md).
+	/// Grain article [Marge Brute (grain article, prov.)] conservé comme contrôle et chemin de
+	/// bascule si customer_price_per_item_eur devient disponible par ligne.
 	/// Revenue (incl. shipping revenue if relevant) - COGS - Inbound transportation costs
 	/// - Outbound transportation costs - Duties and Taxes - Marketplace commission fees
-	/// - Shipping supplies. Shipping revenue inclus par défaut ; "if relevant" non tranché.
+	/// - Shipping supplies - Returns/refunds - Generic costs.
+	/// Retours/remboursements + coûts génériques inclus (Bloc 5, dette technique — Marc doit
+	/// revoir total_generic_costs_eur). Grain commande (agrégés par order_id depuis
+	/// customer_order_item).
 	measure 'Marge Brute' =
-			[CA Total HT] + [Frais Port Encaissés]
+			[CA HT Net Annulation]
+				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 				- [Coût Achat Total]
 				- [Coût Transport Amont]
 				- [Coût Transport Outbound (Retenu)]
 				- [Douanes Taxes]
 				- [Commissions Marketplace]
 				- [Fournitures Expédition]
+				- [Retours Remboursements]
+				- [Coûts Génériques]
 		formatString: #,##0.00 €
 		lineageTag: 1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b
 

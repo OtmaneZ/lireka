@@ -53,7 +53,7 @@ table dim_transporteur
 							{"DHL", "Express", "Existant (référence)", true},
 							{"FedEx", "Express", "Existant (référence)", true},
 							{"UPS", "Express", "Existant (référence)", true},
-							{"Postes Canada", "Standard", "Autre", true},
+							{"Postes Canada", "Standard", "Nouveau (intégré)", true},
 							{"INCONNU", "-", "Non identifié", false}
 						})
 				in

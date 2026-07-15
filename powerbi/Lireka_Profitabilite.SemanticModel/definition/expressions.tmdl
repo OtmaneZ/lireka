@@ -102,6 +102,27 @@ expression stg_Commande_Items =
 			#"Types appliques"
 	lineageTag: 0a8b65e4-a441-4c67-9c33-2084f7ea6296
 
+/// Staging (non chargé) — coûts Bloc 5 agrégés par commande depuis customer_order_item.
+/// Grain article → grain commande (SUM par order_id). Consommé par fact_commandes.
+expression stg_couts_bloc5_commande =
+		let
+			Source = stg_Commande_Items,
+			#"Couts agreges par commande" = Table.Group(Source, {"order_id"}, {
+				{
+					"retours_remboursements",
+					each List.Sum(List.Transform([returns_and_refunds_cost_eur], each if _ = null then 0 else _)),
+					type number
+				},
+				{
+					"couts_generiques",
+					each List.Sum(List.Transform([generic_costs_eur], each if _ = null then 0 else _)),
+					type number
+				}
+			})
+		in
+			#"Couts agreges par commande"
+	lineageTag: b5c6d7e8-f9a0-4123-b456-7890abcdef01
+
 /// Staging (non chargé) — customer_order.csv lu et typé une seule fois.
 /// Consommé par fact_commandes, dim_pays et dim_type_commande (évite 3 lectures du fichier 187 Mo).
 expression stg_customer_order =

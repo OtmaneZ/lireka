@@ -118,6 +118,28 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
+	/// Bloc5 (dette technique) — retours et remboursements agrégés par commande
+	/// (SUM returns_and_refunds_cost_eur depuis customer_order_item). Périmètre provisoire.
+	column retours_remboursements
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: c6d7e8f9-a0b1-4234-c567-8901bcdef012
+		summarizeBy: sum
+		sourceColumn: retours_remboursements
+
+		changedProperty = IsHidden
+
+	/// Bloc5 (dette technique) — coûts génériques agrégés par commande
+	/// (SUM generic_costs_eur depuis customer_order_item). Périmètre provisoire.
+	column couts_generiques
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: d7e8f9a0-b1c2-4345-d678-9012cdef0123
+		summarizeBy: sum
+		sourceColumn: couts_generiques
+
+		changedProperty = IsHidden
+
 	/// Coût d'achat des livres en EUR (product_cost_eur).
 	column cout_achat
 		dataType: double
@@ -251,12 +273,36 @@ table fact_commandes
 						{"inbound_transportation_cost_eur", "cout_transport_amont"},
 						{"marketplace_fees_eur", "commissions_marketplace"}
 					}),
+					// Bloc5 : agrégation grain article → grain commande (retours + coûts génériques)
+					#"Jointure couts bloc5" = Table.NestedJoin(
+						#"Colonnes renommees",
+						{"id_commande"},
+						stg_couts_bloc5_commande,
+						{"order_id"},
+						"bloc5",
+						JoinKind.LeftOuter
+					),
+					#"Couts bloc5 developpes" = Table.ExpandTableColumn(
+						#"Jointure couts bloc5",
+						"bloc5",
+						{"retours_remboursements", "couts_generiques"},
+						{"retours_remboursements", "couts_generiques"}
+					),
+					#"Couts bloc5 null vers zero" = Table.ReplaceValue(
+						#"Couts bloc5 developpes",
+						null,
+						0,
+						Replacer.ReplaceValue,
+						{"retours_remboursements", "couts_generiques"}
+					),
 					// Sélection des colonnes conservées dans le modèle
-					#"Colonnes conservees" = Table.SelectColumns(#"Colonnes renommees", {
+					#"Colonnes conservees" = Table.SelectColumns(#"Couts bloc5 null vers zero", {
 						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
 						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						// Fix F-04 : postes de marge nouvellement importés
 						"cout_transport_amont", "commissions_marketplace",
+						// Bloc5 : coûts agrégés par commande depuis customer_order_item
+						"retours_remboursements", "couts_generiques",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande"
 					}),
