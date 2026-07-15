@@ -8,7 +8,7 @@ model Model
 
 annotation PBI_ProTooling = ["DevMode"]
 
-annotation PBI_QueryOrder = ["fact_commandes","stg_factures_transport_resolu","fact_transport","fact_factures_transport","fact_lignes","dim_date","dim_pays","dim_transporteur","dim_type_commande","SharePointSiteURL","fnSharePointContenuFichier","fnSharePointLireCsv","fnSharePointLireCsvRecap","stg_customer_order","fnNormaliserTransporteur","fnCanonTransporteur","stg_Commande_Items"]
+annotation PBI_QueryOrder = ["fact_commandes","stg_factures_transport_resolu","fact_transport","fact_factures_transport","fact_lignes","dim_date","dim_pays","dim_transporteur","dim_type_commande","SharePointSiteURL","fnSharePointContenuFichier","fnSharePointLireCsv","fnSharePointLireCsvRecap","stg_customer_order","stg_taux_moyen_mensuel","fnNormaliserTransporteur","fnCanonTransporteur","stg_Commande_Items"]
 
 annotation __PBI_TimeIntelligenceEnabled = 1
 

@@ -114,6 +114,8 @@ expression stg_customer_order =
 				{"source", type text},
 				{"destination_country", type text},
 				{"currency", type text},
+				{"currency_rate", type number},
+				{"order_amount_local", type number},
 				{"origin_created", type text},
 				{"order_amount_eur", type number},
 				{"shipping_fee_eur", type number},
@@ -129,6 +131,37 @@ expression stg_customer_order =
 		in
 			#"Types appliques"
 	lineageTag: b3c8e1f2-4a5d-6e7f-8091-a2b3c4d5e6f7
+
+/// Staging (non chargé) — taux de change moyen mensuel par devise.
+/// Calculé à partir des lignes customer_order où currency_rate est renseigné (toutes sources).
+/// Consommé par fact_commandes pour la reconstruction du CA marketplace (option B).
+expression stg_taux_moyen_mensuel =
+		let
+			#"Date commande ajoutee" = Table.AddColumn(
+				stg_customer_order,
+				"date_commande",
+				each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null,
+				type date
+			),
+			#"Annee mois ajoutee" = Table.AddColumn(
+				#"Date commande ajoutee",
+				"annee_mois",
+				each if [date_commande] = null then null else Date.Year([date_commande]) * 100 + Date.Month([date_commande]),
+				Int64.Type
+			),
+			#"Taux valides" = Table.SelectRows(
+				#"Annee mois ajoutee",
+				each [currency_rate] <> null and [currency] <> null and Text.Trim([currency]) <> "" and [annee_mois] <> null
+			),
+			#"Taux moyen par devise mois" = Table.Group(
+				#"Taux valides",
+				{"currency", "annee_mois"},
+				{{"taux_moyen_mensuel", each List.Average([currency_rate]), type number}}
+			),
+			#"Colonnes renommees" = Table.RenameColumns(#"Taux moyen par devise mois", {{"currency", "devise"}})
+		in
+			#"Colonnes renommees"
+	lineageTag: c4d5e6f7-a8b9-4012-cdef-3456789abcde
 
 /// Résout un fichier CSV sur SharePoint (chemin relatif + nom) en contenu binaire.
 /// Utilise SharePoint.Files pour lister récursivement et filtrer par dossier/nom.

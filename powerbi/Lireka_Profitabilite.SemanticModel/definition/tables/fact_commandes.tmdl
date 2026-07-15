@@ -73,6 +73,17 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
+	/// CA HT reconstruit en EUR (order_amount_eur natif ou order_amount_local / taux mensuel).
+	/// Voir commentaire Power Query dans la partition et docs/notes-techniques/reconstruction-ca-marketplace.md.
+	column ca_ht_reconstruit
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: e7f80912-a3b4-5678-9abc-def012345678
+		summarizeBy: sum
+		sourceColumn: ca_ht_reconstruit
+
+		changedProperty = IsHidden
+
 	/// Fix F-04 : frais de port encaissés auprès du client en EUR (shipping_fee_eur).
 	/// Renommé shipping_fee_eur -> frais_port_encaisse pour exposer le poste
 	/// "shipping revenue" de la formule Marc à la mesure [Frais Port Encaissés].
@@ -188,17 +199,51 @@ table fact_commandes
 					}, "en-US"),
 					// Source partagée (stg_customer_order) — une seule lecture du CSV
 					#"Date commande ajoutee" = Table.AddColumn(#"Types postes marge", "date_commande", each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null, type date),
+					#"Annee mois ajoutee" = Table.AddColumn(
+						#"Date commande ajoutee",
+						"annee_mois",
+						each if [date_commande] = null then null else Date.Year([date_commande]) * 100 + Date.Month([date_commande]),
+						Int64.Type
+					),
+					// CA reconstruit pour les canaux marketplace où order_amount_eur natif est absent (Amazon, Cultura, Rakuten, Fnac).
+					// Méthode : taux de change moyen mensuel par devise, calculé à partir des commandes WEBSITE/PRO_WEBSITE
+					// où currency_rate est renseigné par le backend. Approximation, pas une conversion officielle Lireka.
+					// Décision ZineInsights du 15/07/2026, à documenter et faire valider par Marc en fin de mission.
+					#"Jointure taux mensuel" = Table.NestedJoin(
+						#"Annee mois ajoutee",
+						{"currency", "annee_mois"},
+						stg_taux_moyen_mensuel,
+						{"devise", "annee_mois"},
+						"taux",
+						JoinKind.LeftOuter
+					),
+					#"Taux mensuel etendu" = Table.ExpandTableColumn(#"Jointure taux mensuel", "taux", {"taux_moyen_mensuel"}, {"taux_moyen_mensuel"}),
+					#"CA eur reconstruit" = Table.AddColumn(
+						#"Taux mensuel etendu",
+						"order_amount_eur_reconstruit",
+						each
+							let
+								eurNatif = [order_amount_eur],
+								montantLocal = [order_amount_local],
+								taux = [taux_moyen_mensuel]
+							in
+								if eurNatif <> null and eurNatif <> 0 then eurNatif
+								else if montantLocal <> null and montantLocal <> 0 and taux <> null and taux <> 0 then montantLocal / taux
+								else null,
+						type nullable number
+					),
 					// Normalisation du code pays de livraison (majuscules, valeur de repli "??").
 					// "??" est libellé "Pays non attribué" dans dim_pays : le résidu de commandes
 					// non-CANCELLED sans pays (12 lignes, audit 14/07/2026) reste visible dans le
 					// CA/volume au lieu d'être exclu.
-					#"Code pays normalise" = Table.AddColumn(#"Date commande ajoutee", "code_pays", each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??" else Text.Upper(Text.Trim([destination_country])), type text),
+					#"Code pays normalise" = Table.AddColumn(#"CA eur reconstruit", "code_pays", each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??" else Text.Upper(Text.Trim([destination_country])), type text),
 					// Axe type de commande dérivé du canal de vente (source)
 					#"Type commande derive" = Table.AddColumn(#"Code pays normalise", "type_commande", each if [source] = null or Text.Trim([source]) = "" then "INCONNU" else Text.Trim([source]), type text),
 					// Renommage vers le schéma cible du modèle
 					#"Colonnes renommees" = Table.RenameColumns(#"Type commande derive", {
 						{"id", "id_commande"},
 						{"order_amount_eur", "ca_ht"},
+						{"order_amount_eur_reconstruit", "ca_ht_reconstruit"},
 						{"product_cost_eur", "cout_achat"},
 						{"total_shipping_cost_to_delivery_country_eur", "cout_transport_estime"},
 						// Fix F-04 : renommages des postes de marge vers le schéma cible du modèle
@@ -209,7 +254,7 @@ table fact_commandes
 					// Sélection des colonnes conservées dans le modèle
 					#"Colonnes conservees" = Table.SelectColumns(#"Colonnes renommees", {
 						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
-						"ca_ht", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
+						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						// Fix F-04 : postes de marge nouvellement importés
 						"cout_transport_amont", "commissions_marketplace",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",

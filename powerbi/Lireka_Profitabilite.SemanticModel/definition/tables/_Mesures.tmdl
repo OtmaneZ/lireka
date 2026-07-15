@@ -42,6 +42,13 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: dda226fa-8e6c-4c56-acbd-56fa1c84d136
 
+	/// CA HT reconstruit — order_amount_eur natif si présent, sinon order_amount_local / taux mensuel moyen.
+	/// Variante parallèle à [CA Total HT], sur le même modèle que [Marge Brute] vs [Marge Brute (prov.)].
+	/// Voir docs/notes-techniques/reconstruction-ca-marketplace.md.
+	measure 'CA Total HT (reconstruit)' = SUM(fact_commandes[ca_ht_reconstruit])
+		formatString: #,##0.00 €
+		lineageTag: f8091234-5678-9abc-def0-123456789abc
+
 	/// Coût d'achat total des livres (product_cost_eur).
 	measure 'Coût Achat Total' = SUM(fact_commandes[cout_achat])
 		formatString: #,##0.00 €
