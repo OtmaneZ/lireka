@@ -136,7 +136,6 @@ Après publication du dataset sur le workspace Lireka :
 | `powerbi/Lireka_Profitabilite.SemanticModel/definition/expressions.tmdl` | Requêtes M partagées, fonctions SharePoint |
 | `powerbi/Lireka_Profitabilite.SemanticModel/definition/relationships.tmdl` | Relations du modèle |
 | `powerbi/models/mesures-dax.md` | Référentiel des mesures DAX |
-| `powerbi/models/modeles-semanticques.md` | Description du schéma en étoile |
 
 ---
 
