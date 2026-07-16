@@ -463,6 +463,207 @@ table _Mesures
 		formatString: #,##0
 		lineageTag: d5e6f789-0123-4345-e456-789abcdef012
 
+	/// =====================================================================
+	/// Bloc 8 — KPI Finance + time intelligence YoY (SAMEPERIODLASTYEAR).
+	/// Prérequis : dim_date continue depuis 2020. DIVIDE sans 3e arg → BLANK
+	/// si dénominateur PY nul / absent.
+	/// =====================================================================
+
+	/// Finance KPI — Ordered Units (alias [Nb Articles], grain article / date_commande).
+	measure 'Unités commandées' = [Nb Articles]
+		formatString: #,##0
+		lineageTag: 62d36844-d7c6-4108-bb36-42ec9c44c92c
+
+	/// Finance KPI — Revenue = CA produit net annulation + frais de port (hors CANCELLED).
+	/// Aligné sur le dénominateur de [Taux Marge Brute].
+	measure Revenu =
+			[CA HT Net Annulation]
+				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
+		formatString: #,##0.00 €
+		lineageTag: 4449f741-c626-42a0-95c8-c0226f4e7f11
+
+	/// --- KPI cards : Unités commandées (Ordered Units) ---
+	measure 'Unités commandées PY' = CALCULATE([Unités commandées], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0
+		lineageTag: dc99c916-a9a6-42a2-acfa-e7dd0b88b42a
+
+	measure 'Unités commandées YoY Δ' = [Unités commandées] - [Unités commandées PY]
+		formatString: #,##0
+		lineageTag: 63169707-a053-4e3b-a825-b5ac033932d0
+
+	measure 'Unités commandées YoY %' = DIVIDE([Unités commandées] - [Unités commandées PY], [Unités commandées PY])
+		formatString: 0.0%
+		lineageTag: b2b7b172-1298-4d91-ba61-d1142ba285a3
+
+	/// --- KPI cards : Revenu (Revenue) ---
+	measure 'Revenu PY' = CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: b6b7aeab-d880-4342-8a60-5663277104df
+
+	measure 'Revenu YoY Δ' = [Revenu] - [Revenu PY]
+		formatString: #,##0.00 €
+		lineageTag: 61fb369e-68bb-4d68-9514-2c4448bb0e73
+
+	measure 'Revenu YoY %' = DIVIDE([Revenu] - [Revenu PY], [Revenu PY])
+		formatString: 0.0%
+		lineageTag: 2891b13d-7576-4fae-acc3-746871b32126
+
+	/// --- KPI cards : Marge Brute (Gross Profit) ---
+	measure 'Marge Brute PY' = CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: 7e2bb4b1-508f-4fec-b635-ced01e74cc21
+
+	measure 'Marge Brute YoY Δ' = [Marge Brute] - [Marge Brute PY]
+		formatString: #,##0.00 €
+		lineageTag: 2bccadc5-5cad-4801-83a0-b72471a37ece
+
+	measure 'Marge Brute YoY %' = DIVIDE([Marge Brute] - [Marge Brute PY], [Marge Brute PY])
+		formatString: 0.0%
+		lineageTag: 0c2bedcf-84e7-4297-8deb-7507f03ee820
+
+	/// --- KPI cards : Taux Marge Brute (Gross Margin %) — YoY en bps, pas en % ---
+	measure 'Taux Marge Brute PY' = CALCULATE([Taux Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: 0.0%
+		lineageTag: 671212f3-1065-4868-adce-a3a95fe37ea4
+
+	measure 'Taux Marge Brute YoY bps' = ([Taux Marge Brute] - [Taux Marge Brute PY]) * 10000
+		formatString: #,##0
+		lineageTag: 90ed7a8b-a675-4b89-9642-5b5798c3ed86
+
+	/// --- Tableaux détaillés P&L : même logique PY / YoY Δ / YoY % ---
+
+	measure 'Nb Commandes PY' = CALCULATE([Nb Commandes], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0
+		lineageTag: c06ad058-babd-4af3-9382-8e8f7d87de2a
+
+	measure 'Nb Commandes YoY Δ' = [Nb Commandes] - [Nb Commandes PY]
+		formatString: #,##0
+		lineageTag: 4f1666f1-50a1-45a9-a53e-a1707d2e6b4e
+
+	measure 'Nb Commandes YoY %' = DIVIDE([Nb Commandes] - [Nb Commandes PY], [Nb Commandes PY])
+		formatString: 0.0%
+		lineageTag: a9eaf4fa-cdb1-42bc-b812-4e4175876d98
+
+	measure 'CA HT Net Annulation PY' = CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: b375dae1-e80e-4327-8270-83f36c50a2ad
+
+	measure 'CA HT Net Annulation YoY Δ' = [CA HT Net Annulation] - [CA HT Net Annulation PY]
+		formatString: #,##0.00 €
+		lineageTag: 41d555c8-ff35-47ba-89b9-8b94949401bc
+
+	measure 'CA HT Net Annulation YoY %' = DIVIDE([CA HT Net Annulation] - [CA HT Net Annulation PY], [CA HT Net Annulation PY])
+		formatString: 0.0%
+		lineageTag: 4d5f0088-0032-49e6-a591-1f1adb7f0e7a
+
+	measure 'Frais Port Encaissés PY' = CALCULATE([Frais Port Encaissés], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: 3c8c29e4-4493-41b2-b9c5-62213d939366
+
+	measure 'Frais Port Encaissés YoY Δ' = [Frais Port Encaissés] - [Frais Port Encaissés PY]
+		formatString: #,##0.00 €
+		lineageTag: 875190ab-308d-46c5-bcfd-60658b92d4cb
+
+	measure 'Frais Port Encaissés YoY %' = DIVIDE([Frais Port Encaissés] - [Frais Port Encaissés PY], [Frais Port Encaissés PY])
+		formatString: 0.0%
+		lineageTag: 875b244b-fff6-4c17-94a1-9d8b16639d33
+
+	measure 'Coût Achat Total PY' = CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: 62fde7f2-0dab-4203-859c-3f41e6b8e8c9
+
+	measure 'Coût Achat Total YoY Δ' = [Coût Achat Total] - [Coût Achat Total PY]
+		formatString: #,##0.00 €
+		lineageTag: 6a77f5e5-4ac2-45d1-98c9-58927eb3a98b
+
+	measure 'Coût Achat Total YoY %' = DIVIDE([Coût Achat Total] - [Coût Achat Total PY], [Coût Achat Total PY])
+		formatString: 0.0%
+		lineageTag: c1b2cbdc-fcbd-4283-85bb-f8633178bfc9
+
+	measure 'Coût Transport Amont PY' = CALCULATE([Coût Transport Amont], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: 51d9ecde-f889-44e4-940e-026bab6fc47c
+
+	measure 'Coût Transport Amont YoY Δ' = [Coût Transport Amont] - [Coût Transport Amont PY]
+		formatString: #,##0.00 €
+		lineageTag: 9666c508-db96-4550-a7d8-87c287095111
+
+	measure 'Coût Transport Amont YoY %' = DIVIDE([Coût Transport Amont] - [Coût Transport Amont PY], [Coût Transport Amont PY])
+		formatString: 0.0%
+		lineageTag: 0fca9897-d9bd-4ff6-8c5c-8cd4727b1cef
+
+	measure 'Coût Transport Outbound (Retenu) PY' = CALCULATE([Coût Transport Outbound (Retenu)], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: c4ce4585-9c86-47ea-a88d-d7d89b50e5fd
+
+	measure 'Coût Transport Outbound (Retenu) YoY Δ' = [Coût Transport Outbound (Retenu)] - [Coût Transport Outbound (Retenu) PY]
+		formatString: #,##0.00 €
+		lineageTag: 5f0b3520-1bcd-4770-8dba-25664442aa5c
+
+	measure 'Coût Transport Outbound (Retenu) YoY %' = DIVIDE([Coût Transport Outbound (Retenu)] - [Coût Transport Outbound (Retenu) PY], [Coût Transport Outbound (Retenu) PY])
+		formatString: 0.0%
+		lineageTag: 8bcbd401-4e41-421b-9af7-3ccc383fb0ba
+
+	measure 'Douanes Taxes PY' = CALCULATE([Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: f000cb0d-655f-4ba1-a763-e8ab5d69a443
+
+	measure 'Douanes Taxes YoY Δ' = [Douanes Taxes] - [Douanes Taxes PY]
+		formatString: #,##0.00 €
+		lineageTag: 16fbcfd2-dde6-4481-b4cf-b65158d16e68
+
+	measure 'Douanes Taxes YoY %' = DIVIDE([Douanes Taxes] - [Douanes Taxes PY], [Douanes Taxes PY])
+		formatString: 0.0%
+		lineageTag: 6147462f-8305-4568-8404-63a1abee626f
+
+	measure 'Commissions Marketplace PY' = CALCULATE([Commissions Marketplace], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: 09d9cbe9-ce73-470d-97d0-6cba4c2de600
+
+	measure 'Commissions Marketplace YoY Δ' = [Commissions Marketplace] - [Commissions Marketplace PY]
+		formatString: #,##0.00 €
+		lineageTag: 4028c4bb-382f-458c-94cf-316ab739d77a
+
+	measure 'Commissions Marketplace YoY %' = DIVIDE([Commissions Marketplace] - [Commissions Marketplace PY], [Commissions Marketplace PY])
+		formatString: 0.0%
+		lineageTag: 2f8200f8-dd17-43d9-b73f-c499062f2d77
+
+	measure 'Fournitures Expédition PY' = CALCULATE([Fournitures Expédition], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: 99df3b5d-eab6-4918-b040-24adefd6b1b0
+
+	measure 'Fournitures Expédition YoY Δ' = [Fournitures Expédition] - [Fournitures Expédition PY]
+		formatString: #,##0.00 €
+		lineageTag: ffb87dd7-ee17-425c-bae7-67260d253f0f
+
+	measure 'Fournitures Expédition YoY %' = DIVIDE([Fournitures Expédition] - [Fournitures Expédition PY], [Fournitures Expédition PY])
+		formatString: 0.0%
+		lineageTag: 86d98470-ce8d-45aa-979d-fc7701f189d4
+
+	measure 'Retours Remboursements PY' = CALCULATE([Retours Remboursements], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: e430624b-7acd-4eec-a764-b0dd52df83d0
+
+	measure 'Retours Remboursements YoY Δ' = [Retours Remboursements] - [Retours Remboursements PY]
+		formatString: #,##0.00 €
+		lineageTag: 8ccd792d-079b-4dbd-956d-b44fac89a5c3
+
+	measure 'Retours Remboursements YoY %' = DIVIDE([Retours Remboursements] - [Retours Remboursements PY], [Retours Remboursements PY])
+		formatString: 0.0%
+		lineageTag: 0fe4f423-5830-4f64-880f-93e2e40ab98b
+
+	measure 'Coûts Génériques PY' = CALCULATE([Coûts Génériques], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: b962c013-7f99-440e-9eee-43f9219e752f
+
+	measure 'Coûts Génériques YoY Δ' = [Coûts Génériques] - [Coûts Génériques PY]
+		formatString: #,##0.00 €
+		lineageTag: 1747e9bb-8b28-4b36-8697-5932f1cc2918
+
+	measure 'Coûts Génériques YoY %' = DIVIDE([Coûts Génériques] - [Coûts Génériques PY], [Coûts Génériques PY])
+		formatString: 0.0%
+		lineageTag: 625464b5-de13-4b23-8028-5c54a97ab079
+
 	column Dummy
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a
 		summarizeBy: none

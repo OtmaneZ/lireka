@@ -1,6 +1,8 @@
-/// Dimension — calendrier (2022-01-01 -> 2026-12-31), libellés en français.
-/// Table générée en Power Query (indépendante des sources). Reliée à
-/// fact_commandes[date_commande] et fact_factures_transport[date_facture].
+/// Dimension — calendrier (2020-01-01 -> 2026-12-31), libellés en français.
+/// Étendue à 2020 pour couvrir l'historique backend (origin_created dès 2020-01)
+/// et permettre le YoY sur toute la plage. Table générée en Power Query
+/// (indépendante des sources). Reliée à fact_commandes[date_commande] et
+/// fact_factures_transport[date_facture].
 table dim_date
 	lineageTag: 1ae962f8-740f-448c-901d-b26c93c27570
 	dataCategory: Time
@@ -11,6 +13,8 @@ table dim_date
 		lineageTag: 3bdec9d9-5d0e-4b61-a426-61abab59c3a6
 		summarizeBy: none
 		sourceColumn: date
+		isKey
+		dataCategory: Time
 
 		changedProperty = IsHidden
 
@@ -107,8 +111,8 @@ table dim_date
 		mode: import
 		source =
 				let
-					// Bornes du calendrier (les données backend démarrent en 2022)
-					Debut = #date(2022, 1, 1),
+					// Bornes du calendrier (historique backend dès 2020 — requis pour YoY)
+					Debut = #date(2020, 1, 1),
 					Fin = #date(2026, 12, 31),
 					NbJours = Duration.Days(Fin - Debut) + 1,
 					// Génération de la liste continue de dates

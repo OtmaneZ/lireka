@@ -1,7 +1,8 @@
 /// Dimension — type de commande (axe d'analyse du dashboard).
 /// Dérivée des valeurs distinctes de customer_order.source (canal de vente).
-/// Catégorisation par règle (Marketplace / B2C direct / B2B / Autre) — à valider
-/// avec Lireka pour la nomenclature métier définitive.
+/// Colonne canal : regroupement Finance (Website B2C / Website B2B / Marketplaces /
+/// Librairie Arthaud / Autre). Mapping validé provisoirement — PRO_WEBSITE = Website B2B
+/// à confirmer avec Marc.
 table dim_type_commande
 	lineageTag: 429de86e-9e69-49ed-bcff-fcd4d672de50
 
@@ -13,11 +14,11 @@ table dim_type_commande
 
 		changedProperty = IsHidden
 
-	column categorie
+	column canal
 		dataType: string
 		lineageTag: c4d80b3e-bab1-4dbd-b1ef-e50399ec9c0d
 		summarizeBy: none
-		sourceColumn: categorie
+		sourceColumn: canal
 
 		changedProperty = IsHidden
 
@@ -38,17 +39,16 @@ table dim_type_commande
 					// Normalisation de la clé type_commande (repli INCONNU)
 					#"Type commande derive" = Table.AddColumn(#"Colonne source", "type_commande", each if [source] = null or Text.Trim([source]) = "" then "INCONNU" else Text.Trim([source]), type text),
 					#"Valeurs distinctes" = Table.Distinct(Table.SelectColumns(#"Type commande derive", {"type_commande"})),
-					// Catégorisation métier par règle
-					#"Categorie ajoutee" = Table.AddColumn(#"Valeurs distinctes", "categorie", each
+					// Mapping Canal validé provisoirement — PRO_WEBSITE = Website B2B à confirmer avec Marc
+					#"Canal ajoute" = Table.AddColumn(#"Valeurs distinctes", "canal", each
 						let s = Text.Upper([type_commande]) in
-						if s = "WEBSITE" then "B2C direct"
-						else if Text.StartsWith(s, "AMAZON") then "Marketplace"
-						else if Text.Contains(s, "B2B") then "B2B"
-						else if Text.Contains(s, "FNAC") or Text.Contains(s, "CDISCOUNT") or Text.Contains(s, "EBAY") or Text.Contains(s, "RAKUTEN") then "Marketplace"
-						else if s = "INCONNU" then "Non identifié"
+						if s = "WEBSITE" then "Website B2C"
+						else if s = "PRO_WEBSITE" then "Website B2B"
+						else if Text.StartsWith(s, "AMAZON") or s = "CULTURA" or s = "RAKUTEN" or s = "FNAC" then "Marketplaces"
+						else if s = "ARTHAUD" then "Librairie Arthaud"
 						else "Autre", type text),
 					// Libellé lisible (underscores -> espaces, casse normalisée)
-					#"Libelle ajoute" = Table.AddColumn(#"Categorie ajoutee", "libelle", each Text.Proper(Text.Replace([type_commande], "_", " ")), type text)
+					#"Libelle ajoute" = Table.AddColumn(#"Canal ajoute", "libelle", each Text.Proper(Text.Replace([type_commande], "_", " ")), type text)
 				in
 					#"Libelle ajoute"
 

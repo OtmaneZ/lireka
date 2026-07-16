@@ -5,7 +5,7 @@
 > **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
 > Ne pas éditer à la main : régénérer depuis `_Mesures.tmdl` (script one-shot).
 
-> Total : **59 mesures**, dans l'ordre du modèle.
+> Total : **105 mesures**, dans l'ordre du modèle.
 
 ---
 
@@ -100,10 +100,10 @@ Nb Articles = COUNTROWS(fact_lignes)
 > Contrôle Bloc2 — recalcule l'ancien total par somme des quantity_groupe distincts par groupe.  
 
 ```dax
-Nb Articles (contrôle grain groupe) = 			SUMX(
-				VALUES(fact_lignes[item_group_id]),
-				CALCULATE(MAX(fact_lignes[quantity_groupe]))
-			)
+Nb Articles (contrôle grain groupe) = SUMX(
+		VALUES(fact_lignes[item_group_id]),
+		CALCULATE(MAX(fact_lignes[quantity_groupe]))
+	)
 ```
 
 *Format* : `#,##0`
@@ -129,14 +129,14 @@ Nb Articles Annulés = CALCULATE([Nb Articles], fact_lignes[internal_state] = "C
 > article, pas commande, pour gérer les annulations partielles (~8 900 commandes, audit 15/07/2026).  
 
 ```dax
-CA Total HT (grain article, ajusté annulation) = 			SUMX(
-				fact_lignes,
-				IF(
-					fact_lignes[statut_annulation_ligne] = "NON_ANNULE",
-					fact_lignes[customer_price_per_item_eur],
-					0
-				)
-			)
+CA Total HT (grain article, ajusté annulation) = SUMX(
+		fact_lignes,
+		IF(
+			fact_lignes[statut_annulation_ligne] = "NON_ANNULE",
+			fact_lignes[customer_price_per_item_eur],
+			0
+		)
+	)
 ```
 
 *Format* : `#,##0.00 €`
@@ -161,7 +161,7 @@ Coût Achat Total (grain article) = SUM(fact_lignes[product_cost_eur])
 > Bloc3 — articles annulés avant expédition (proxy package_id null).  
 
 ```dax
-Nb Articles Annulés Avant Expédition = 			CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_AVANT_EXPEDITION")
+Nb Articles Annulés Avant Expédition = CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_AVANT_EXPEDITION")
 ```
 
 *Format* : `#,##0`
@@ -173,7 +173,7 @@ Nb Articles Annulés Avant Expédition = 			CALCULATE([Nb Articles], fact_lignes
 > Bloc3 — articles annulés après expédition (proxy package_id non-null).  
 
 ```dax
-Nb Articles Annulés Après Expédition = 			CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_APRES_EXPEDITION")
+Nb Articles Annulés Après Expédition = CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_APRES_EXPEDITION")
 ```
 
 *Format* : `#,##0`
@@ -187,7 +187,7 @@ Nb Articles Annulés Après Expédition = 			CALCULATE([Nb Articles], fact_ligne
 > intégrés au même grain. Ne pas publier dans le rapport final sans validation Marc.  
 
 ```dax
-Marge Brute (grain article, prov.) = 			[CA Total HT (grain article, ajusté annulation)] - [Coût Achat Total (grain article)]
+Marge Brute (grain article, prov.) = [CA Total HT (grain article, ajusté annulation)] - [Coût Achat Total (grain article)]
 ```
 
 *Format* : `#,##0.00 €`
@@ -228,7 +228,7 @@ CA Total HT (reconstruit) = SUM(fact_commandes[ca_ht_reconstruit])
 > borne CA cf. limite-etf-annulation.md) — limite connue documentée.  
 
 ```dax
-CA HT Net Annulation = 			CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
+CA HT Net Annulation = CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
 ```
 
 *Format* : `#,##0.00 €`
@@ -241,7 +241,7 @@ CA HT Net Annulation = 			CALCULATE([CA Total HT], fact_commandes[state] <> "CAN
 > Variante marketplace (Bloc 1) de [CA HT Net Annulation].  
 
 ```dax
-CA HT Net Annulation (reconstruit) = 			CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
+CA HT Net Annulation (reconstruit) = CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
 ```
 
 *Format* : `#,##0.00 €`
@@ -255,25 +255,25 @@ CA HT Net Annulation (reconstruit) = 			CALCULATE([CA Total HT (reconstruit)], f
 > Identification via rel_lignes_commandes (pas de colonne calculée fact_commandes).  
 
 ```dax
-CA Commandes Annulation Partielle = 			CALCULATE(
-				[CA Total HT],
-				FILTER(
-					fact_commandes,
-					fact_commandes[state] <> "CANCELLED"
-						&& COUNTROWS(
-							FILTER(
-								RELATEDTABLE(fact_lignes),
-								fact_lignes[internal_state] = "CANCELLED"
-							)
-						) > 0
-						&& COUNTROWS(
-							FILTER(
-								RELATEDTABLE(fact_lignes),
-								fact_lignes[internal_state] <> "CANCELLED"
-							)
-						) > 0
-				)
-			)
+CA Commandes Annulation Partielle = CALCULATE(
+		[CA Total HT],
+		FILTER(
+			fact_commandes,
+			fact_commandes[state] <> "CANCELLED"
+				&& COUNTROWS(
+					FILTER(
+						RELATEDTABLE(fact_lignes),
+						fact_lignes[internal_state] = "CANCELLED"
+					)
+				) > 0
+				&& COUNTROWS(
+					FILTER(
+						RELATEDTABLE(fact_lignes),
+						fact_lignes[internal_state] <> "CANCELLED"
+					)
+				) > 0
+		)
+	)
 ```
 
 *Format* : `#,##0.00 €`
@@ -325,12 +325,12 @@ Coût Transport Réel = SUM(fact_transport[cout_transport])
 > avec CROSSFILTER pour éviter toute ambiguïté.  
 
 ```dax
-Coût Transport Facturé = 			CALCULATE(
-				SUM(fact_factures_transport[cout_transport]),
-				USERELATIONSHIP(fact_factures_transport[transporteur], dim_transporteur[transporteur]),
-				USERELATIONSHIP(fact_factures_transport[date_facture], dim_date[date]),
-				CROSSFILTER(fact_factures_transport[id_package], fact_transport[id_package], None)
-			)
+Coût Transport Facturé = CALCULATE(
+		SUM(fact_factures_transport[cout_transport]),
+		USERELATIONSHIP(fact_factures_transport[transporteur], dim_transporteur[transporteur]),
+		USERELATIONSHIP(fact_factures_transport[date_facture], dim_date[date]),
+		CROSSFILTER(fact_factures_transport[id_package], fact_transport[id_package], None)
+	)
 ```
 
 *Format* : `#,##0.00 €`
@@ -344,7 +344,7 @@ Coût Transport Facturé = 			CALCULATE(
 > deux estimations backend (coût colis vs coût commande), sans valeur de pilotage.  
 
 ```dax
-Écart Coût Outbound vs Estimé Backend = 			[Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
+Écart Coût Outbound vs Estimé Backend = [Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
 ```
 
 *Format* : `#,##0.00 €`
@@ -547,16 +547,16 @@ Coûts Génériques = SUM(fact_commandes[couts_generiques])
 > customer_order_item).  
 
 ```dax
-Marge Brute = 			[CA HT Net Annulation]
-				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
-				- [Coût Achat Total]
-				- [Coût Transport Amont]
-				- [Coût Transport Outbound (Retenu)]
-				- [Douanes Taxes]
-				- [Commissions Marketplace]
-				- [Fournitures Expédition]
-				- [Retours Remboursements]
-				- [Coûts Génériques]
+Marge Brute = [CA HT Net Annulation]
+		+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
+		- [Coût Achat Total]
+		- [Coût Transport Amont]
+		- [Coût Transport Outbound (Retenu)]
+		- [Douanes Taxes]
+		- [Commissions Marketplace]
+		- [Fournitures Expédition]
+		- [Retours Remboursements]
+		- [Coûts Génériques]
 ```
 
 *Format* : `#,##0.00 €`
@@ -569,12 +569,12 @@ Marge Brute = 			[CA HT Net Annulation]
 > ([CA HT Net Annulation] + frais port hors CANCELLED) — même périmètre que [Marge Brute].  
 
 ```dax
-Taux Marge Brute = 			DIVIDE(
-				[Marge Brute],
-				[CA HT Net Annulation]
-					+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED"),
-				0
-			)
+Taux Marge Brute = DIVIDE(
+		[Marge Brute],
+		[CA HT Net Annulation]
+			+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED"),
+		0
+	)
 ```
 
 *Format* : `0.0%`
@@ -641,10 +641,10 @@ Nb Commandes Non Matchées = [Nb Commandes] - [Nb Commandes Matchées]
 > suit le chemin direct facture -> transporteur/date.  
 
 ```dax
-Coût Facturé Rapproché = 			CALCULATE(
-				SUM(fact_factures_transport[cout_transport]),
-				USERELATIONSHIP(fact_factures_transport[id_package], fact_transport[id_package])
-			)
+Coût Facturé Rapproché = CALCULATE(
+		SUM(fact_factures_transport[cout_transport]),
+		USERELATIONSHIP(fact_factures_transport[id_package], fact_transport[id_package])
+	)
 ```
 
 *Format* : `#,##0.00 €`
@@ -754,17 +754,17 @@ CA Mois Précédent = CALCULATE([CA Total HT], DATEADD(dim_date[date], -1, MONTH
 > Chronopost : lignes au-delà de la 1re par numero_facture (grain multi-colis, pas un doublon qualité).  
 
 ```dax
-Lignes Colis par Facture (hors 1re) = 			VAR T =
-				ADDCOLUMNS(
-					FILTER(
-						VALUES(fact_factures_transport[numero_facture]),
-						NOT ISBLANK(fact_factures_transport[numero_facture])
-							&& fact_factures_transport[numero_facture] <> ""
-					),
-					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-				)
-			RETURN
-				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+Lignes Colis par Facture (hors 1re) = VAR T =
+		ADDCOLUMNS(
+			FILTER(
+				VALUES(fact_factures_transport[numero_facture]),
+				NOT ISBLANK(fact_factures_transport[numero_facture])
+					&& fact_factures_transport[numero_facture] <> ""
+			),
+			"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+		)
+	RETURN
+		SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
 *Format* : `#,##0`
@@ -776,17 +776,17 @@ Lignes Colis par Facture (hors 1re) = 			VAR T =
 > Vrais doublons qualité : même numero_facture ET même numero_suivi sur plusieurs lignes.  
 
 ```dax
-Vrais Doublons (Facture + Suivi) = 			VAR T =
-				ADDCOLUMNS(
-					SUMMARIZE(
-						fact_factures_transport,
-						fact_factures_transport[numero_facture],
-						fact_factures_transport[numero_suivi]
-					),
-					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-				)
-			RETURN
-				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+Vrais Doublons (Facture + Suivi) = VAR T =
+		ADDCOLUMNS(
+			SUMMARIZE(
+				fact_factures_transport,
+				fact_factures_transport[numero_facture],
+				fact_factures_transport[numero_suivi]
+			),
+			"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+		)
+	RETURN
+		SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
 *Format* : `#,##0`
@@ -798,13 +798,13 @@ Vrais Doublons (Facture + Suivi) = 			VAR T =
 > Lignes de facture dont numero_suivi apparaît plus d'une fois (surplus hors 1re occurrence).  
 
 ```dax
-Doublons Numero Suivi Factures = 			VAR T =
-				ADDCOLUMNS(
-					VALUES(fact_factures_transport[numero_suivi]),
-					"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-				)
-			RETURN
-				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
+Doublons Numero Suivi Factures = VAR T =
+		ADDCOLUMNS(
+			VALUES(fact_factures_transport[numero_suivi]),
+			"Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
+		)
+	RETURN
+		SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 ```
 
 *Format* : `#,##0`
@@ -816,13 +816,13 @@ Doublons Numero Suivi Factures = 			VAR T =
 > Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).  
 
 ```dax
-Commandes Sans Colis = 			COUNTROWS(
-				FILTER(
-					fact_commandes,
-					fact_commandes[state] <> "CANCELLED"
-						&& COUNTROWS(RELATEDTABLE(fact_transport)) = 0
-				)
-			)
+Commandes Sans Colis = COUNTROWS(
+		FILTER(
+			fact_commandes,
+			fact_commandes[state] <> "CANCELLED"
+				&& COUNTROWS(RELATEDTABLE(fact_transport)) = 0
+		)
+	)
 ```
 
 *Format* : `#,##0`
@@ -834,12 +834,12 @@ Commandes Sans Colis = 			COUNTROWS(
 > Colis dont order_id ne correspond à aucune commande (intégrité référentielle).  
 
 ```dax
-Colis Sans Commande = 			COUNTROWS(
-				FILTER(
-					fact_transport,
-					ISBLANK(RELATED(fact_commandes[id_commande]))
-				)
-			)
+Colis Sans Commande = COUNTROWS(
+		FILTER(
+			fact_transport,
+			ISBLANK(RELATED(fact_commandes[id_commande]))
+		)
+	)
 ```
 
 *Format* : `#,##0`
@@ -851,17 +851,484 @@ Colis Sans Commande = 			COUNTROWS(
 > Lignes de facture chargées avec cout_transport nul ou absent.  
 
 ```dax
-Lignes Facture Coût Transport Zero ou Null = 			COUNTROWS(
-				FILTER(
-					fact_factures_transport,
-					ISBLANK(fact_factures_transport[cout_transport])
-						|| fact_factures_transport[cout_transport] = 0
-				)
-			)
+Lignes Facture Coût Transport Zero ou Null = COUNTROWS(
+		FILTER(
+			fact_factures_transport,
+			ISBLANK(fact_factures_transport[cout_transport])
+				|| fact_factures_transport[cout_transport] = 0
+		)
+	)
 ```
 
 *Format* : `#,##0`
 
 ---
 
-*Mesures régénérées automatiquement depuis `_Mesures.tmdl` le 15/07/2026.*
+## Unités commandées
+
+> Bloc 8 — KPI Finance + time intelligence YoY (SAMEPERIODLASTYEAR).  
+> Prérequis : dim_date continue depuis 2020. DIVIDE sans 3e arg → BLANK  
+> si dénominateur PY nul / absent.  
+> Finance KPI — Ordered Units (alias [Nb Articles], grain article / date_commande).  
+
+```dax
+Unités commandées = [Nb Articles]
+```
+
+*Format* : `#,##0`
+
+---
+
+## Revenu
+
+> Finance KPI — Revenue = CA produit net annulation + frais de port (hors CANCELLED).  
+> Aligné sur le dénominateur de [Taux Marge Brute].  
+
+```dax
+Revenu = [CA HT Net Annulation]
+		+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Unités commandées PY
+
+```dax
+Unités commandées PY = CALCULATE([Unités commandées], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0`
+
+---
+
+## Unités commandées YoY Δ
+
+```dax
+Unités commandées YoY Δ = [Unités commandées] - [Unités commandées PY]
+```
+
+*Format* : `#,##0`
+
+---
+
+## Unités commandées YoY %
+
+```dax
+Unités commandées YoY % = DIVIDE([Unités commandées] - [Unités commandées PY], [Unités commandées PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Revenu PY
+
+```dax
+Revenu PY = CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Revenu YoY Δ
+
+```dax
+Revenu YoY Δ = [Revenu] - [Revenu PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Revenu YoY %
+
+```dax
+Revenu YoY % = DIVIDE([Revenu] - [Revenu PY], [Revenu PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Marge Brute PY
+
+```dax
+Marge Brute PY = CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Marge Brute YoY Δ
+
+```dax
+Marge Brute YoY Δ = [Marge Brute] - [Marge Brute PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Marge Brute YoY %
+
+```dax
+Marge Brute YoY % = DIVIDE([Marge Brute] - [Marge Brute PY], [Marge Brute PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Taux Marge Brute PY
+
+```dax
+Taux Marge Brute PY = CALCULATE([Taux Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `0.0%`
+
+---
+
+## Taux Marge Brute YoY bps
+
+```dax
+Taux Marge Brute YoY bps = ([Taux Marge Brute] - [Taux Marge Brute PY]) * 10000
+```
+
+*Format* : `#,##0`
+
+---
+
+## Nb Commandes PY
+
+```dax
+Nb Commandes PY = CALCULATE([Nb Commandes], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0`
+
+---
+
+## Nb Commandes YoY Δ
+
+```dax
+Nb Commandes YoY Δ = [Nb Commandes] - [Nb Commandes PY]
+```
+
+*Format* : `#,##0`
+
+---
+
+## Nb Commandes YoY %
+
+```dax
+Nb Commandes YoY % = DIVIDE([Nb Commandes] - [Nb Commandes PY], [Nb Commandes PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## CA HT Net Annulation PY
+
+```dax
+CA HT Net Annulation PY = CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## CA HT Net Annulation YoY Δ
+
+```dax
+CA HT Net Annulation YoY Δ = [CA HT Net Annulation] - [CA HT Net Annulation PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## CA HT Net Annulation YoY %
+
+```dax
+CA HT Net Annulation YoY % = DIVIDE([CA HT Net Annulation] - [CA HT Net Annulation PY], [CA HT Net Annulation PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Frais Port Encaissés PY
+
+```dax
+Frais Port Encaissés PY = CALCULATE([Frais Port Encaissés], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Frais Port Encaissés YoY Δ
+
+```dax
+Frais Port Encaissés YoY Δ = [Frais Port Encaissés] - [Frais Port Encaissés PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Frais Port Encaissés YoY %
+
+```dax
+Frais Port Encaissés YoY % = DIVIDE([Frais Port Encaissés] - [Frais Port Encaissés PY], [Frais Port Encaissés PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Coût Achat Total PY
+
+```dax
+Coût Achat Total PY = CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Achat Total YoY Δ
+
+```dax
+Coût Achat Total YoY Δ = [Coût Achat Total] - [Coût Achat Total PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Achat Total YoY %
+
+```dax
+Coût Achat Total YoY % = DIVIDE([Coût Achat Total] - [Coût Achat Total PY], [Coût Achat Total PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Coût Transport Amont PY
+
+```dax
+Coût Transport Amont PY = CALCULATE([Coût Transport Amont], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Amont YoY Δ
+
+```dax
+Coût Transport Amont YoY Δ = [Coût Transport Amont] - [Coût Transport Amont PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Amont YoY %
+
+```dax
+Coût Transport Amont YoY % = DIVIDE([Coût Transport Amont] - [Coût Transport Amont PY], [Coût Transport Amont PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Coût Transport Outbound (Retenu) PY
+
+```dax
+Coût Transport Outbound (Retenu) PY = CALCULATE([Coût Transport Outbound (Retenu)], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Outbound (Retenu) YoY Δ
+
+```dax
+Coût Transport Outbound (Retenu) YoY Δ = [Coût Transport Outbound (Retenu)] - [Coût Transport Outbound (Retenu) PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coût Transport Outbound (Retenu) YoY %
+
+```dax
+Coût Transport Outbound (Retenu) YoY % = DIVIDE([Coût Transport Outbound (Retenu)] - [Coût Transport Outbound (Retenu) PY], [Coût Transport Outbound (Retenu) PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Douanes Taxes PY
+
+```dax
+Douanes Taxes PY = CALCULATE([Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Douanes Taxes YoY Δ
+
+```dax
+Douanes Taxes YoY Δ = [Douanes Taxes] - [Douanes Taxes PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Douanes Taxes YoY %
+
+```dax
+Douanes Taxes YoY % = DIVIDE([Douanes Taxes] - [Douanes Taxes PY], [Douanes Taxes PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Commissions Marketplace PY
+
+```dax
+Commissions Marketplace PY = CALCULATE([Commissions Marketplace], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Commissions Marketplace YoY Δ
+
+```dax
+Commissions Marketplace YoY Δ = [Commissions Marketplace] - [Commissions Marketplace PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Commissions Marketplace YoY %
+
+```dax
+Commissions Marketplace YoY % = DIVIDE([Commissions Marketplace] - [Commissions Marketplace PY], [Commissions Marketplace PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Fournitures Expédition PY
+
+```dax
+Fournitures Expédition PY = CALCULATE([Fournitures Expédition], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Fournitures Expédition YoY Δ
+
+```dax
+Fournitures Expédition YoY Δ = [Fournitures Expédition] - [Fournitures Expédition PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Fournitures Expédition YoY %
+
+```dax
+Fournitures Expédition YoY % = DIVIDE([Fournitures Expédition] - [Fournitures Expédition PY], [Fournitures Expédition PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Retours Remboursements PY
+
+```dax
+Retours Remboursements PY = CALCULATE([Retours Remboursements], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Retours Remboursements YoY Δ
+
+```dax
+Retours Remboursements YoY Δ = [Retours Remboursements] - [Retours Remboursements PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Retours Remboursements YoY %
+
+```dax
+Retours Remboursements YoY % = DIVIDE([Retours Remboursements] - [Retours Remboursements PY], [Retours Remboursements PY])
+```
+
+*Format* : `0.0%`
+
+---
+
+## Coûts Génériques PY
+
+```dax
+Coûts Génériques PY = CALCULATE([Coûts Génériques], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coûts Génériques YoY Δ
+
+```dax
+Coûts Génériques YoY Δ = [Coûts Génériques] - [Coûts Génériques PY]
+```
+
+*Format* : `#,##0.00 €`
+
+---
+
+## Coûts Génériques YoY %
+
+```dax
+Coûts Génériques YoY % = DIVIDE([Coûts Génériques] - [Coûts Génériques PY], [Coûts Génériques PY])
+```
+
+*Format* : `0.0%`
+
+---
