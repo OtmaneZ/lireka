@@ -1,0 +1,119 @@
+{
+  "task1_flag_source_cout": {
+    "colonne_ajoutee": "fact_transport.source_cout",
+    "valeurs": [
+      "reel",
+      "estime",
+      "non_disponible"
+    ],
+    "repartition_globale": {
+      "estime": 811470,
+      "reel": 115701,
+      "non_disponible": 19312
+    },
+    "total_colis": 946483,
+    "somme_3_categories": 946483,
+    "colis_prive": {
+      "total": 516836,
+      "reel": 0,
+      "estime": 508627,
+      "non_disponible": 8209,
+      "pct_100_estime_ou_non_dispo": 100.0
+    },
+    "postes_canada": {
+      "total": 3788,
+      "reel": 0,
+      "estime": 3788,
+      "non_disponible": 0
+    },
+    "par_transporteur": {
+      "Chronopost": {
+        "estime": 4084,
+        "non_disponible": 12,
+        "reel": 2944
+      },
+      "Colis Privé": {
+        "estime": 508627,
+        "non_disponible": 8209,
+        "reel": 0
+      },
+      "DHL": {
+        "estime": 51231,
+        "non_disponible": 51,
+        "reel": 0
+      },
+      "FedEx": {
+        "estime": 19478,
+        "non_disponible": 1,
+        "reel": 0
+      },
+      "INCONNU": {
+        "estime": 48541,
+        "non_disponible": 10950,
+        "reel": 1
+      },
+      "La Poste": {
+        "estime": 153034,
+        "non_disponible": 4,
+        "reel": 112756
+      },
+      "Postes Canada": {
+        "estime": 3788,
+        "non_disponible": 0,
+        "reel": 0
+      },
+      "UPS": {
+        "estime": 22687,
+        "non_disponible": 85,
+        "reel": 0
+      }
+    }
+  },
+  "task2_mesures_matching": {
+    "mesures_modifiees": [
+      "Nb Commandes Matchées",
+      "Taux Matching",
+      "Nb Colis Avec Facture",
+      "Nb Colis (coût réel) [nouveau]",
+      "Nb Colis (coût estimé) [nouveau]",
+      "Nb Colis (coût non disponible) [nouveau]"
+    ],
+    "AVANT (cout_transport > 0)": {
+      "Nb_Commandes_Matchees": 890492,
+      "Taux_Matching_pct": 98.3151,
+      "Nb_Colis_avec_cout_backend": 927121,
+      "note": "Colis Privé avec coût backend comptait comme matché"
+    },
+    "APRES (source_cout = reel)": {
+      "Nb_Commandes_Matchees": 114926,
+      "Taux_Matching_pct": 12.6884,
+      "Nb_Colis_cout_reel": 115701,
+      "Nb_Colis_cout_estime": 811470,
+      "Nb_Colis_cout_non_disponible": 19312
+    },
+    "delta_commandes_matchees": -775566,
+    "nb_commandes_total": 905753
+  },
+  "task3_colis_prive_non_disponible": {
+    "decision": "coût non disponible (source_cout = non_disponible)",
+    "colis_prive_sans_facture_ni_backend": {
+      "count": 8209,
+      "attendu_audit": 8209,
+      "ecart_vs_audit": 0
+    },
+    "visibles_en_volume": 516836,
+    "exclus_du_cout_transport": 8209,
+    "pct_du_volume_colis_prive": 1.5883,
+    "exemples_id_package": [
+      37,
+      15035,
+      14718,
+      20225,
+      21
+    ]
+  },
+  "meta": {
+    "id_packages_facture_resolus": 115701,
+    "lignes_factures_valides": 116121
+  }
+}

@@ -811,6 +811,36 @@ Doublons Numero Suivi Factures = VAR T =
 
 ---
 
+## Colis Order ID Manquant
+
+> Colis sans order_id renseigné.
+
+```dax
+Colis Order ID Manquant =
+CALCULATE([Nb Colis], ISBLANK(fact_transport[order_id]))
+```
+
+## Colis Numero Suivi Manquant
+
+> Colis sans numero_suivi renseigné.
+
+```dax
+Colis Numero Suivi Manquant =
+CALCULATE(
+    [Nb Colis],
+    ISBLANK(fact_transport[numero_suivi]) || fact_transport[numero_suivi] = ""
+)
+```
+
+## Commandes Code Pays Non Attribué
+
+> Commandes dont le code pays est "??" (destination_country absent).
+
+```dax
+Commandes Code Pays Non Attribué =
+CALCULATE([Nb Commandes], fact_commandes[code_pays] = "??")
+```
+
 ## Commandes Sans Colis
 
 > Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).  
