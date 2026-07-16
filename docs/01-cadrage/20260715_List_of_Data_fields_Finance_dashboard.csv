@@ -1,0 +1,54 @@
+﻿Line #;Data item name (in English);Data item name (in French);Description;Data Source;Version;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+1;Units ordered;Unités commandées;Number of units (ie single items/ISBN's) ordered by customers over a given period of time. Please note that an order typically includes multiple units, eg. Customer orders 5 books. For this item, the date to be used is the order_date, ie the date when the order is placed.;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+2;Units shipped;Unités expédiées;Number of units shipped over a given period of time. Please note that a multi-item order may be shipped in multiple shipments. Eg. Customer orders 5 books, 3 of which are shipped first and 2 later. For this item, the date to be used is the ship_date, ie the date when items are shipped.;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+3;Cancelled units;Unités annulées;Number of ordered units that were later cancelled;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+4;Cancellation rate;Taux d'annulation;= Cancelled units / Ordered units;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+5;Number of orders;Nombre de commandes;Number of orders placed by customers over a given period of time.;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+6;Product revenue;Chiffre d'Affaires (CA) produit;Revenue from sales of products (books), excluding VAT. This is the majority of our revenue.;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+7;Shipping revenue;Chiffre d'Affaires (CA) frais de port;Revenue from shipping fees, excluding VAT. This only applies to orders for which we charge shipping, ie Marketplace orders and Website orders in France and Belgium (for other destinations, we apply free shipping on Website orders).;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+8;Revenue;Chiffre d'Affaires (CA);Sum of (Product revenue + Shipping revenue);Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+9;Product cost;Coût d'achat des marchandises;Product_cost = List_price_without_tax (aka RRP excl. VAT - Retail_recommended_price_excl_VAT) - discount applied by the supplier. For example, if a Fiction title has a list_price_excl_VAT of €10.00 and a 40% discount applied by the supplier, then the product cost will be €10.00 x (100% - 40%) = €6.00. Please refer to the July 15 conversation in the #analytics channel for  further details on how product_cost is calculated.;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+10;Pure Product Profit (PPP);Marge commerciale en valeur;PPP = Revenue - Product cost. This is the first type of margin, ie the raw difference between Revenue and Product cost.;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+11;Pure Product Margin (PPM);Marge commerciale en taux;PPM = PPP/Revenue. This is the same as above, but expressed in % of revenue.;Backend MCP server;V1;;;Notes pour Marc;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+12;Inbound Freight;Transport entrant;Cost of inbound transportation, ie the cost of bringing the books from the supplier warehouse (usually in the Paris area) to our warehouse in Grenoble. This is calculated by the backend, and in 2026 should be 1.29% of Revenue based on 2025 FY actuals.;Backend MCP server;V1;;;"60821000 TRANSPORT S/ACHATS ARTHAUD 20,3k€ en 2025
+60822000 FRAIS TRANSPORTS SUR ACHATS BESSON 94,2k€ en 2025
+
+A diviser par le CA Lireka hors refacturations à Arthaud et hors RFA Editeurs (8880,6k€ en 2025)";0,012893273;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+13;Shipping cost;Transport sortant;"Cost of outbound transportation, ie the cost of shipping the books from our warehouse to the end customer. This is the sum of transporation costs, fuel surcharges, and various additional transportation charges billed by carriers (eg. remote area delivery surcharge, etc.). In PowerBI, we should be able to drill down and break down this cost into three buckets: transportation cost, fuel surcharge, other surcharges.
+
+Please note that currently we are using BE estimates by carrier based on our shipping ratecards negotiated at the beginning of each year with each carrier. However, this data is just an estimate and does not include other surcharges such as remote area delivery, so whenever possible we should use actual invoice data provided by carriers rather than Backend (BE) data. However, in instances where the invoice data is not yet available or has not yet been uploaded to Power BI, we should use BE estimates by default. For example, if an order has been placed but has not yet been shipped and does not yet have a tracking ID, then the default value for shipping cost should be the BE data.";Actual invoices from carriers (FedEx, UPS, DHL, La Poste, Canada Post, etc.) to be uploaded monthly in PowerBI by mbordier@ if the order has been shipped and the invoice is available. If not, default behavior is to use BE estimates via MCP server connection.;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+14;Shipping cost per unit;Transport sortant par unité;= Shipping cost / ordered units;;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+15;Shipping % of revenue;Transport sortant en % du CA;= Shipping cost / revenue;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+16;D/T - Duties and Taxes;D/T - Droits et taxes;Customs duties and taxes charged by carriers, including admin fees (brokerage fees, processing fees, etc.);Same as Shipping cost - see above;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+17;D/T per unit;D/T per unit;= D/T / ordered units;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+18;D/T percentage of revenue;D/T en pourcentage du CA;= D/T / revenue;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+19;Marketplace fees;Commissions Marketplace;Marketplace fees charged by Amazon, Cultura and Rakuten;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+20;Returns and refunds;Retours et remboursements;Costs of returns and refunds. This line is currently set at 0 in the backend because we do not track returns and refunds, but we will redefine how it is calculated.;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+21;Shipping supplies;Coûts des emballages;Cost of shipping supplies as estimated in the backend (in 2025, €127.5k/€8880.6k revenue = 1.44% of Revenue);Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+22;Generic costs;Autres coûts;This is a general provision line for any other types of costs not taken into account.;Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+23;Gross Profit;Marge brute en valeur;"Gross Margin = Revenue (incl. shipping revenue if relevant)
+-Product cost (aka Cost of Goods Sold - COGS)
+-Inbound transportation costs
+-Outbound transportations costs (DHL, FedEx, La Poste, etc.)
+-Duties and Taxes
+-Marketplace commission fees (fixed and variable fee)
+-Shipping supplies
+-Returns and refunds
+-Generic costs
+
+Gross Margin can be calculated in value (in €'s), % of revenue, or per ordered unit.";Backend MCP server;V1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+24;Gross Margin;Marge brute en taux;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+25;Gross Profit per unit;Marge brute par unité;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Line #;Data item name (in English);Data item name (in French);Description;Data Source;Version;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+26;Units in inventory;Nombre d'unités en stock;Number of items (ie ISBN's) held in stock at a given date.;Backend MCP server (based on Gestock);V2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+27;Gross Inventory value;Valeur brute du stock;Units in inventory x value per unit, where value is the product cost of each ISBN at the time it was added to our inventory;Backend MCP server (based on Gestock);V2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+28;Net Inventory value;Valeur nette du stock;Units in inventory x value per unit, where value of units held in stock beyond a certain time (eg. 24 months) is discounted by a predefined percentage. In our current accounting rules, all items that have been in stock for more than 24 months are discounted by 100%.;Backend MCP server (based on Gestock);V2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+29;Aged inventory;Stock âgé;"Distribution of inventory value based on how long items have been held in stock, with the following bands : 
+0 to 3 months
+3 to 6 months
+6 to 12 months
+12 to 24 months
+24 months + ";Backend MCP server (based on Gestock);V2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+30;Unhealthy inventory units;Stock excédentaire;Inventory units that are considered unhealthy. Initially, we will consider that unhealthy units are units that were ordered from suppliers more than 6 months ago and have not sold a single units over this timeframe. In the future, we will fine tune this definition to also include units that are less than 6 months old but have more than XX weeks of sales coverage (WoCs) based on current demand trends.;Backend MCP server (based on Gestock);V2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+31;Accounts receivables;Créances clients;Amount of yet to be paid invoices according to the backend;Backend MCP server (based on Gestock);V2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+32;Past due;Créances clients échues;Amount of yet to be paid invoices that are beyond past due date;Backend MCP server (based on Gestock);V2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
