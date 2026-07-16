@@ -502,6 +502,9 @@ Fournitures Expédition = SUM(fact_transport[shipping_supply_cost_eur])
 
 > Bloc5 (dette technique) — retours et remboursements (returns_and_refunds_cost_eur,  
 > agrégé par commande). Provisoire : Marc doit revoir le périmètre de son côté.  
+> Risque double comptage à valider avec Marc : sur CANCELLED, product_cost (cout_achat)  
+> est conservé ET returns_and_refunds est aussi soustrait — coexistence réelle dans les  
+> données (pas d'identité rr≈pc ; ratio médian rr/pc ≈ 2,4 %). Voir dette-technique-bloc5.md.  
 
 ```dax
 Retours Remboursements = SUM(fact_commandes[retours_remboursements])
@@ -514,7 +517,8 @@ Retours Remboursements = SUM(fact_commandes[retours_remboursements])
 ## Coûts Génériques
 
 > Bloc5 (dette technique) — coûts génériques (generic_costs_eur, agrégé par commande).  
-> Provisoire : Marc doit revoir total_generic_costs_eur de son côté.  
+> Provisoire : Marc doit revoir total_generic_costs_eur / la définition de generic costs  
+> de son côté avant de figer ce poste dans la marge.  
 
 ```dax
 Coûts Génériques = SUM(fact_commandes[couts_generiques])
@@ -537,8 +541,9 @@ Coûts Génériques = SUM(fact_commandes[couts_generiques])
 > Revenue (incl. shipping revenue if relevant) - COGS - Inbound transportation costs  
 > - Outbound transportation costs - Duties and Taxes - Marketplace commission fees  
 > - Shipping supplies - Returns/refunds - Generic costs.  
-> Retours/remboursements + coûts génériques inclus (Bloc 5, dette technique — Marc doit  
-> revoir total_generic_costs_eur). Grain commande (agrégés par order_id depuis  
+> Retours/remboursements + coûts génériques inclus (Bloc 5, dette technique provisoire —  
+> Marc doit revoir total_generic_costs_eur ; valider risque double comptage returns/refunds  
+> vs product_cost conservé sur annulation). Grain commande (agrégés par order_id depuis  
 > customer_order_item).  
 
 ```dax

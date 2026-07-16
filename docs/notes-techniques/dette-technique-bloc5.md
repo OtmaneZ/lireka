@@ -53,6 +53,23 @@ Bloc 5 n'ajoute que les 2 postes de coût (retours, génériques), sans toucher 
 
 ---
 
+## Risque double comptage — returns/refunds vs product_cost sur annulation
+
+Audit 16/07/2026 (`customer_order.csv`, entrepôt `Données_Backend/`) :
+
+| Constat | Valeur |
+|---------|--------|
+| CANCELLED avec `product_cost` ≠ 0 **et** `returns_and_refunds` ≠ 0 | **34 681** cmd |
+| SUM `returns_and_refunds` sur ces cmd | **11 706 €** |
+| SUM `product_cost` sur ces cmd | **485 200 €** |
+| Cas où `returns_and_refunds` ≈ `product_cost` (±0,01 €) | **0** |
+| Ratio médian `returns / product_cost` (CANCELLED et SHIPPED) | **≈ 2,4 %** |
+
+→ **Pas de double comptage identité** (le poste retours n'est pas le COGS recopié).  
+→ **Coexistence réelle** : sur annulation, la marge soustrait à la fois le `product_cost` conservé (règle Marc) et `returns_and_refunds` (~2,4 % du COGS, même pattern que sur SHIPPED). À valider avec Marc si ce poste doit rester imputé sur CANCELLED.
+
+---
+
 ## Recoupement `contribution_profit_eur`
 
 Test : `gross_profit_eur − retours − génériques ≈ contribution_profit_eur`
@@ -83,6 +100,7 @@ Test : `gross_profit_eur − retours − génériques ≈ contribution_profit_eu
 ## Points de validation pour Marc (fin de mission)
 
 - [ ] Valider le périmètre `returns_and_refunds_cost_eur` (retours SAV, remboursements partiels, etc.)
+- [ ] Confirmer si `returns_and_refunds` doit rester soustrait sur CANCELLED alors que `product_cost` est déjà conservé (risque de surcomptage, ~11,7 k€)
 - [ ] Revoir la définition et le calcul de `total_generic_costs_eur` / `generic_costs_eur`
 - [ ] Confirmer que l'agrégation `SUM` par commande est le bon grain pour la marge pilotage
 - [ ] Arbitrer sur l'écart `contribution_profit_eur` vs formule Marc enrichie Bloc 5
