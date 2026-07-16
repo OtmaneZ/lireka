@@ -1,8 +1,8 @@
 # Mesures DAX — Lireka Power BI
 
 > **Référence** : [`../../project/devis.md`](../../project/devis.md)  
-> Référentiel des mesures DAX pour le dashboard profitabilité (J3).  
-> Copier-coller dans Power BI Desktop → Modélisation → Nouvelle mesure.
+> Référentiel des mesures DAX pour le dashboard profitabilité (L04).  
+> Aligné sur le modèle `Lireka_Profitabilite` et la table `_Mesures` (14/07/2026).
 
 ---
 
@@ -10,15 +10,17 @@
 
 ```dax
 Coût Transport Réel =
-SUMX(
-    fact_commandes,
-    COALESCE(fact_commandes[cout_transport_reel], 0)
-)
+SUM(fact_transport[cout_transport])
 ```
 
 ```dax
 Coût Transport Estimé =
 SUM(fact_commandes[cout_transport_estime])
+```
+
+```dax
+Coût Transport Facturé =
+SUM(fact_factures_transport[cout_transport])
 ```
 
 ```dax
@@ -32,12 +34,12 @@ DIVIDE([Écart Coût Transport], [Coût Transport Estimé], 0)
 
 ```dax
 Coût Moyen Colis =
-DIVIDE([Coût Transport Réel], [Nb Commandes], 0)
+DIVIDE([Coût Transport Réel], [Nb Colis], 0)
 ```
 
 ---
 
-## Marge brute
+## Marge brute (provisoire — en attente validation Marc)
 
 ```dax
 CA Total HT =
@@ -50,23 +52,23 @@ SUM(fact_commandes[cout_achat])
 ```
 
 ```dax
-Marge Brute =
+Marge Brute (prov.) =
 [CA Total HT] - [Coût Achat Total] - [Coût Transport Réel]
 ```
 
 ```dax
-Taux Marge Brute =
-DIVIDE([Marge Brute], [CA Total HT], 0)
+Taux Marge Brute (prov.) =
+DIVIDE([Marge Brute (prov.)], [CA Total HT], 0)
 ```
 
 ```dax
-Marge Brute Estimée =
-[CA Total HT] - [Coût Achat Total] - [Coût Transport Estimé]
+Marge Brute Backend (réf.) =
+SUM(fact_commandes[gross_profit_eur])
 ```
 
 ```dax
-Écart Marge =
-[Marge Brute] - [Marge Brute Estimée]
+Écart Marge vs Backend =
+[Marge Brute (prov.)] - [Marge Brute Backend (réf.)]
 ```
 
 ---
@@ -79,8 +81,33 @@ COUNTROWS(fact_commandes)
 ```
 
 ```dax
+Nb Colis =
+COUNTROWS(fact_transport)
+```
+
+```dax
+Nb Colis (coût réel) =
+CALCULATE([Nb Colis], fact_transport[source_cout] = "reel")
+```
+
+```dax
+Nb Colis (coût estimé) =
+CALCULATE([Nb Colis], fact_transport[source_cout] = "estime")
+```
+
+```dax
+Nb Colis (coût non disponible) =
+CALCULATE([Nb Colis], fact_transport[source_cout] = "non_disponible")
+```
+
+```dax
 Nb Colis Facturés =
 COUNTROWS(fact_factures_transport)
+```
+
+```dax
+Nb Articles =
+SUM(fact_lignes[quantity])
 ```
 
 ```dax
@@ -90,12 +117,13 @@ DIVIDE([CA Total HT], [Nb Commandes], 0)
 
 ---
 
-## Qualité données
+## Qualité données / matching
 
 ```dax
 Nb Commandes Matchées =
-COUNTROWS(
-    FILTER(fact_commandes, NOT(ISBLANK(fact_commandes[cout_transport_reel])))
+CALCULATE(
+    DISTINCTCOUNT(fact_transport[order_id]),
+    fact_transport[source_cout] = "reel"
 )
 ```
 
@@ -109,15 +137,37 @@ Nb Commandes Non Matchées =
 [Nb Commandes] - [Nb Commandes Matchées]
 ```
 
+```dax
+Commandes Sans Colis =
+COUNTROWS(
+    EXCEPT(
+        VALUES(fact_commandes[id_commande]),
+        VALUES(fact_transport[order_id])
+    )
+)
+```
+
+```dax
+Colis Sans Commande =
+COUNTROWS(
+    EXCEPT(
+        VALUES(fact_transport[order_id]),
+        VALUES(fact_commandes[id_commande])
+    )
+)
+```
+
 ---
 
 ## Par transporteur
+
+Le transporteur est porté par `fact_transport` et `dim_transporteur` (pas de colonne transporteur sur `fact_commandes`).
 
 ```dax
 Coût Transport par Transporteur =
 CALCULATE(
     [Coût Transport Réel],
-    ALLEXCEPT(fact_commandes, fact_commandes[transporteur])
+    ALLEXCEPT(fact_transport, fact_transport[transporteur])
 )
 ```
 
@@ -127,6 +177,14 @@ DIVIDE(
     [Coût Transport Réel],
     CALCULATE([Coût Transport Réel], ALL(dim_transporteur)),
     0
+)
+```
+
+```dax
+Nb Colis par Transporteur =
+CALCULATE(
+    [Nb Colis],
+    ALLEXCEPT(fact_transport, fact_transport[transporteur])
 )
 ```
 
@@ -148,27 +206,10 @@ DIVIDE([CA Total HT] - [CA Mois Précédent], [CA Mois Précédent], 0)
 ```
 
 ```dax
-Marge YTD =
-TOTALYTD([Marge Brute], dim_date[date])
+Marge YTD (prov.) =
+TOTALYTD([Marge Brute (prov.)], dim_date[date])
 ```
 
 ---
 
-## Colonne calculée — Coût transport réel (lookup)
-
-```dax
-cout_transport_reel =
-VAR suivi = fact_commandes[numero_suivi]
-RETURN
-CALCULATE(
-    SUM(fact_factures_transport[cout_transport]),
-    FILTER(
-        fact_factures_transport,
-        fact_factures_transport[numero_suivi] = suivi
-    )
-)
-```
-
----
-
-*Mesures à tester et ajuster après intégration des données réelles.*
+*Mesures à valider avec les données réelles après refresh du modèle.*

@@ -1,0 +1,393 @@
+{
+  "task1_dedup_tracking": {
+    "package_rows": 946483,
+    "distinct_tracking_id_non_null": 946101,
+    "duplicated_tracking_groups": 382,
+    "group_size_distribution": {
+      "2": 382
+    },
+    "strict_duplicate_all_cols_incl_id": 0,
+    "strict_duplicate_business_cols_id_excluded": 0,
+    "pct_strict_business": 0.0,
+    "divergent_groups": 382,
+    "pct_divergent": 100.0,
+    "divergence_breakdown (groupes divergents, non exclusifs)": {
+      "differ_order_id": 382,
+      "differ_weight": 382,
+      "differ_shipping_cost_eur": 381,
+      "differ_shipping_supply_cost_eur": 370,
+      "differ_duties_taxes_eur": 2
+    },
+    "divergent_examples_full (max 5)": [
+      {
+        "tracking_id": "1469402432",
+        "rows": [
+          {
+            "id": 144536,
+            "order_id": 150914,
+            "tracking_id": "1469402432",
+            "weight": 2794,
+            "shipping_cost_eur": 26.0,
+            "shipping_supply_cost_eur": 1.5,
+            "duties_taxes_eur": 0.0
+          },
+          {
+            "id": 407976,
+            "order_id": 421198,
+            "tracking_id": "1469402432",
+            "weight": 3112,
+            "shipping_cost_eur": 65.6864,
+            "shipping_supply_cost_eur": 1.5,
+            "duties_taxes_eur": 15.313
+          }
+        ]
+      },
+      {
+        "tracking_id": "22551050",
+        "rows": [
+          {
+            "id": 394,
+            "order_id": 375,
+            "tracking_id": "22551050",
+            "weight": 163,
+            "shipping_cost_eur": 1.749,
+            "shipping_supply_cost_eur": 0.2,
+            "duties_taxes_eur": 0.0
+          },
+          {
+            "id": 309717,
+            "order_id": 321980,
+            "tracking_id": "22551050",
+            "weight": 775,
+            "shipping_cost_eur": 6.4462,
+            "shipping_supply_cost_eur": 0.5,
+            "duties_taxes_eur": 0.0
+          }
+        ]
+      },
+      {
+        "tracking_id": "22602066",
+        "rows": [
+          {
+            "id": 431,
+            "order_id": 400,
+            "tracking_id": "22602066",
+            "weight": 1423,
+            "shipping_cost_eur": 7.444,
+            "shipping_supply_cost_eur": 1.5,
+            "duties_taxes_eur": 0.0
+          },
+          {
+            "id": 312051,
+            "order_id": 325187,
+            "tracking_id": "22602066",
+            "weight": 345,
+            "shipping_cost_eur": 3.9878,
+            "shipping_supply_cost_eur": 0.25,
+            "duties_taxes_eur": 0.0
+          }
+        ]
+      },
+      {
+        "tracking_id": "22824215",
+        "rows": [
+          {
+            "id": 505,
+            "order_id": 459,
+            "tracking_id": "22824215",
+            "weight": 199,
+            "shipping_cost_eur": 1.8084,
+            "shipping_supply_cost_eur": 0.2,
+            "duties_taxes_eur": 0.0
+          },
+          {
+            "id": 320661,
+            "order_id": 333186,
+            "tracking_id": "22824215",
+            "weight": 179,
+            "shipping_cost_eur": 3.45,
+            "shipping_supply_cost_eur": 0.2,
+            "duties_taxes_eur": 0.0
+          }
+        ]
+      },
+      {
+        "tracking_id": "23158452",
+        "rows": [
+          {
+            "id": 698,
+            "order_id": 687,
+            "tracking_id": "23158452",
+            "weight": 387,
+            "shipping_cost_eur": 2.1186,
+            "shipping_supply_cost_eur": 0.2,
+            "duties_taxes_eur": 0.0
+          },
+          {
+            "id": 332959,
+            "order_id": 345990,
+            "tracking_id": "23158452",
+            "weight": 1366,
+            "shipping_cost_eur": 7.2958,
+            "shipping_supply_cost_eur": 1.5,
+            "duties_taxes_eur": 0.0
+          }
+        ]
+      }
+    ]
+  },
+  "task2_dedup_fichiers": {
+    "dedup_function_review": {
+      "fichier": "scripts/validation/audit_warehouse.py -> inventory()",
+      "hash_contenu_calcule": "OUI (sha256_file, lecture binaire complète 1 Mo/chunk)",
+      "compare_periodes_et_lignes": "OUI (csv_analysis: line_count + période min/max)",
+      "limite_1": "ne compare QUE les fichiers dont le nom contient 'récap'/'recap' (regex de recap_groups) -> les fichiers *_V2.csv sont EXCLUS du groupement",
+      "limite_2": "groupe par préfixe année (2025_… vs 2026_… séparés via re.sub(r'_au_.*')) -> 2025 et 2026 ne sont jamais comparés entre eux",
+      "consequence": "chaque préfixe ne contenait qu'1 fichier -> aucun groupe de taille>1 -> duplicates=[] SANS qu'aucune comparaison de contenu n'ait réellement eu lieu",
+      "verdict": "fonction capable de comparer le contenu (hash), mais son PÉRIMÈTRE (filtre nom + préfixe année) l'a empêchée de comparer les fichiers suspects entre eux"
+    },
+    "fichiers_presents": {
+      "COLISSIMO": [
+        "2025_COLISSIMO_récap.csv",
+        "2026_COLISSIMO_récap_au_30_juin_2026.csv"
+      ],
+      "CHRONOPOST": [
+        "2025_CHRONOPOST_récap.csv",
+        "2026_CHRONOPOST_V2.csv",
+        "2026_CHRONOPOST_récap_au_30_juin_2026.csv"
+      ],
+      "note_COLISSIMO_V2": "2026_COLISSIMO_V2.csv ABSENT du dossier"
+    },
+    "COLISSIMO": {
+      "fichiers": {
+        "2025_COLISSIMO_récap.csv": {
+          "columns": [
+            "ï»¿Date",
+            "NÂ° de colis",
+            "Destination",
+            "Poids kg",
+            "Port net HT",
+            "CAE HT",
+            "DÃ©carbonation HT",
+            "SMIC HT",
+            "TOTAL HT"
+          ],
+          "rows": 91278,
+          "colonne_facture": null,
+          "colonne_suivi": "NÂ° de colis",
+          "sha256": "0427E4079EB80EA0896E6659DBEA028DD07CC2B012F0F23C7EC9CEB0927FBED8"
+        },
+        "2026_COLISSIMO_récap_au_30_juin_2026.csv": {
+          "columns": [
+            "ï»¿Date",
+            "NÂ° de colis",
+            "Destination",
+            "Poids kg",
+            "Port net HT",
+            "CAE HT",
+            "DÃ©carbonation HT",
+            "SMIC HT",
+            "TOTAL HT"
+          ],
+          "rows": 21797,
+          "colonne_facture": null,
+          "colonne_suivi": "NÂ° de colis",
+          "sha256": "D0A79EB74FFFE1768DB62A828FFE42E5DB2534FE7F3DBA2FBDD635685A089DDE"
+        }
+      },
+      "chevauchement_numero_suivi": {
+        "2025_COLISSIMO_récap.csv ∩ 2026_COLISSIMO_récap_au_30_juin_2026.csv": {
+          "count_a": 91278,
+          "count_b": 21797,
+          "intersection": 0,
+          "pct_of_a": 0.0,
+          "pct_of_b": 0.0
+        }
+      },
+      "chevauchement_numero_facture": "N/A — aucune colonne facture dans les récaps COLISSIMO"
+    },
+    "CHRONOPOST": {
+      "fichiers": {
+        "2025_CHRONOPOST_récap.csv": {
+          "columns": [
+            "ï»¿Facture",
+            "Date",
+            "NÂ° de colis",
+            "Poids (kg)",
+            "Port HT",
+            "Redevance sÃ©curitÃ© HT",
+            "Participation Ã©coresponsable HT",
+            "Surcharge carburant HT",
+            "TOTAL HT"
+          ],
+          "rows": 2142,
+          "colonne_facture": "ï»¿Facture",
+          "colonne_suivi": "NÂ° de colis",
+          "sha256": "8231F2D763793DFD17E4D45A95D9651ECA7B51A46DD1633F40CDCB22A06C478C"
+        },
+        "2026_CHRONOPOST_récap_au_30_juin_2026.csv": {
+          "columns": [
+            "ï»¿NÂ° Facture",
+            "Date",
+            "NÂ° de colis (NÂ° objet)",
+            "Poids (kg)",
+            "Port HT",
+            "Redevance sÃ©curitÃ© HT",
+            "Participation Ã©coresponsable HT",
+            "Surcharge carburant HT",
+            "TOTAL HT"
+          ],
+          "rows": 904,
+          "colonne_facture": "ï»¿NÂ° Facture",
+          "colonne_suivi": "NÂ° de colis (NÂ° objet)",
+          "sha256": "9C16B343DBC440067606B25AE6FF3D74C84C9E0EDDB857974DB3D44D28089A7D"
+        },
+        "2026_CHRONOPOST_V2.csv": {
+          "columns": [
+            "ï»¿NÂ° Facture",
+            "Date",
+            "NÂ° de colis (NÂ° objet)",
+            "Poids (kg)",
+            "Port HT",
+            "Redevance sÃ©curitÃ© HT",
+            "Participation Ã©coresponsable HT",
+            "Surcharge carburant HT",
+            "TOTAL HT"
+          ],
+          "rows": 904,
+          "colonne_facture": "ï»¿NÂ° Facture",
+          "colonne_suivi": "NÂ° de colis (NÂ° objet)",
+          "sha256": "9C16B343DBC440067606B25AE6FF3D74C84C9E0EDDB857974DB3D44D28089A7D"
+        }
+      },
+      "paires_identiques_byte_for_byte": [
+        [
+          "2026_CHRONOPOST_récap_au_30_juin_2026.csv",
+          "2026_CHRONOPOST_V2.csv"
+        ]
+      ],
+      "chevauchement_numero_facture": {
+        "2025_CHRONOPOST_récap.csv ∩ 2026_CHRONOPOST_récap_au_30_juin_2026.csv": {
+          "count_a": 20,
+          "count_b": 7,
+          "intersection": 0,
+          "pct_of_a": 0.0,
+          "pct_of_b": 0.0
+        },
+        "2025_CHRONOPOST_récap.csv ∩ 2026_CHRONOPOST_V2.csv": {
+          "count_a": 20,
+          "count_b": 7,
+          "intersection": 0,
+          "pct_of_a": 0.0,
+          "pct_of_b": 0.0
+        },
+        "2026_CHRONOPOST_récap_au_30_juin_2026.csv ∩ 2026_CHRONOPOST_V2.csv": {
+          "count_a": 7,
+          "count_b": 7,
+          "intersection": 7,
+          "pct_of_a": 100.0,
+          "pct_of_b": 100.0
+        }
+      },
+      "chevauchement_numero_suivi": {
+        "2025_CHRONOPOST_récap.csv ∩ 2026_CHRONOPOST_récap_au_30_juin_2026.csv": {
+          "count_a": 2125,
+          "count_b": 895,
+          "intersection": 0,
+          "pct_of_a": 0.0,
+          "pct_of_b": 0.0
+        },
+        "2025_CHRONOPOST_récap.csv ∩ 2026_CHRONOPOST_V2.csv": {
+          "count_a": 2125,
+          "count_b": 895,
+          "intersection": 0,
+          "pct_of_a": 0.0,
+          "pct_of_b": 0.0
+        },
+        "2026_CHRONOPOST_récap_au_30_juin_2026.csv ∩ 2026_CHRONOPOST_V2.csv": {
+          "count_a": 895,
+          "count_b": 895,
+          "intersection": 895,
+          "pct_of_a": 100.0,
+          "pct_of_b": 100.0
+        }
+      }
+    }
+  },
+  "task3_destination_country_null": {
+    "customer_order_rows": 989234,
+    "destination_country_null_count": 33932,
+    "destination_country_null_pct": 3.43,
+    "repartition_currency": {
+      "EUR": 28065,
+      "CAD": 2865,
+      "USD": 1777,
+      "GBP": 1223,
+      "SEK": 1,
+      "ZAR": 1
+    },
+    "repartition_source": {
+      "AMAZON_FR": 22623,
+      "AMAZON_CA": 2865,
+      "AMAZON_BE": 1801,
+      "AMAZON_US": 1777,
+      "CULTURA": 1495,
+      "AMAZON_UK": 1223,
+      "AMAZON_DE": 1096,
+      "AMAZON_IT": 589,
+      "AMAZON_ES": 425,
+      "AMAZON_NL": 24,
+      "WEBSITE": 12,
+      "AMAZON_SE": 1,
+      "RAKUTEN": 1
+    },
+    "repartition_state": {
+      "CANCELLED": 33920,
+      "SHIPPED": 12
+    },
+    "repartition_par_annee": {
+      "2020": 1255,
+      "2021": 5529,
+      "2022": 5530,
+      "2023": 5283,
+      "2024": 7242,
+      "2025": 6168,
+      "2026": 2925
+    },
+    "origin_order_id_avec_code_pays (-XX-)": {
+      "count": 12,
+      "pct_des_null": 0.04,
+      "top_codes": {
+        "NA": 12
+      }
+    },
+    "currency_mono_pays (USD/CAD/GBP/…)": {
+      "count": 5865,
+      "pct_des_null": 17.28
+    },
+    "source_avec_suffixe_pays (_XX)": {
+      "count": 32424,
+      "pct_des_null": 95.56,
+      "top": {
+        "AMAZON_FR": 22623,
+        "AMAZON_CA": 2865,
+        "AMAZON_BE": 1801,
+        "AMAZON_US": 1777,
+        "AMAZON_UK": 1223,
+        "AMAZON_DE": 1096,
+        "AMAZON_IT": 589,
+        "AMAZON_ES": 425,
+        "AMAZON_NL": 24,
+        "AMAZON_SE": 1
+      }
+    },
+    "au_moins_un_repli_exploitable": {
+      "count": 32436,
+      "pct_des_null": 95.59
+    },
+    "aucun_repli_exploitable": {
+      "count": 1496,
+      "pct_des_null": 4.41
+    }
+  }
+}

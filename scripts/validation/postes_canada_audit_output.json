@@ -1,0 +1,22 @@
+{
+  "source_package_csv": {
+    "postes_canada_colis_q013": 3788,
+    "tracking_prefix": "Q013",
+    "order_date_min": "2021-06-06",
+    "order_date_max": "2022-12-08",
+    "sum_shipping_cost_eur": 22826.44,
+    "source_cout": "estime",
+    "source_cout_reel": 0
+  },
+  "warehouse_postes_canada_folder": {
+    "csv_files": 0,
+    "pdf_invoices": 88,
+    "pdf_date_min": "20250421",
+    "pdf_date_max": "20260629",
+    "paths": [
+      "Dashboards_transporteurs/POSTES CANADA Dashboard PowerBI/Postes_Canada_2025/",
+      "Dashboards_transporteurs/POSTES CANADA Dashboard PowerBI/Postes_Canada_2026/"
+    ]
+  },
+  "conclusion": "Aucun CSV Postes Canada dédié dans l'entrepôt. Les 3 788 colis proviennent exclusivement de package.csv (backend). Les factures PDF 2025-2026 ne sont pas intégrées au modèle et couvrent une période disjointe des commandes Q013 (2021-2022). Données manquantes pour rapprochement facture ↔ colis Postes Canada."
+}

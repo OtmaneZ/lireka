@@ -1,7 +1,7 @@
 # Modèles sémantiques Power BI — Lireka
 
 > **Référence** : [`../../project/devis.md`](../../project/devis.md)  
-> Document de travail technique — support à l'intégration J2–J3.
+> Document de travail technique — aligné sur `Lireka_Profitabilite` (14/07/2026).
 
 ---
 
@@ -9,9 +9,7 @@
 
 | Dataset | Workspace | Mode | Refresh | Source |
 |---------|-----------|------|---------|--------|
-| `Lireka - Factures Transport` | Lireka - Transport | Import | Mensuel | `factures_unifiees.csv` |
-| `Lireka - Commandes` | Lireka - Profitabilité | Import | Hebdomadaire | `commandes_clean.csv` |
-| `Lireka - Profitabilité` | Lireka - Profitabilité | Import | Mensuel | Modèle unifié (jointure) |
+| `Lireka - Profitabilité` | Lireka - Profitabilité | Import | Hebdomadaire / mensuel | Entrepôt SharePoint `Power_BI_Datawarehouse` |
 | `Lireka - Formation` | Lireka - Formation | Import | Statique | Échantillon anonymisé |
 
 ---
@@ -21,25 +19,54 @@
 ### Tables
 
 ```
-fact_commandes          ← Commandes enrichies (coût réel, marge)
-fact_factures_transport ← Factures transporteurs unifiées
-dim_date                ← Calendrier
-dim_pays                ← Pays de livraison
-dim_transporteur        ← 6 transporteurs
-dim_type_commande       ← Types B2C, B2B, etc.
+fact_commandes            ← Commandes (customer_order.csv)
+fact_transport            ← Colis / coûts transport (package.csv)
+fact_factures_transport   ← Factures Colissimo + Chronopost (récaps CSV)
+fact_lignes               ← Lignes articles (customer_order_item_group.csv)
+dim_date                  ← Calendrier 2022–2026
+dim_pays                  ← Pays de livraison (code ISO + zone_geo + continent)
+dim_transporteur          ← 8 transporteurs canoniques
+dim_type_commande         ← Canaux de vente (source backend)
+_Mesures                  ← Mesures DAX (table technique)
 ```
 
 ### Relations
 
 | De | Vers | Colonne | Cardinalité |
 |----|------|---------|-------------|
+| fact_transport | fact_commandes | order_id → id_commande | N:1 |
+| fact_lignes | fact_commandes | order_id → id_commande | N:1 |
 | fact_commandes | dim_date | date_commande → date | N:1 |
-| fact_commandes | dim_pays | pays_livraison → code_pays | N:1 |
-| fact_commandes | dim_transporteur | transporteur → transporteur | N:1 |
+| fact_commandes | dim_pays | **code_pays** → code_pays | N:1 |
 | fact_commandes | dim_type_commande | type_commande → type_commande | N:1 |
-| fact_factures_transport | dim_date | date_facture → date | N:1 |
+| fact_transport | dim_transporteur | transporteur → transporteur | N:1 |
 | fact_factures_transport | dim_transporteur | transporteur → transporteur | N:1 |
-| fact_commandes | fact_factures_transport | numero_suivi → numero_suivi | N:1 (inactive si besoin) |
+| fact_factures_transport | dim_date | date_facture → date | N:1 |
+| fact_factures_transport | fact_transport | id_package → id_package | N:1 (clé résolue par date) |
+
+**Absent du modèle** : pas de relation directe `fact_commandes` → `dim_transporteur` (le transporteur est au grain colis, table `fact_transport`).
+
+### dim_pays — enrichissement géographique
+
+| Colonne | Description |
+|---------|-------------|
+| `code_pays` | Code ISO 3166-1 alpha-2 issu de `destination_country` ; `"??"` si absent |
+| `nom_pays` | Libellé pays (table de correspondance) |
+| `zone_geo` | Zone commerciale (ex. Europe de l'Ouest, DOM-TOM, Amérique du Nord) |
+| `continent` | Continent ou regroupement (Europe, Amérique, Afrique, Non attribué, …) |
+
+### dim_transporteur — 8 transporteurs
+
+| Transporteur | Statut intégration |
+|--------------|-------------------|
+| La Poste | Nouveau (intégré) |
+| Colis Privé | Nouveau (intégré) |
+| Chronopost | Nouveau (intégré) |
+| DHL | Existant (référence) |
+| FedEx | Existant (référence) |
+| UPS | Existant (référence) |
+| Postes Canada | Autre (backend uniquement, pas de CSV facture) |
+| INCONNU | Non identifié |
 
 ---
 
@@ -51,45 +78,31 @@ Voir le fichier complet : [`mesures-dax.md`](mesures-dax.md)
 
 | Mesure | Description |
 |--------|-------------|
-| `Coût Transport Réel` | Somme des coûts issus des factures |
-| `Coût Transport Estimé` | Somme des estimations backend |
+| `Coût Transport Réel` | Somme `fact_transport[cout_transport]` (backend colis) |
+| `Coût Transport Estimé` | Somme `fact_commandes[cout_transport_estime]` |
 | `Écart Coût Transport` | Réel − Estimé |
-| `Marge Brute` | CA HT − Coût achat − Coût transport réel |
-| `Taux Marge Brute` | Marge / CA HT |
-| `Taux Matching` | % commandes avec coût réel |
+| `Marge Brute (prov.)` | CA HT − Coût achat − Coût transport réel *(en attente validation Marc)* |
+| `Taux Marge Brute (prov.)` | Marge provisoire / CA HT |
+| `Taux Matching` | % commandes avec au moins un colis `source_cout = "reel"` |
 | `Nb Commandes` | Nombre de commandes |
-| `Coût Moyen Colis` | Coût réel / Nb commandes |
+| `Nb Colis` | Nombre de colis |
+| `Coût Moyen Colis` | Coût réel / Nb colis |
+
+### Colonne calculée fact_transport
+
+| Colonne | Valeurs | Règle |
+|---------|---------|-------|
+| `source_cout` | `reel` / `estime` / `non_disponible` | Facture rapprochée / coût backend seul / ni l'un ni l'autre |
 
 ---
 
 ## Rapports
 
-### Transporteurs — existants *(référence, hors livraison mission)*
+### Profitabilité — livrable contractuel L04
 
-| Rapport | Statut | Note |
-|---------|--------|------|
-| Dashboard DHL | ✅ Existant | Référence modèle |
-| Dashboard FedEx | ✅ Existant | Référence modèle |
-| Dashboard UPS | ✅ Existant | Référence modèle |
-
-**Mission 4 jours** : intégrer les données La Poste, Colis Privé et Chronopost dans le **modèle de données** — **pas** créer de dashboards transporteurs dédiés calqués sur DHL/FedEx/UPS *(hors périmètre devis)*.
-
-### Profitabilité — livrable contractuel J3
-
-| Rapport | Statut | Périmètre devis |
-|---------|--------|-----------------|
-| Dashboard profitabilité | ⬜ À créer | **1 rapport** — marge brute par **pays** et par **type de commande** (2 axes d'analyse) |
-
-Le devis ne précise **aucun nombre de pages/onglets**. Structure au **choix du prestataire**.
-
-### Hors périmètre devis *(vision future / avenant — ne pas livrer dans les 4 jours)*
-
-| Rapport | Raison |
-|---------|--------|
-| Dashboards transporteurs dédiés (La Poste, Colis Privé, Chronopost) | Non mentionné au devis |
-| Synthèse direction | Non mentionné au devis |
-| Écarts coûts transport (rapport séparé) | Non mentionné au devis |
-| Dashboard marketing / opérations | Non mentionné au devis |
+| Rapport | Statut | Périmètre |
+|---------|--------|-----------|
+| `Lireka_Profitabilite` | 🟡 En cours | Volumes transport, coûts, pays, type commande ; marge en attente validation |
 
 ---
 
@@ -107,14 +120,4 @@ Le devis ne précise **aucun nombre de pages/onglets**. Structure au **choix du 
 
 ---
 
-## Connexion Claude AI
-
-| Élément | Détail |
-|---------|--------|
-| Statut | ✅ Connecté (existant) |
-| Dataset exposé | *À documenter lors de l'audit* |
-| Recommandation | Exposer le dataset Profitabilité unifié |
-
----
-
-*Documentation à compléter au fur et à mesure de la construction.*
+*Documentation alignée sur le modèle TMDL `Lireka_Profitabilite.SemanticModel`.*

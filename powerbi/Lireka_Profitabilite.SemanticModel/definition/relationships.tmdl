@@ -30,3 +30,8 @@ relationship rel_factures_date
 	fromColumn: fact_factures_transport.date_facture
 	toColumn: dim_date.date
 
+/// Facture -> colis, clé résolue par proximité de date (numero_suivi recyclé).
+relationship rel_factures_colis
+	fromColumn: fact_factures_transport.id_package
+	toColumn: fact_transport.id_package
+

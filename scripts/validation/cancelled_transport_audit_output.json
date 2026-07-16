@@ -1,0 +1,20 @@
+{
+  "cancelled_packages_count": 242,
+  "cancelled_distinct_orders": 241,
+  "cout_transport_gt0": 213,
+  "cout_transport_eq0": 29,
+  "cout_transport_null": 0,
+  "sum_cout_transport": 1491.26,
+  "cancelled_reel_colis": 33,
+  "nb_colis_current": 946483,
+  "nb_colis_without_cancelled": 946241,
+  "nb_colis_delta": 242,
+  "nb_commandes_matchees_current": 114926,
+  "nb_commandes_matchees_without_cancelled_pkgs": 114893,
+  "taux_matching_current_pct": 11.6177,
+  "taux_matching_without_cancelled_pkgs_pct": 11.6143,
+  "taux_matching_delta_pp": 0.0033,
+  "nb_colis_reel_current": 115701,
+  "nb_colis_reel_without_cancelled": 115668,
+  "nb_commandes_total": 989234
+}

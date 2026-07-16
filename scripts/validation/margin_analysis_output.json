@@ -1,0 +1,587 @@
+{
+  "customer_order_rows": 989234,
+  "task1_fill_rate": {
+    "Revenue": [
+      {
+        "file": "customer_order.csv",
+        "column": "order_amount_eur",
+        "rows": 989234,
+        "pct_null": 0.0,
+        "pct_zero": 85.161,
+        "pct_null_or_zero": 85.161,
+        "pct_negative": 0.0,
+        "sum_eur": 9647277.7
+      }
+    ],
+    "Shipping revenue": [
+      {
+        "file": "customer_order.csv",
+        "column": "shipping_fee_eur",
+        "rows": 989234,
+        "pct_null": 0.0,
+        "pct_zero": 98.745,
+        "pct_null_or_zero": 98.745,
+        "pct_negative": 0.0,
+        "sum_eur": 28921.84
+      }
+    ],
+    "COGS": [
+      {
+        "file": "customer_order.csv",
+        "column": "product_cost_eur",
+        "rows": 989234,
+        "pct_null": 3.991,
+        "pct_zero": 0.0,
+        "pct_null_or_zero": 3.991,
+        "pct_negative": 0.0,
+        "sum_eur": 17630200.94
+      },
+      {
+        "file": "customer_order_item.csv",
+        "column": "product_cost_eur",
+        "rows": 1847317,
+        "pct_null": 1.27,
+        "pct_zero": 0.0,
+        "pct_null_or_zero": 1.27,
+        "pct_negative": 0.0,
+        "sum_eur": 17630200.94
+      }
+    ],
+    "Transport inbound": [
+      {
+        "file": "customer_order.csv",
+        "column": "inbound_transportation_cost_eur",
+        "rows": 989234,
+        "pct_null": 4.661,
+        "pct_zero": 87.892,
+        "pct_null_or_zero": 92.552,
+        "pct_negative": 0.0,
+        "sum_eur": 9397.7
+      },
+      {
+        "file": "customer_order_item.csv",
+        "column": "freight_in_cost_eur",
+        "rows": 1847317,
+        "pct_null": 2.05,
+        "pct_zero": 93.146,
+        "pct_null_or_zero": 95.196,
+        "pct_negative": 0.0,
+        "sum_eur": 9397.7
+      }
+    ],
+    "Transport outbound": [
+      {
+        "file": "customer_order.csv",
+        "column": "total_shipping_cost_to_delivery_country_eur",
+        "rows": 989234,
+        "pct_null": 4.661,
+        "pct_zero": 5.568,
+        "pct_null_or_zero": 10.228,
+        "pct_negative": 0.0,
+        "sum_eur": 9707526.97
+      },
+      {
+        "file": "customer_order_item.csv",
+        "column": "shipping_cost_to_delivery_country_eur",
+        "rows": 1847317,
+        "pct_null": 2.05,
+        "pct_zero": 9.322,
+        "pct_null_or_zero": 11.372,
+        "pct_negative": 0.0,
+        "sum_eur": 9707526.97
+      },
+      {
+        "file": "package.csv",
+        "column": "shipping_cost_eur",
+        "rows": 946483,
+        "pct_null": 0.0,
+        "pct_zero": 2.046,
+        "pct_null_or_zero": 2.046,
+        "pct_negative": 0.0,
+        "sum_eur": 8454884.44
+      }
+    ],
+    "Duties/taxes": [
+      {
+        "file": "customer_order.csv",
+        "column": "duties_and_taxes_eur",
+        "rows": 989234,
+        "pct_null": 8.431,
+        "pct_zero": 87.379,
+        "pct_null_or_zero": 95.81,
+        "pct_negative": 0.0,
+        "sum_eur": 472551.83
+      },
+      {
+        "file": "package.csv",
+        "column": "duties_taxes_eur",
+        "rows": 946483,
+        "pct_null": 0.0,
+        "pct_zero": 95.44,
+        "pct_null_or_zero": 95.44,
+        "pct_negative": 0.0,
+        "sum_eur": 472551.83
+      }
+    ],
+    "Commissions marketplace": [
+      {
+        "file": "customer_order.csv",
+        "column": "marketplace_fees_eur",
+        "rows": 989234,
+        "pct_null": 4.035,
+        "pct_zero": 32.19,
+        "pct_null_or_zero": 36.225,
+        "pct_negative": 0.0,
+        "sum_eur": 3252862.23
+      }
+    ],
+    "Fournitures expédition": [
+      {
+        "file": "customer_order.csv",
+        "column": "total_shipping_supplies_eur",
+        "rows": 989234,
+        "pct_null": 4.661,
+        "pct_zero": 0.0,
+        "pct_null_or_zero": 4.661,
+        "pct_negative": 0.0,
+        "sum_eur": 457859.7
+      },
+      {
+        "file": "customer_order_item.csv",
+        "column": "shipping_supplies_cost_eur",
+        "rows": 1847317,
+        "pct_null": 2.05,
+        "pct_zero": 0.0,
+        "pct_null_or_zero": 2.05,
+        "pct_negative": 0.0,
+        "sum_eur": 457859.7
+      },
+      {
+        "file": "package.csv",
+        "column": "shipping_supply_cost_eur",
+        "rows": 946483,
+        "pct_null": 0.0,
+        "pct_zero": 1.742,
+        "pct_null_or_zero": 1.742,
+        "pct_negative": 0.0,
+        "sum_eur": 421384.6
+      }
+    ],
+    "_hors_formule (customer_order)": [
+      {
+        "file": "customer_order.csv",
+        "column": "returns_and_refunds_eur",
+        "rows": 989234,
+        "pct_null": 3.991,
+        "pct_zero": 42.819,
+        "pct_null_or_zero": 46.81,
+        "pct_negative": 0.0,
+        "sum_eur": 176145.52
+      },
+      {
+        "file": "customer_order.csv",
+        "column": "total_generic_costs_eur",
+        "rows": 989234,
+        "pct_null": 4.944,
+        "pct_zero": 0.0,
+        "pct_null_or_zero": 4.944,
+        "pct_negative": 0.0,
+        "sum_eur": 747983.55
+      }
+    ],
+    "_natif backend (customer_order)": [
+      {
+        "file": "customer_order.csv",
+        "column": "gross_profit_eur",
+        "rows": 989234,
+        "pct_null": 4.035,
+        "pct_zero": 0.0,
+        "pct_null_or_zero": 4.035,
+        "pct_negative": 0.182,
+        "sum_eur": 18898244.05
+      },
+      {
+        "file": "customer_order.csv",
+        "column": "contribution_profit_eur",
+        "rows": 989234,
+        "pct_null": 4.035,
+        "pct_zero": 0.03,
+        "pct_null_or_zero": 4.065,
+        "pct_negative": 9.343,
+        "sum_eur": 5499105.58
+      }
+    ]
+  },
+  "task1_coherence_variantes": {
+    "COGS": {
+      "co_column": "product_cost_eur",
+      "agg_source": "customer_order_item.csv[product_cost_eur] sommé par order_id",
+      "orders_both_present": 949755,
+      "co_sum_eur": 17630200.94,
+      "agg_sum_eur": 17630200.94,
+      "mean_abs_diff": 0.0,
+      "median_abs_diff": 0.0,
+      "max_abs_diff": 0.0,
+      "pct_diff_gt_1eur": 0.0,
+      "pct_diff_gt_1pct_rel": 0.0,
+      "corr": 1.0
+    },
+    "Transport inbound": {
+      "co_column": "inbound_transportation_cost_eur",
+      "agg_source": "customer_order_item.csv[freight_in_cost_eur] sommé par order_id",
+      "orders_both_present": 943130,
+      "co_sum_eur": 9397.7,
+      "agg_sum_eur": 9397.7,
+      "mean_abs_diff": 0.0,
+      "median_abs_diff": 0.0,
+      "max_abs_diff": 0.0,
+      "pct_diff_gt_1eur": 0.0,
+      "pct_diff_gt_1pct_rel": 0.0,
+      "corr": 1.0
+    },
+    "Transport outbound (item)": {
+      "co_column": "total_shipping_cost_to_delivery_country_eur",
+      "agg_source": "customer_order_item.csv[shipping_cost_to_delivery_country_eur] sommé par order_id",
+      "orders_both_present": 943130,
+      "co_sum_eur": 9707526.97,
+      "agg_sum_eur": 9707526.97,
+      "mean_abs_diff": 0.0,
+      "median_abs_diff": 0.0,
+      "max_abs_diff": 0.0,
+      "pct_diff_gt_1eur": 0.0,
+      "pct_diff_gt_1pct_rel": 0.0,
+      "corr": 1.0
+    },
+    "Transport outbound (package)": {
+      "co_column": "total_shipping_cost_to_delivery_country_eur",
+      "agg_source": "package.csv[shipping_cost_eur] sommé par order_id",
+      "orders_both_present": 894310,
+      "co_sum_eur": 9366852.54,
+      "agg_sum_eur": 8432174.02,
+      "mean_abs_diff": 4.5582,
+      "median_abs_diff": 0.0049,
+      "max_abs_diff": 47295.9303,
+      "pct_diff_gt_1eur": 38.794,
+      "pct_diff_gt_1pct_rel": 40.182,
+      "corr": 0.36446
+    },
+    "Duties/taxes (package)": {
+      "co_column": "duties_and_taxes_eur",
+      "agg_source": "package.csv[duties_taxes_eur] sommé par order_id",
+      "orders_both_present": 905832,
+      "co_sum_eur": 472551.83,
+      "agg_sum_eur": 472551.83,
+      "mean_abs_diff": 0.0,
+      "median_abs_diff": 0.0,
+      "max_abs_diff": 0.0,
+      "pct_diff_gt_1eur": 0.0,
+      "pct_diff_gt_1pct_rel": 0.0,
+      "corr": 1.0
+    },
+    "Fournitures (item)": {
+      "co_column": "total_shipping_supplies_eur",
+      "agg_source": "customer_order_item.csv[shipping_supplies_cost_eur] sommé par order_id",
+      "orders_both_present": 943130,
+      "co_sum_eur": 457859.7,
+      "agg_sum_eur": 457859.7,
+      "mean_abs_diff": 0.0,
+      "median_abs_diff": 0.0,
+      "max_abs_diff": 0.0,
+      "pct_diff_gt_1eur": 0.0,
+      "pct_diff_gt_1pct_rel": 0.0,
+      "corr": 1.0
+    },
+    "Fournitures (package)": {
+      "co_column": "total_shipping_supplies_eur",
+      "agg_source": "package.csv[shipping_supply_cost_eur] sommé par order_id",
+      "orders_both_present": 894310,
+      "co_sum_eur": 435817.23,
+      "agg_sum_eur": 419476.76,
+      "mean_abs_diff": 0.1988,
+      "median_abs_diff": 0.0,
+      "max_abs_diff": 665.0,
+      "pct_diff_gt_1eur": 3.818,
+      "pct_diff_gt_1pct_rel": 49.655,
+      "corr": 0.24866
+    }
+  },
+  "task2_recalc": {
+    "gross_profit_eur_exists": true,
+    "contribution_profit_eur_exists": true,
+    "note_revenue": "order_amount_eur = 0 sur de nombreuses lignes alors que gross_profit_eur est renseigné : le backend n'utilise PAS order_amount_eur comme revenu. Revenu reconstruit = gross_profit_eur / gross_margin pour contrôle.",
+    "formule_Marc_vs_gross_profit_eur": {
+      "n": 949317,
+      "mean_signed_diff": -42.9444,
+      "mean_abs_diff": 43.9239,
+      "median_signed_diff": -33.04,
+      "median_abs_diff": 33.05,
+      "max_abs_diff": 293310.26,
+      "pct_lines_diff_gt_1eur": 99.772,
+      "pct_lines_rel_gt_5pct": 99.916,
+      "pct_lines_converged_lt_0p01eur": 0.001
+    },
+    "formule_Marc_vs_contribution_profit_eur": {
+      "n": 949317,
+      "mean_signed_diff": -28.8298,
+      "mean_abs_diff": 31.2476,
+      "median_signed_diff": -22.43,
+      "median_abs_diff": 22.44,
+      "max_abs_diff": 293349.12,
+      "pct_lines_diff_gt_1eur": 98.779,
+      "pct_lines_rel_gt_5pct": 99.399,
+      "pct_lines_converged_lt_0p01eur": 0.008
+    },
+    "revenu_order_amount_eur_vs_reconstruit": {
+      "n": 949204,
+      "pct_order_amount_eur_zero_quand_gp_present": 84.597,
+      "mean_signed_diff (oa - reconstruit)": -28.3574,
+      "median_abs_diff": 23.308,
+      "pct_lignes_ecart_gt_1eur": 87.241
+    },
+    "formule_avec_revenu_reconstruit_vs_gross_profit": {
+      "n": 949204,
+      "mean_signed_diff": -14.595,
+      "mean_abs_diff": 14.6267,
+      "median_signed_diff": -9.5495,
+      "median_abs_diff": 9.5495,
+      "max_abs_diff": 48568.938,
+      "pct_lines_diff_gt_1eur": 94.799,
+      "pct_lines_rel_gt_5pct": 95.531,
+      "pct_lines_converged_lt_0p01eur": 0.682
+    },
+    "formule_avec_revenu_reconstruit_vs_contribution": {
+      "n": 949204,
+      "mean_signed_diff": -0.482,
+      "mean_abs_diff": 5.1896,
+      "median_signed_diff": 0.708,
+      "median_abs_diff": 0.9534,
+      "max_abs_diff": 47617.188,
+      "pct_lines_diff_gt_1eur": 48.376,
+      "pct_lines_rel_gt_5pct": 97.008,
+      "pct_lines_converged_lt_0p01eur": 0.056
+    },
+    "isolation_vs_gross_profit (retrait d'un poste)": {
+      "sans_COGS": {
+        "n": 949317,
+        "mean_signed_diff": -24.3884,
+        "mean_abs_diff": 29.7821,
+        "median_signed_diff": -21.61,
+        "median_abs_diff": 22.15,
+        "max_abs_diff": 293332.47,
+        "pct_lines_diff_gt_1eur": 99.626,
+        "pct_lines_rel_gt_5pct": 99.574,
+        "pct_lines_converged_lt_0p01eur": 0.002
+      },
+      "sans_inbound": {
+        "n": 949317,
+        "mean_signed_diff": -42.9345,
+        "mean_abs_diff": 43.9141,
+        "median_signed_diff": -33.04,
+        "median_abs_diff": 33.05,
+        "max_abs_diff": 293310.26,
+        "pct_lines_diff_gt_1eur": 99.772,
+        "pct_lines_rel_gt_5pct": 99.916,
+        "pct_lines_converged_lt_0p01eur": 0.001
+      },
+      "sans_outbound": {
+        "n": 949317,
+        "mean_signed_diff": -32.7318,
+        "mean_abs_diff": 33.8153,
+        "median_signed_diff": -27.53,
+        "median_abs_diff": 27.54,
+        "max_abs_diff": 293341.66,
+        "pct_lines_diff_gt_1eur": 90.343,
+        "pct_lines_rel_gt_5pct": 89.872,
+        "pct_lines_converged_lt_0p01eur": 0.017
+      },
+      "sans_duties": {
+        "n": 949317,
+        "mean_signed_diff": -42.4486,
+        "mean_abs_diff": 43.4299,
+        "median_signed_diff": -32.95,
+        "median_abs_diff": 32.96,
+        "max_abs_diff": 293322.16,
+        "pct_lines_diff_gt_1eur": 99.772,
+        "pct_lines_rel_gt_5pct": 99.913,
+        "pct_lines_converged_lt_0p01eur": 0.001
+      },
+      "sans_commissions": {
+        "n": 949317,
+        "mean_signed_diff": -39.5178,
+        "mean_abs_diff": 40.4974,
+        "median_signed_diff": -29.18,
+        "median_abs_diff": 29.19,
+        "max_abs_diff": 293310.26,
+        "pct_lines_diff_gt_1eur": 99.772,
+        "pct_lines_rel_gt_5pct": 99.916,
+        "pct_lines_converged_lt_0p01eur": 0.001
+      },
+      "sans_fournitures": {
+        "n": 949317,
+        "mean_signed_diff": -42.4624,
+        "mean_abs_diff": 43.4605,
+        "median_signed_diff": -32.7,
+        "median_abs_diff": 32.71,
+        "max_abs_diff": 293310.7,
+        "pct_lines_diff_gt_1eur": 99.78,
+        "pct_lines_rel_gt_5pct": 99.903,
+        "pct_lines_converged_lt_0p01eur": 0.002
+      },
+      "sans_shipping_revenue": {
+        "n": 949317,
+        "mean_signed_diff": -42.9747,
+        "mean_abs_diff": 43.919,
+        "median_signed_diff": -33.05,
+        "median_abs_diff": 33.05,
+        "max_abs_diff": 293295.36,
+        "pct_lines_diff_gt_1eur": 99.407,
+        "pct_lines_rel_gt_5pct": 99.867,
+        "pct_lines_converged_lt_0p01eur": 0.002
+      }
+    },
+    "ajout_postes_hors_formule_vs_contribution_profit": {
+      "formule_moins_returns": {
+        "n": 949317,
+        "mean_signed_diff": -29.0154,
+        "mean_abs_diff": 31.4331,
+        "median_signed_diff": -22.66,
+        "median_abs_diff": 22.69,
+        "max_abs_diff": 293349.12,
+        "pct_lines_diff_gt_1eur": 98.78,
+        "pct_lines_rel_gt_5pct": 99.4,
+        "pct_lines_converged_lt_0p01eur": 0.008
+      },
+      "formule_moins_generic": {
+        "n": 949317,
+        "mean_signed_diff": -29.6167,
+        "mean_abs_diff": 31.883,
+        "median_signed_diff": -22.85,
+        "median_abs_diff": 22.91,
+        "max_abs_diff": 293348.45,
+        "pct_lines_diff_gt_1eur": 98.604,
+        "pct_lines_rel_gt_5pct": 99.043,
+        "pct_lines_converged_lt_0p01eur": 0.082
+      },
+      "formule_moins_returns_et_generic": {
+        "n": 949317,
+        "mean_signed_diff": -29.8022,
+        "mean_abs_diff": 32.0686,
+        "median_signed_diff": -23.03,
+        "median_abs_diff": 23.09,
+        "max_abs_diff": 293348.45,
+        "pct_lines_diff_gt_1eur": 98.606,
+        "pct_lines_rel_gt_5pct": 99.044,
+        "pct_lines_converged_lt_0p01eur": 0.082
+      }
+    },
+    "ajout_postes_hors_formule_vs_gross_profit": {
+      "formule_moins_returns": {
+        "n": 949317,
+        "mean_signed_diff": -43.1299,
+        "mean_abs_diff": 44.1095,
+        "median_signed_diff": -33.25,
+        "median_abs_diff": 33.26,
+        "max_abs_diff": 293310.26,
+        "pct_lines_diff_gt_1eur": 99.772,
+        "pct_lines_rel_gt_5pct": 99.916,
+        "pct_lines_converged_lt_0p01eur": 0.001
+      },
+      "formule_moins_generic": {
+        "n": 949317,
+        "mean_signed_diff": -43.7312,
+        "mean_abs_diff": 44.6844,
+        "median_signed_diff": -33.48,
+        "median_abs_diff": 33.49,
+        "max_abs_diff": 293309.59,
+        "pct_lines_diff_gt_1eur": 99.506,
+        "pct_lines_rel_gt_5pct": 99.755,
+        "pct_lines_converged_lt_0p01eur": 0.002
+      },
+      "formule_moins_returns_et_generic": {
+        "n": 949317,
+        "mean_signed_diff": -43.9167,
+        "mean_abs_diff": 44.8699,
+        "median_signed_diff": -33.68,
+        "median_abs_diff": 33.69,
+        "max_abs_diff": 293309.59,
+        "pct_lines_diff_gt_1eur": 99.506,
+        "pct_lines_rel_gt_5pct": 99.755,
+        "pct_lines_converged_lt_0p01eur": 0.002
+      }
+    },
+    "hypothese_gross_profit = revenu_reconstruit - COGS": {
+      "n": 949204,
+      "mean_signed_diff": 0.0001,
+      "mean_abs_diff": 0.0023,
+      "median_signed_diff": 0.0,
+      "median_abs_diff": 0.0012,
+      "max_abs_diff": 109.6817,
+      "pct_lines_diff_gt_1eur": 0.004,
+      "pct_lines_rel_gt_5pct": 0.031,
+      "pct_lines_converged_lt_0p01eur": 98.425
+    },
+    "confirmation_vs_contribution": {
+      "formule_Marc(revenu_reconstruit)": {
+        "n": 949204,
+        "mean_signed_diff": -0.482,
+        "mean_abs_diff": 5.1896,
+        "median_signed_diff": 0.708,
+        "median_abs_diff": 0.9534,
+        "max_abs_diff": 47617.188,
+        "pct_lines_diff_gt_1eur": 48.376,
+        "pct_lines_rel_gt_5pct": 97.008,
+        "pct_lines_converged_lt_0p01eur": 0.056
+      },
+      "formule_Marc - returns": {
+        "n": 949204,
+        "mean_signed_diff": -0.6675,
+        "mean_abs_diff": 5.0578,
+        "median_signed_diff": 0.4207,
+        "median_abs_diff": 0.6844,
+        "max_abs_diff": 47617.188,
+        "pct_lines_diff_gt_1eur": 41.414,
+        "pct_lines_rel_gt_5pct": 93.328,
+        "pct_lines_converged_lt_0p01eur": 0.793
+      },
+      "formule_Marc - generic": {
+        "n": 949204,
+        "mean_signed_diff": -1.2687,
+        "mean_abs_diff": 4.8624,
+        "median_signed_diff": 0.2812,
+        "median_abs_diff": 0.4024,
+        "max_abs_diff": 47868.088,
+        "pct_lines_diff_gt_1eur": 38.914,
+        "pct_lines_rel_gt_5pct": 85.564,
+        "pct_lines_converged_lt_0p01eur": 5.273
+      },
+      "formule_Marc - returns - generic": {
+        "n": 949204,
+        "mean_signed_diff": -1.4543,
+        "mean_abs_diff": 4.7362,
+        "median_signed_diff": 0.0009,
+        "median_abs_diff": 0.0493,
+        "max_abs_diff": 47868.088,
+        "pct_lines_diff_gt_1eur": 38.155,
+        "pct_lines_rel_gt_5pct": 44.58,
+        "pct_lines_converged_lt_0p01eur": 47.503
+      },
+      "formule_Marc - shipping_rev - returns - generic": {
+        "n": 949204,
+        "mean_signed_diff": -1.4846,
+        "mean_abs_diff": 4.73,
+        "median_signed_diff": 0.0009,
+        "median_abs_diff": 0.0493,
+        "max_abs_diff": 47868.088,
+        "pct_lines_diff_gt_1eur": 38.153,
+        "pct_lines_rel_gt_5pct": 44.577,
+        "pct_lines_converged_lt_0p01eur": 47.506
+      }
+    },
+    "residu_decompose (Marc - contribution) vs (shipping_rev+returns+generic)": {
+      "n": 949204,
+      "mean_abs_gap": 4.73,
+      "median_abs_gap": 0.0493,
+      "pct_lignes_gap_lt_0p01eur": 47.506
+    }
+  }
+}

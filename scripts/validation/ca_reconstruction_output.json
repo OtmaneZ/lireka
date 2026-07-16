@@ -1,0 +1,594 @@
+{
+  "customer_order_rows": 989234,
+  "contexte_order_amount": {
+    "order_amount_eur_zero": 842438,
+    "order_amount_eur_zero_pct": 85.161,
+    "order_amount_eur_null": 0,
+    "order_amount_local_zero": 842438,
+    "order_amount_local_zero_pct": 85.161,
+    "les_deux_zero_ensemble": 842438,
+    "note": "si local et eur sont 0 aux mêmes lignes -> le 0 vient de la source, pas de la conversion"
+  },
+  "tache1_ca_niveau_ligne": {
+    "customer_order_item_scan": {
+      "columns": [
+        "id",
+        "item_group_id",
+        "order_id",
+        "package_id",
+        "internal_state",
+        "product_cost_eur",
+        "returns_and_refunds_cost_eur",
+        "freight_in_cost_eur",
+        "shipping_cost_to_delivery_country_eur",
+        "shipping_supplies_cost_eur",
+        "generic_costs_eur"
+      ],
+      "colonnes_prix_vente_detectees": [],
+      "colonnes_cout": [
+        "product_cost_eur",
+        "returns_and_refunds_cost_eur",
+        "freight_in_cost_eur",
+        "shipping_cost_to_delivery_country_eur",
+        "shipping_supplies_cost_eur",
+        "generic_costs_eur"
+      ]
+    },
+    "item_group_diag": {
+      "item_group_rows": 1709908,
+      "distinct_order_id": 973741,
+      "customer_price_per_item_eur_null": 0,
+      "customer_price_per_item_eur_zero": 1647936,
+      "quantity_null": 0,
+      "group_type_counts": {
+        "CUSTOMER_ORDER": 1700961,
+        "REPLACEMENT": 8947
+      },
+      "group_type_rev_customer_sum": {
+        "CUSTOMER_ORDER": 1835558.81,
+        "REPLACEMENT": 1167.84
+      }
+    },
+    "verif_convergence_sur_order_amount_positif": {
+      "rev_customer(item_group) vs order_amount_eur": {
+        "n": 146796,
+        "sum_a": 1835865.46,
+        "sum_b": 9647277.7,
+        "mean_signed_diff (a-b)": -53.2127,
+        "median_abs_diff": 37.74,
+        "max_abs_diff": 293396.5,
+        "pct_converge_lt_0p01": 6.154,
+        "pct_converge_lt_1eur": 6.908,
+        "pct_diff_gt_1eur": 93.091,
+        "corr": 0.29018
+      },
+      "rev_list(item_group) vs order_amount_eur": {
+        "n": 146796,
+        "sum_a": 7600360.09,
+        "sum_b": 9647277.7,
+        "mean_signed_diff (a-b)": -13.944,
+        "median_abs_diff": 7.0,
+        "max_abs_diff": 293359.6,
+        "pct_converge_lt_0p01": 6.597,
+        "pct_converge_lt_1eur": 16.096,
+        "pct_diff_gt_1eur": 83.774,
+        "corr": 0.33504
+      }
+    },
+    "reconstitution_sur_les_lignes_a_zero": {
+      "commandes_oa_zero": 842438,
+      "  dont rev_customer(item_group) renseigne_et_non_nul": 1,
+      "  dont rev_customer(item_group) = 0_ou_absent": 842437,
+      "somme_rev_customer_reconstitue_sur_oa_zero": 861.19,
+      "somme_rev_list_reconstitue_sur_oa_zero": 22277362.28
+    },
+    "coherence_rev_customer_vs_revenu_reconstruit_gp_sur_gm (toutes lignes)": {
+      "n": 949201,
+      "sum_a": 1818742.16,
+      "sum_b": 36513693.73,
+      "mean_signed_diff (a-b)": -36.5517,
+      "median_abs_diff": 26.4384,
+      "max_abs_diff": 35745.79,
+      "pct_converge_lt_0p01": 0.52,
+      "pct_converge_lt_1eur": 0.938,
+      "pct_diff_gt_1eur": 99.062,
+      "corr": 0.73538
+    },
+    "coherence_rev_customer_vs_revenu_reconstruit_sur_oa_zero": {
+      "n": 802994,
+      "sum_a": 861.19,
+      "sum_b": 27421536.48,
+      "mean_signed_diff (a-b)": -34.148,
+      "median_abs_diff": 25.432,
+      "max_abs_diff": 22929.82,
+      "pct_converge_lt_0p01": 0.002,
+      "pct_converge_lt_1eur": 0.01,
+      "pct_diff_gt_1eur": 99.99,
+      "corr": 0.01205
+    }
+  },
+  "tache2_correlation_du_nul": {
+    "table_croisee_state_x_order_amount": {
+      "SHIPPED": {
+        "total": 898648,
+        "oa_zero": 757817,
+        "oa_non_zero": 140831,
+        "pct_zero": 84.33
+      },
+      "CANCELLED": {
+        "total": 83481,
+        "oa_zero": 80078,
+        "oa_non_zero": 3403,
+        "pct_zero": 95.92
+      },
+      "PICKED": {
+        "total": 6368,
+        "oa_zero": 3806,
+        "oa_non_zero": 2562,
+        "pct_zero": 59.77
+      },
+      "RECEIVED": {
+        "total": 737,
+        "oa_zero": 737,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      }
+    },
+    "recap_cancelled": {
+      "order_amount_eur_zero_total": 842438,
+      "  dont CANCELLED": 80078,
+      "  dont NON-CANCELLED": 762360,
+      "pct_des_zero_qui_sont_CANCELLED": 9.506,
+      "total_CANCELLED": 83481,
+      "pct_CANCELLED_qui_sont_zero": 95.924
+    },
+    "non_cancelled_a_zero": {
+      "total": 762360,
+      "avec_gross_profit_renseigne_et_non_nul": 757225,
+      "pct": 99.326,
+      "CA_implicite_reverse (gp + product_cost_eur) somme": 26075332.35,
+      "CA_implicite_reverse (gp / gross_margin) somme": 26075351.27
+    },
+    "repartition_currency (top)": {
+      "EUR": {
+        "total": 627337,
+        "oa_zero": 598463,
+        "oa_non_zero": 28874,
+        "pct_zero": 95.4
+      },
+      "CAD": {
+        "total": 135021,
+        "oa_zero": 100659,
+        "oa_non_zero": 34362,
+        "pct_zero": 74.55
+      },
+      "USD": {
+        "total": 102832,
+        "oa_zero": 69747,
+        "oa_non_zero": 33085,
+        "pct_zero": 67.83
+      },
+      "GBP": {
+        "total": 47526,
+        "oa_zero": 38262,
+        "oa_non_zero": 9264,
+        "pct_zero": 80.51
+      },
+      "CHF": {
+        "total": 38069,
+        "oa_zero": 12429,
+        "oa_non_zero": 25640,
+        "pct_zero": 32.65
+      },
+      "ILS": {
+        "total": 15839,
+        "oa_zero": 9754,
+        "oa_non_zero": 6085,
+        "pct_zero": 61.58
+      },
+      "BRL": {
+        "total": 1846,
+        "oa_zero": 726,
+        "oa_non_zero": 1120,
+        "pct_zero": 39.33
+      },
+      "NOK": {
+        "total": 1586,
+        "oa_zero": 996,
+        "oa_non_zero": 590,
+        "pct_zero": 62.8
+      },
+      "SEK": {
+        "total": 1534,
+        "oa_zero": 978,
+        "oa_non_zero": 556,
+        "pct_zero": 63.75
+      },
+      "AUD": {
+        "total": 1424,
+        "oa_zero": 780,
+        "oa_non_zero": 644,
+        "pct_zero": 54.78
+      },
+      "JPY": {
+        "total": 1321,
+        "oa_zero": 791,
+        "oa_non_zero": 530,
+        "pct_zero": 59.88
+      },
+      "CZK": {
+        "total": 1187,
+        "oa_zero": 900,
+        "oa_non_zero": 287,
+        "pct_zero": 75.82
+      },
+      "QAR": {
+        "total": 1061,
+        "oa_zero": 691,
+        "oa_non_zero": 370,
+        "pct_zero": 65.13
+      },
+      "AED": {
+        "total": 1017,
+        "oa_zero": 726,
+        "oa_non_zero": 291,
+        "pct_zero": 71.39
+      },
+      "MXN": {
+        "total": 997,
+        "oa_zero": 466,
+        "oa_non_zero": 531,
+        "pct_zero": 46.74
+      },
+      "HKD": {
+        "total": 987,
+        "oa_zero": 705,
+        "oa_non_zero": 282,
+        "pct_zero": 71.43
+      },
+      "NZD": {
+        "total": 980,
+        "oa_zero": 548,
+        "oa_non_zero": 432,
+        "pct_zero": 55.92
+      },
+      "DKK": {
+        "total": 927,
+        "oa_zero": 497,
+        "oa_non_zero": 430,
+        "pct_zero": 53.61
+      },
+      "MAD": {
+        "total": 596,
+        "oa_zero": 443,
+        "oa_non_zero": 153,
+        "pct_zero": 74.33
+      },
+      "RON": {
+        "total": 594,
+        "oa_zero": 332,
+        "oa_non_zero": 262,
+        "pct_zero": 55.89
+      },
+      "PLN": {
+        "total": 579,
+        "oa_zero": 291,
+        "oa_non_zero": 288,
+        "pct_zero": 50.26
+      },
+      "THB": {
+        "total": 561,
+        "oa_zero": 247,
+        "oa_non_zero": 314,
+        "pct_zero": 44.03
+      },
+      "TRY": {
+        "total": 530,
+        "oa_zero": 293,
+        "oa_non_zero": 237,
+        "pct_zero": 55.28
+      },
+      "BGN": {
+        "total": 516,
+        "oa_zero": 333,
+        "oa_non_zero": 183,
+        "pct_zero": 64.53
+      },
+      "PHP": {
+        "total": 431,
+        "oa_zero": 156,
+        "oa_non_zero": 275,
+        "pct_zero": 36.19
+      }
+    },
+    "repartition_source (top)": {
+      "AMAZON_FR": {
+        "total": 379034,
+        "oa_zero": 379034,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "WEBSITE": {
+        "total": 299072,
+        "oa_zero": 159541,
+        "oa_non_zero": 139531,
+        "pct_zero": 53.35
+      },
+      "AMAZON_CA": {
+        "total": 65001,
+        "oa_zero": 65001,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "CULTURA": {
+        "total": 49005,
+        "oa_zero": 49005,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "AMAZON_US": {
+        "total": 42766,
+        "oa_zero": 42766,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "AMAZON_DE": {
+        "total": 31954,
+        "oa_zero": 31954,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "AMAZON_UK": {
+        "total": 30873,
+        "oa_zero": 30873,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "RAKUTEN": {
+        "total": 25663,
+        "oa_zero": 25663,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "AMAZON_BE": {
+        "total": 24327,
+        "oa_zero": 24327,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "ARTHAUD": {
+        "total": 18860,
+        "oa_zero": 12896,
+        "oa_non_zero": 5964,
+        "pct_zero": 68.38
+      },
+      "AMAZON_IT": {
+        "total": 10817,
+        "oa_zero": 10817,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "AMAZON_ES": {
+        "total": 9352,
+        "oa_zero": 9352,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "PRO_WEBSITE": {
+        "total": 1305,
+        "oa_zero": 4,
+        "oa_non_zero": 1301,
+        "pct_zero": 0.31
+      },
+      "FNAC": {
+        "total": 768,
+        "oa_zero": 768,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "AMAZON_NL": {
+        "total": 382,
+        "oa_zero": 382,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "AMAZON_SE": {
+        "total": 55,
+        "oa_zero": 55,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      }
+    },
+    "repartition_annee": {
+      "2025": {
+        "total": 224144,
+        "oa_zero": 127939,
+        "oa_non_zero": 96205,
+        "pct_zero": 57.08
+      },
+      "2024": {
+        "total": 211522,
+        "oa_zero": 207888,
+        "oa_non_zero": 3634,
+        "pct_zero": 98.28
+      },
+      "2023": {
+        "total": 162536,
+        "oa_zero": 162536,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "2022": {
+        "total": 143255,
+        "oa_zero": 143255,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "2021": {
+        "total": 116708,
+        "oa_zero": 116708,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      },
+      "2026": {
+        "total": 99381,
+        "oa_zero": 52424,
+        "oa_non_zero": 46957,
+        "pct_zero": 52.75
+      },
+      "2020": {
+        "total": 31688,
+        "oa_zero": 31688,
+        "oa_non_zero": 0,
+        "pct_zero": 100.0
+      }
+    }
+  },
+  "tache4_origin_source": {
+    "origin_order_id_format": {
+      "vide": 0,
+      "purement_numerique": 25663,
+      "contient_lettres": 369010
+    },
+    "prefixe_alpha_x_zero": {
+      "(num/vide)": {
+        "total": 939617,
+        "oa_zero": 792821,
+        "pct_zero": 84.38
+      },
+      "P": {
+        "total": 49005,
+        "oa_zero": 49005,
+        "pct_zero": 100.0
+      },
+      "H": {
+        "total": 76,
+        "oa_zero": 76,
+        "pct_zero": 100.0
+      },
+      "G": {
+        "total": 43,
+        "oa_zero": 43,
+        "pct_zero": 100.0
+      },
+      "B": {
+        "total": 9,
+        "oa_zero": 9,
+        "pct_zero": 100.0
+      },
+      "CT": {
+        "total": 9,
+        "oa_zero": 9,
+        "pct_zero": 100.0
+      },
+      "FG": {
+        "total": 8,
+        "oa_zero": 8,
+        "pct_zero": 100.0
+      },
+      "DP": {
+        "total": 8,
+        "oa_zero": 8,
+        "pct_zero": 100.0
+      },
+      "GE": {
+        "total": 6,
+        "oa_zero": 6,
+        "pct_zero": 100.0
+      },
+      "BY": {
+        "total": 6,
+        "oa_zero": 6,
+        "pct_zero": 100.0
+      },
+      "GC": {
+        "total": 6,
+        "oa_zero": 6,
+        "pct_zero": 100.0
+      },
+      "BX": {
+        "total": 6,
+        "oa_zero": 6,
+        "pct_zero": 100.0
+      },
+      "HZ": {
+        "total": 5,
+        "oa_zero": 5,
+        "pct_zero": 100.0
+      },
+      "BZ": {
+        "total": 5,
+        "oa_zero": 5,
+        "pct_zero": 100.0
+      },
+      "EM": {
+        "total": 5,
+        "oa_zero": 5,
+        "pct_zero": 100.0
+      },
+      "FI": {
+        "total": 5,
+        "oa_zero": 5,
+        "pct_zero": 100.0
+      },
+      "CV": {
+        "total": 5,
+        "oa_zero": 5,
+        "pct_zero": 100.0
+      },
+      "EL": {
+        "total": 5,
+        "oa_zero": 5,
+        "pct_zero": 100.0
+      },
+      "EK": {
+        "total": 4,
+        "oa_zero": 4,
+        "pct_zero": 100.0
+      },
+      "DQ": {
+        "total": 3,
+        "oa_zero": 3,
+        "pct_zero": 100.0
+      },
+      "BXQ": {
+        "total": 3,
+        "oa_zero": 3,
+        "pct_zero": 100.0
+      },
+      "CVY": {
+        "total": 2,
+        "oa_zero": 2,
+        "pct_zero": 100.0
+      },
+      "CVG": {
+        "total": 2,
+        "oa_zero": 2,
+        "pct_zero": 100.0
+      },
+      "HAI": {
+        "total": 2,
+        "oa_zero": 2,
+        "pct_zero": 100.0
+      },
+      "DRJ": {
+        "total": 2,
+        "oa_zero": 2,
+        "pct_zero": 100.0
+      }
+    },
+    "format_x_zero": {
+      "purement_numerique": {
+        "total": 25663,
+        "oa_zero": 25663,
+        "pct_zero": 100.0
+      },
+      "contient_lettres": {
+        "total": 369010,
+        "oa_zero": 222214,
+        "pct_zero": 60.22
+      }
+    },
+    "note": "source déjà croisé en tâche 2 (repartition_source) : un canal à 100 % oa_zero ou 0 % oa_zero indiquerait un problème de transmission par canal."
+  }
+}
