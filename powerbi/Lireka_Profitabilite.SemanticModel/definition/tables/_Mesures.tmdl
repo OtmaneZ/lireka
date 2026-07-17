@@ -675,6 +675,320 @@ table _Mesures
 		formatString: 0.0%
 		lineageTag: 625464b5-de13-4b23-8028-5c54a97ab079
 
+	/// Finance KPI — Revenue (reconstruit) = CA HT net annulation reconstruit + frais port hors CANCELLED.
+	/// Variante marketplace pour dashboards Finance (General View, B2C, Marketplaces…).
+	measure 'Revenu (reconstruit)' =
+			[CA HT Net Annulation (reconstruit)]
+				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
+		formatString: #,##0.00 €
+		lineageTag: 11112222-3333-4444-5555-666677778888
+
+	measure 'Revenu (reconstruit) PY' = CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: 22223333-4444-5555-6666-777788889999
+
+	measure 'Revenu (reconstruit) YoY Δ' = [Revenu (reconstruit)] - [Revenu (reconstruit) PY]
+		formatString: #,##0.00 €
+		lineageTag: 33334444-5555-6666-7777-888899990000
+
+	measure 'Revenu (reconstruit) YoY %' = DIVIDE([Revenu (reconstruit)] - [Revenu (reconstruit) PY], [Revenu (reconstruit) PY])
+		formatString: 0.0%
+		lineageTag: 44445555-6666-7777-8888-999900001111
+
+	/// Marge brute avec CA reconstruit (même formule Marc que [Marge Brute]).
+	measure 'Marge Brute (reconstruit)' =
+			[CA HT Net Annulation (reconstruit)]
+				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
+				- [Coût Achat Total]
+				- [Coût Transport Amont]
+				- [Coût Transport Outbound (Retenu)]
+				- [Douanes Taxes]
+				- [Commissions Marketplace]
+				- [Fournitures Expédition]
+				- [Retours Remboursements]
+				- [Coûts Génériques]
+		formatString: #,##0.00 €
+		lineageTag: 55556666-7777-8888-9999-000011112222
+
+	measure 'Marge Brute (reconstruit) PY' = CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: 66667777-8888-9999-0000-111122223333
+
+	measure 'Marge Brute (reconstruit) YoY Δ' = [Marge Brute (reconstruit)] - [Marge Brute (reconstruit) PY]
+		formatString: #,##0.00 €
+		lineageTag: 77778888-9999-0000-1111-222233334444
+
+	measure 'Marge Brute (reconstruit) YoY %' = DIVIDE([Marge Brute (reconstruit)] - [Marge Brute (reconstruit) PY], [Marge Brute (reconstruit) PY])
+		formatString: 0.0%
+		lineageTag: 88889999-0000-1111-2222-333344445555
+
+	measure 'Taux Marge Brute (reconstruit)' = DIVIDE([Marge Brute (reconstruit)], [Revenu (reconstruit)], 0)
+		formatString: 0.0%
+		lineageTag: 99990000-1111-2222-3333-444455556666
+
+	measure 'Taux Marge Brute (reconstruit) PY' = CALCULATE([Taux Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: 0.0%
+		lineageTag: aaaabb00-1111-2222-3333-444455556666
+
+	measure 'Taux Marge Brute (reconstruit) YoY bps' = ([Taux Marge Brute (reconstruit)] - [Taux Marge Brute (reconstruit) PY]) * 10000
+		formatString: #,##0
+		lineageTag: bbbbcc00-1111-2222-3333-444455556666
+
+	/// Gross Margin % dashboard — numérateur [Marge Brute] Marc, dénominateur [Revenu (reconstruit)].
+	measure 'Taux Marge Brute (revenu reconstruit)' = DIVIDE([Marge Brute], [Revenu (reconstruit)], 0)
+		formatString: 0.0%
+		lineageTag: ccddcc00-1111-2222-3333-444455556667
+
+	measure 'Taux Marge Brute (revenu reconstruit) PY' = CALCULATE([Taux Marge Brute (revenu reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: 0.0%
+		lineageTag: ddeedd00-1111-2222-3333-444455556668
+
+	measure 'Taux Marge Brute (revenu reconstruit) YoY bps' = ([Taux Marge Brute (revenu reconstruit)] - [Taux Marge Brute (revenu reconstruit) PY]) * 10000
+		formatString: #,##0
+		lineageTag: eeffee00-1111-2222-3333-444455556669
+
+	/// General View — alloue le revenu commande (reconstruit) au prorata des unités par langue livre.
+	measure 'Revenu (reconstruit, alloué langue)' =
+			SUMX(
+				VALUES(fact_commandes[id_commande]),
+				VAR Rev =
+					CALCULATE(
+						[CA HT Net Annulation (reconstruit)]
+							+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED"),
+						ALLEXCEPT(fact_commandes, fact_commandes[id_commande]),
+						REMOVEFILTERS(fact_lignes[langue_livre], fact_lignes[canal_ligne], fact_lignes[canal_langue])
+					)
+				VAR UnitsTotal =
+					CALCULATE(
+						[Nb Articles],
+						ALLEXCEPT(fact_commandes, fact_commandes[id_commande]),
+						REMOVEFILTERS(fact_lignes[langue_livre], fact_lignes[canal_ligne], fact_lignes[canal_langue])
+					)
+				VAR UnitsSlice = CALCULATE([Nb Articles], ALLEXCEPT(fact_commandes, fact_commandes[id_commande]))
+				RETURN IF(UnitsTotal = 0, BLANK(), Rev * DIVIDE(UnitsSlice, UnitsTotal))
+			)
+		formatString: #,##0.00 €
+		lineageTag: ccccdd00-1111-2222-3333-444455556666
+
+	/// --- KPI cards : Taux Annulation (Cancellation rate) — YoY en bps, pas en % ---
+	/// Field cadrage n°4 : = Cancelled units / Ordered units (grain article, date_commande).
+	/// Numérateur [Nb Articles Annulés] (internal_state = CANCELLED), dénominateur
+	/// [Unités commandées] (= [Nb Articles], toutes lignes y compris annulées).
+	measure 'Taux Annulation' = DIVIDE([Nb Articles Annulés], [Unités commandées], 0)
+		formatString: 0.0%
+		lineageTag: 3a1c5e7d-2b48-4f16-9c03-1d5e7f9a0b21
+
+	measure 'Taux Annulation PY' = CALCULATE([Taux Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: 0.0%
+		lineageTag: 4b2d6f8e-3c59-4027-ad14-2e6f80ab1c32
+
+	measure 'Taux Annulation YoY bps' = ([Taux Annulation] - [Taux Annulation PY]) * 10000
+		formatString: #,##0
+		lineageTag: 5c3e709f-4d6a-4138-be25-3f7091bc2d43
+
+	/// =====================================================================
+	/// Bloc 9 — Présentation General View (L04). Sous-titres cartes KPI
+	/// (valeur PY + YoY compact, flèche ▲/▼) et mesures couleur (vert/rouge)
+	/// pour le formatage conditionnel des cartes et des colonnes YoY du tableau.
+	/// Couleurs alignées charte : good #6FA84B / bad #C0504D.
+	/// =====================================================================
+	/// Carte General View — sous-titre "PY: 1.23k (▲ +45.2% YoY)" (unités, compact).
+	measure 'GV sous-titre — Unités' =
+			VAR py = [Unités commandées PY]
+			VAR yoy = [Unités commandées YoY %]
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR a = ABS(py)
+			VAR pytxt =
+				SWITCH(
+					TRUE(),
+					a >= 1000000, FORMAT(py / 1000000, "0.0") & "M",
+					a >= 1000, FORMAT(py / 1000, "0.0") & "k",
+					FORMAT(py, "#,##0")
+				)
+			RETURN
+				IF(
+					ISBLANK(py),
+					"PY: n/a",
+					"PY: " & pytxt & "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)"
+				)
+		lineageTag: aa000001-1111-2222-3333-444455550001
+
+	/// Carte General View — sous-titre "PY: €120k (▲ +48.3% YoY)" (revenu reconstruit, compact €).
+	measure 'GV sous-titre — Revenue' =
+			VAR py = [Revenu (reconstruit) PY]
+			VAR yoy = [Revenu (reconstruit) YoY %]
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR a = ABS(py)
+			VAR pytxt =
+				SWITCH(
+					TRUE(),
+					a >= 1000000, "€" & FORMAT(py / 1000000, "0.0") & "M",
+					a >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
+					"€" & FORMAT(py, "#,##0")
+				)
+			RETURN
+				IF(
+					ISBLANK(py),
+					"PY: n/a",
+					"PY: " & pytxt & "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)"
+				)
+		lineageTag: aa000002-1111-2222-3333-444455550002
+
+	/// Carte General View — sous-titre "PY: €20k (▲ +52.8% YoY)" (marge brute, compact €).
+	measure 'GV sous-titre — Gross Profit' =
+			VAR py = [Marge Brute PY]
+			VAR yoy = [Marge Brute YoY %]
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR a = ABS(py)
+			VAR pytxt =
+				SWITCH(
+					TRUE(),
+					a >= 1000000, "€" & FORMAT(py / 1000000, "0.0") & "M",
+					a >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
+					"€" & FORMAT(py, "#,##0")
+				)
+			RETURN
+				IF(
+					ISBLANK(py),
+					"PY: n/a",
+					"PY: " & pytxt & "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)"
+				)
+		lineageTag: aa000003-1111-2222-3333-444455550003
+
+	/// Carte General View — sous-titre "PY: 16.8% (▲ +500 bps YoY)" (taux marge, delta en bps).
+	measure 'GV sous-titre — Gross Margin' =
+			VAR py = [Taux Marge Brute (revenu reconstruit) PY]
+			VAR bps = [Taux Marge Brute (revenu reconstruit) YoY bps]
+			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
+			RETURN
+				IF(
+					ISBLANK(py),
+					"PY: n/a",
+					"PY: " & FORMAT(py, "0.0%") & "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)"
+				)
+		lineageTag: aa000004-1111-2222-3333-444455550004
+
+	/// Couleur conditionnelle YoY — unités (hausse = vert). Cartes + tableau.
+	measure 'GV couleur — Unités YoY' = IF([Unités commandées YoY %] >= 0, "#6FA84B", "#C0504D")
+		lineageTag: aa000005-1111-2222-3333-444455550005
+
+	/// Couleur conditionnelle YoY — revenu reconstruit (hausse = vert). Cartes + tableau.
+	measure 'GV couleur — Revenue YoY' = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
+		lineageTag: aa000006-1111-2222-3333-444455550006
+
+	/// Couleur conditionnelle YoY — marge brute (hausse = vert). Cartes + tableau.
+	measure 'GV couleur — Gross Profit YoY' = IF([Marge Brute YoY %] >= 0, "#6FA84B", "#C0504D")
+		lineageTag: aa000007-1111-2222-3333-444455550007
+
+	/// Couleur conditionnelle YoY — taux marge, delta bps (hausse = vert). Cartes + tableau.
+	measure 'GV couleur — Gross Margin YoY' = IF([Taux Marge Brute (revenu reconstruit) YoY bps] >= 0, "#6FA84B", "#C0504D")
+		lineageTag: aa000008-1111-2222-3333-444455550008
+
+	/// Couleur conditionnelle YoY — taux d'annulation, delta bps. Baisse = vert (inversé).
+	measure 'GV couleur — Cancellation YoY' = IF([Taux Annulation YoY bps] <= 0, "#6FA84B", "#C0504D")
+		lineageTag: aa000009-1111-2222-3333-444455550009
+
+	/// General View — data label YoY sur graphe Revenue (combo CY/PY).
+	measure 'GV chart label Revenue YoY' =
+			VAR y = [Revenu (reconstruit) YoY %]
+			RETURN
+				IF(
+					NOT ISNUMBER(y) || ISBLANK([Revenu (reconstruit) PY]),
+					BLANK(),
+					FORMAT(y, "+0%;-0%") & " YoY"
+				)
+		lineageTag: aa000010-1111-2222-3333-444455550010
+
+	/// General View — data label YoY sur graphe Gross Profit (combo CY/PY).
+	measure 'GV chart label Gross Profit YoY' =
+			VAR y = [Marge Brute YoY %]
+			RETURN
+				IF(
+					NOT ISNUMBER(y) || ISBLANK([Marge Brute PY]),
+					BLANK(),
+					FORMAT(y, "+0%;-0%") & " YoY"
+				)
+		lineageTag: aa000011-1111-2222-3333-444455550011
+
+	/// General View — KPI card valeur compacte (texte : 521.6k / €11.2M).
+	/// formatString DAX (,,M / ,"k") ne s'applique pas aux cartes en locale FR.
+	measure 'GV KPI — Ordered units' =
+			VAR v = [Unités commandées]
+			VAR a = ABS(v)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					SWITCH(
+						TRUE(),
+						a >= 1000000, FORMAT(v / 1000000, "0.0") & "M",
+						a >= 1000, FORMAT(v / 1000, "0.0") & "k",
+						FORMAT(v, "#,##0")
+					)
+				)
+		lineageTag: bb000001-1111-2222-3333-444455550001
+
+	measure 'GV KPI — Revenue' =
+			VAR v = [Revenu (reconstruit)]
+			VAR a = ABS(v)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					SWITCH(
+						TRUE(),
+						a >= 1000000, "€" & FORMAT(v / 1000000, "0.0") & "M",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+						"€" & FORMAT(v, "#,##0")
+					)
+				)
+		lineageTag: bb000002-1111-2222-3333-444455550002
+
+	measure 'GV KPI — Gross Profit' =
+			VAR v = [Marge Brute]
+			VAR a = ABS(v)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					SWITCH(
+						TRUE(),
+						a >= 1000000, "€" & FORMAT(v / 1000000, "0.0") & "M",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+						"€" & FORMAT(v, "#,##0")
+					)
+				)
+		lineageTag: bb000003-1111-2222-3333-444455550003
+
+	measure 'GV KPI — Gross Margin' = FORMAT([Taux Marge Brute (revenu reconstruit)], "0.0%")
+		lineageTag: bb000004-1111-2222-3333-444455550004
+
+	/// General View — tableau KPI, formats compacts (texte).
+	measure 'GV Display — Ordered units' = [GV KPI — Ordered units]
+		lineageTag: bb000011-1111-2222-3333-444455550011
+
+	measure 'GV Display — Revenue' = [GV KPI — Revenue]
+		lineageTag: bb000012-1111-2222-3333-444455550012
+
+	measure 'GV Display — Gross Profit' = [GV KPI — Gross Profit]
+		lineageTag: bb000013-1111-2222-3333-444455550013
+
+	measure 'GV Display — YoY€' =
+			VAR v = [Revenu (reconstruit) YoY Δ]
+			VAR a = ABS(v)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					SWITCH(
+						TRUE(),
+						a >= 1000000, "€" & FORMAT(v / 1000000, "0.0") & "M",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+						"€" & FORMAT(v, "#,##0")
+					)
+				)
+		lineageTag: bb000014-1111-2222-3333-444455550014
+
 	column Dummy
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a
 		summarizeBy: none

@@ -107,6 +107,35 @@ table dim_date
 
 		annotation SummarizationSetBy = Automatic
 
+	/// Libellé semaine ISO (AAA-Sww) — axe graphe General View.
+	column semaine_annee_libelle
+		dataType: string
+		lineageTag: d1e2f3a4-b5c6-7890-dabc-ef1234567890
+		summarizeBy: none
+		sourceColumn: semaine_annee_libelle
+
+		changedProperty = IsHidden
+
+	/// Libellé mois + année — axe graphe General View.
+	column nom_mois_annee
+		dataType: string
+		lineageTag: e2f3a4b5-c6d7-8901-bcde-f23456789012
+		summarizeBy: none
+		sourceColumn: nom_mois_annee
+		sortByColumn: annee_mois
+
+		changedProperty = IsHidden
+
+	/// Libellé mois court anglais (Jul 25) — axe chart General View V1.
+	column mois_annee_court_en
+		dataType: string
+		lineageTag: f3a4b5c6-d7e8-9012-cdef-345678901234
+		summarizeBy: none
+		sourceColumn: mois_annee_court_en
+		sortByColumn: annee_mois
+
+		changedProperty = IsHidden
+
 	partition dim_date = m
 		mode: import
 		source =
@@ -127,7 +156,25 @@ table dim_date
 					#"Annee mois ajoutee" = Table.AddColumn(#"Nom mois ajoute", "annee_mois", each [annee] * 100 + [mois], Int64.Type),
 					#"Semaine ajoutee" = Table.AddColumn(#"Annee mois ajoutee", "semaine", each Date.WeekOfYear([date], Day.Monday), Int64.Type),
 					#"Jour semaine ajoute" = Table.AddColumn(#"Semaine ajoutee", "jour_semaine", each Date.ToText([date], [Format = "dddd", Culture = "fr-FR"]), type text),
-					#"Num jour semaine ajoute" = Table.AddColumn(#"Jour semaine ajoute", "num_jour_semaine", each Date.DayOfWeek([date], Day.Monday) + 1, Int64.Type)
+					#"Num jour semaine ajoute" = Table.AddColumn(#"Jour semaine ajoute", "num_jour_semaine", each Date.DayOfWeek([date], Day.Monday) + 1, Int64.Type),
+					#"Semaine annee libelle" = Table.AddColumn(
+						#"Num jour semaine ajoute",
+						"semaine_annee_libelle",
+						each Text.From([annee]) & "-S" & Text.PadStart(Text.From([semaine]), 2, "0"),
+						type text
+					),
+					#"Nom mois annee" = Table.AddColumn(
+						#"Semaine annee libelle",
+						"nom_mois_annee",
+						each [nom_mois] & " " & Text.From([annee]),
+						type text
+					),
+					#"Mois annee court EN" = Table.AddColumn(
+						#"Nom mois annee",
+						"mois_annee_court_en",
+						each Date.ToText([date], [Format = "MMM yy", Culture = "en-US"]),
+						type text
+					)
 				in
-					#"Num jour semaine ajoute"
+					#"Mois annee court EN"
 

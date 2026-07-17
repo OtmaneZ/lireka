@@ -1,0 +1,26 @@
+/// Paramètre UI — sélecteur FR/EN (libellés rapport). Déconnecté du modèle de faits.
+table _ParamLangueUI
+	lineageTag: a1a2a3a4-b5b6-7890-abcd-ef0123456789
+
+	column code
+		lineageTag: 102c07cb-9d03-4d5d-ba1b-9822391985d0
+		isNameInferred
+		sourceColumn: [code]
+
+	column libelle
+		lineageTag: 9fa44591-99a3-41b1-aabc-06de1bc8a00a
+		isNameInferred
+		sourceColumn: [libelle]
+
+	partition _ParamLangueUI = calculated
+		mode: import
+		source =
+				DATATABLE(
+					"code", STRING,
+					"libelle", STRING,
+					{
+						{ "FR", "Français" },
+						{ "EN", "English" }
+					}
+				)
+

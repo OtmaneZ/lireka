@@ -68,6 +68,11 @@
           "name": "LirekaProfitabilite",
           "path": "LirekaProfitabilite",
           "type": "CustomTheme"
+        },
+        {
+          "name": "LirekaLogo.png",
+          "path": "LirekaLogo.png",
+          "type": "Image"
         }
       ]
     }

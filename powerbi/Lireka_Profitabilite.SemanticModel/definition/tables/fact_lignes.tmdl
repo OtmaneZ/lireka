@@ -111,6 +111,27 @@ table fact_lignes
 		lineageTag: e5f6a7b8-c9d0-1234-efab-567890123456
 		summarizeBy: none
 
+	/// Langue du livre (ISBN) — proxy Bloc 7 Finance dashboard. À remplacer si le backend exporte langue_livre.
+	column langue_livre
+		dataType: string
+		lineageTag: f1e2d3c4-b5a6-9780-1234-567890abcdef
+		summarizeBy: none
+		sourceColumn: langue_livre
+
+	/// Canal Finance (Website B2C / B2B / Marketplaces / Arthaud / Autre) — dénormalisé depuis la commande.
+	column canal_ligne
+		dataType: string
+		lineageTag: a9b8c7d6-e5f4-3210-fedc-ba9876543210
+		summarizeBy: none
+		sourceColumn: canal_ligne
+
+	/// Légende graphe General View : canal × langue livre.
+	column canal_langue
+		dataType: string
+		lineageTag: b0c1d2e3-f4a5-6789-abcd-ef0123456789
+		summarizeBy: none
+		sourceColumn: canal_langue
+
 	partition fact_lignes = m
 		mode: import
 		source =
@@ -146,10 +167,48 @@ table fact_lignes
 						{"isbn", "quantity_groupe", "list_price_eur", "customer_price_per_item_eur", "group_type"}
 					),
 					#"Colonnes renommees" = Table.RenameColumns(#"Colonnes groupe developpees", {{"id", "id_article"}}),
-					#"Colonnes conservees" = Table.SelectColumns(#"Colonnes renommees", {
+					#"Sources commande" = Table.SelectColumns(stg_customer_order, {"id", "source"}),
+					#"Jointure source commande" = Table.NestedJoin(
+						#"Colonnes renommees",
+						{"order_id"},
+						#"Sources commande",
+						{"id"},
+						"cmd",
+						JoinKind.LeftOuter
+					),
+					#"Source developpee" = Table.ExpandTableColumn(#"Jointure source commande", "cmd", {"source"}, {"source"}),
+					#"Canal ajoute" = Table.AddColumn(#"Source developpee", "canal_ligne", each
+						let
+							raw = if [source] = null then "" else Text.Upper(Text.Trim([source])),
+							s = if raw = "" then "INCONNU" else raw
+						in
+							if s = "WEBSITE" then "Website B2C"
+							else if s = "PRO_WEBSITE" then "Website B2B"
+							else if Text.StartsWith(s, "AMAZON") or s = "CULTURA" or s = "RAKUTEN" or s = "FNAC" then "Marketplaces"
+							else if s = "ARTHAUD" then "Librairie Arthaud"
+							else "Autre",
+						type text
+					),
+					#"Langue livre ajoutee" = Table.AddColumn(#"Canal ajoute", "langue_livre", each
+						let
+							raw = if [isbn] = null then "" else Text.Replace(Text.From([isbn]), "-", ""),
+							s = Text.Trim(raw)
+						in
+							if Text.Length(s) < 4 then "Autre"
+							else if Text.StartsWith(s, "9782") or Text.StartsWith(s, "97910") then "Français"
+							else if Text.StartsWith(s, "9780") or Text.StartsWith(s, "9781") then "Anglais"
+							else if Text.StartsWith(s, "9783") then "Allemand"
+							else if Text.StartsWith(s, "97884") then "Espagnol"
+							else if Text.StartsWith(s, "97888") then "Italien"
+							else "Autre",
+						type text
+					),
+					#"Canal langue ajoute" = Table.AddColumn(#"Langue livre ajoutee", "canal_langue", each [canal_ligne] & " · " & [langue_livre], type text),
+					#"Colonnes conservees" = Table.SelectColumns(#"Canal langue ajoute", {
 						"id_article", "order_id", "item_group_id", "isbn", "list_price_eur",
 						"customer_price_per_item_eur", "group_type", "quantity_groupe",
-						"internal_state", "package_id", "product_cost_eur"
+						"internal_state", "package_id", "product_cost_eur",
+						"langue_livre", "canal_ligne", "canal_langue"
 					})
 				in
 					#"Colonnes conservees"

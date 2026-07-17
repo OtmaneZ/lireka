@@ -1,0 +1,30 @@
+/// Field parameter — granularité axe temps (General View). Jour / Semaine / Mois.
+table _ParamAxePeriode
+	lineageTag: d4d5d6d7-e8e9-0123-defa-456789012345
+
+	column Value1
+		lineageTag: 7bc9f18e-a1b0-4597-a4f9-1ac6b5e3700b
+		isNameInferred
+		sourceColumn: [Value1]
+
+	column Value2
+		lineageTag: a679acff-29d6-4f1d-8993-b778a14590a8
+		isNameInferred
+		sourceColumn: [Value2]
+
+	column Value3
+		lineageTag: ccd5bc6f-1d45-4c56-80ca-22afc97ce57d
+		isNameInferred
+		sourceColumn: [Value3]
+
+	partition _ParamAxePeriode = calculated
+		mode: import
+		source =
+				{
+					("Jour", NAMEOF(dim_date[date]), 0),
+					("Semaine", NAMEOF(dim_date[semaine_annee_libelle]), 1),
+					("Mois", NAMEOF(dim_date[nom_mois_annee]), 2)
+				}
+
+	annotation FieldParameterMetadata = { "version": 0, "kind": 2 }
+

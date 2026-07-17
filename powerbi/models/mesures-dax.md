@@ -1033,6 +1033,38 @@ Taux Marge Brute YoY bps = ([Taux Marge Brute] - [Taux Marge Brute PY]) * 10000
 
 ---
 
+## Taux Annulation
+
+Cancellation rate (field cadrage n°4) = Cancelled units / Ordered units, au grain article / `date_commande`. Numérateur `[Nb Articles Annulés]` (`internal_state = CANCELLED`), dénominateur `[Unités commandées]` (= `[Nb Articles]`, toutes lignes y compris annulées). Se décline par canal via le slicing du modèle.
+
+```dax
+Taux Annulation = DIVIDE([Nb Articles Annulés], [Unités commandées], 0)
+```
+
+*Format* : `0.0%`
+
+---
+
+## Taux Annulation PY
+
+```dax
+Taux Annulation PY = CALCULATE([Taux Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+```
+
+*Format* : `0.0%`
+
+---
+
+## Taux Annulation YoY bps
+
+```dax
+Taux Annulation YoY bps = ([Taux Annulation] - [Taux Annulation PY]) * 10000
+```
+
+*Format* : `#,##0`
+
+---
+
 ## Nb Commandes PY
 
 ```dax

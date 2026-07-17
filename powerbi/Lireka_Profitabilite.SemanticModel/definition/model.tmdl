@@ -22,6 +22,8 @@ ref table dim_pays
 ref table dim_transporteur
 ref table dim_type_commande
 ref table _Mesures
+ref table _ParamLangueUI
+ref table _ParamAxePeriode
 
 ref cultureInfo fr-FR
 

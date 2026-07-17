@@ -19,6 +19,7 @@ table dim_type_commande
 		lineageTag: c4d80b3e-bab1-4dbd-b1ef-e50399ec9c0d
 		summarizeBy: none
 		sourceColumn: canal
+		sortByColumn: ordre_gv
 
 		changedProperty = IsHidden
 
@@ -29,6 +30,18 @@ table dim_type_commande
 		sourceColumn: libelle
 
 		changedProperty = IsHidden
+
+	/// Ordre d'affichage General View — B2C (1) · B2B (2) · MP (3).
+	column ordre_gv
+		dataType: int64
+		formatString: 0
+		lineageTag: a1b2c3d4-e5f6-7890-abcd-ef1234567899
+		summarizeBy: sum
+		sourceColumn: ordre_gv
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
 
 	partition dim_type_commande = m
 		mode: import
@@ -52,7 +65,19 @@ table dim_type_commande
 						else if s = "ARTHAUD" then "Librairie Arthaud"
 						else "Autre", type text),
 					// Libellé lisible (underscores -> espaces, casse normalisée)
-					#"Libelle ajoute" = Table.AddColumn(#"Canal ajoute", "libelle", each Text.Proper(Text.Replace([type_commande], "_", " ")), type text)
+					#"Libelle ajoute" = Table.AddColumn(#"Canal ajoute", "libelle", each Text.Proper(Text.Replace([type_commande], "_", " ")), type text),
+					// Ordre mockup General View : B2C · B2B · Marketplaces
+					#"Ordre GV ajoute" = Table.AddColumn(
+						#"Libelle ajoute",
+						"ordre_gv",
+						each
+							if [canal] = "Website B2C" then 1
+							else if [canal] = "Website B2B" then 2
+							else if [canal] = "Marketplaces" then 3
+							else if [canal] = "Librairie Arthaud" then 4
+							else 99,
+						Int64.Type
+					)
 				in
-					#"Libelle ajoute"
+					#"Ordre GV ajoute"
 
