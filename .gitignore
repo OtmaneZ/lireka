@@ -50,3 +50,6 @@ Power_BI_Datawarehouse/**
 tools/audit-interne/*_output.json
 tools/audit-interne/*_output.txt
 tools/audit-interne/rapport_backend.txt
+scripts/validation/*_output.json
+scripts/validation/*_output.txt
+scripts/validation/rapport_*.txt
