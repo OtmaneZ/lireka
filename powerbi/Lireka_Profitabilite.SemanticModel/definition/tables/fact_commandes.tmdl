@@ -305,7 +305,7 @@ table fact_commandes
 						"retours_remboursements", "couts_generiques",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande"
-					}),
+					})
 					// CANCELLED conservées en table (grain commande complet). La règle métier
 					// actée (CA=0 et frais port exclus sur annulation, décision Marc Slack 13/07)
 					// est appliquée dans les MESURES ([CA HT Net Annulation], [Marge Brute]),

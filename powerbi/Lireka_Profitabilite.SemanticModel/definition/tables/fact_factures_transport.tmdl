@@ -110,9 +110,34 @@ table fact_factures_transport
 		mode: import
 		source =
 				let
-					// Logique unifiée dans stg_factures_transport_resolu (résolution par date, sans
-					// dépendance circulaire vers fact_transport — consommée aussi pour source_cout).
-					#"Devise ajoutee" = Table.AddColumn(stg_factures_transport_resolu, "devise", each "EUR", type text)
+					// TEST ISOLATION R2 — true = table vide (skip refresh lourd). Remettre false pour réactiver.
+					IsolationSkipR2 = true,
+					Result =
+						if IsolationSkipR2 then
+							#table(
+								type table [
+									numero_facture = text,
+									date_facture = date,
+									numero_suivi = text,
+									transporteur = text,
+									service = text,
+									pays_destination = text,
+									poids = number,
+									cout_transport = number,
+									devise = text,
+									order_id = Int64.Type,
+									id_package = Int64.Type,
+									nb_candidats_resolution = Int64.Type
+								],
+								{}
+							)
+						else
+							let
+								// Logique unifiée dans stg_factures_transport_resolu (résolution par date, sans
+								// dépendance circulaire vers fact_transport — consommée aussi pour source_cout).
+								#"Devise ajoutee" = Table.AddColumn(stg_factures_transport_resolu, "devise", each "EUR", type text)
+							in
+								#"Devise ajoutee"
 				in
-					#"Devise ajoutee"
+					Result
 

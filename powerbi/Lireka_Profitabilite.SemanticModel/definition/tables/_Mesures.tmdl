@@ -449,7 +449,6 @@ table _Mesures
 		formatString: #,##0
 		lineageTag: e5f6a7b8-c9d0-4123-e456-789abcdef012
 
-
 	/// Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).
 	measure 'Commandes Sans Colis' =
 			COUNTROWS(
@@ -490,7 +489,6 @@ table _Mesures
 	/// Prérequis : dim_date continue depuis 2020. DIVIDE sans 3e arg → BLANK
 	/// si dénominateur PY nul / absent.
 	/// =====================================================================
-
 	/// Finance KPI — Ordered Units (alias [Nb Articles], grain article / date_commande).
 	measure 'Unités commandées' = [Nb Articles]
 		formatString: #,##0
@@ -553,7 +551,6 @@ table _Mesures
 		lineageTag: 90ed7a8b-a675-4b89-9642-5b5798c3ed86
 
 	/// --- Tableaux détaillés P&L : même logique PY / YoY Δ / YoY % ---
-
 	measure 'Nb Commandes PY' = CALCULATE([Nb Commandes], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0
 		lineageTag: c06ad058-babd-4af3-9382-8e8f7d87de2a
