@@ -989,6 +989,643 @@ table _Mesures
 				)
 		lineageTag: bb000014-1111-2222-3333-444455550014
 
+	/// =====================================================================
+	/// Bloc 10 — Website B2C (stable) : Display ASCII + Rest via code_pays
+	/// =====================================================================
+	measure 'Profit Produit Pur' = [Revenu (reconstruit)] - [Coût Achat Total]
+		formatString: #,##0.00 €
+		lineageTag: cc000001-1111-2222-3333-444455550001
+
+	measure 'B2C Display - Sales' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Revenu (reconstruit)],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Sales],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
+					)
+				)
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: cc000010-1111-2222-3333-444455550010
+
+	measure 'B2C Display - COGS' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Coût Achat Total],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest COGS],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Achat Total], BLANK())
+					)
+				)
+			VAR sales =
+				IF(
+					ISBLANK(Country),
+					[Revenu (reconstruit)],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Sales],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
+					)
+				)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+				)
+		lineageTag: cc000011-1111-2222-3333-444455550011
+
+	measure 'B2C Display - Product profit' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Profit Produit Pur],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Product profit],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Profit Produit Pur], BLANK())
+					)
+				)
+			VAR sales =
+				IF(
+					ISBLANK(Country),
+					[Revenu (reconstruit)],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Sales],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
+					)
+				)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+				)
+		lineageTag: cc000012-1111-2222-3333-444455550012
+
+	measure 'B2C Display - Gross profit' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Marge Brute],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Gross profit],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute], BLANK())
+					)
+				)
+			VAR sales =
+				IF(
+					ISBLANK(Country),
+					[Revenu (reconstruit)],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Sales],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
+					)
+				)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+				)
+		lineageTag: cc000019-1111-2222-3333-444455550019
+
+	measure 'B2C Display - Returns and refunds' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Retours Remboursements],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Returns],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Retours Remboursements], BLANK())
+					)
+				)
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: cc000013-1111-2222-3333-444455550013
+
+	measure 'B2C Display - Inbound freight' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Coût Transport Amont],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Inbound],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Amont], BLANK())
+					)
+				)
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: cc000014-1111-2222-3333-444455550014
+
+	measure 'B2C Display - Shipping' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Coût Transport Outbound (Retenu)],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Shipping],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Outbound (Retenu)], BLANK())
+					)
+				)
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: cc000015-1111-2222-3333-444455550015
+
+	measure 'B2C Display - Duties and taxes' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Douanes Taxes],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Duties],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Douanes Taxes], BLANK())
+					)
+				)
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: cc000016-1111-2222-3333-444455550016
+
+	measure 'B2C Display - Shipping supplies' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Fournitures Expédition],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Supplies],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Fournitures Expédition], BLANK())
+					)
+				)
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: cc000017-1111-2222-3333-444455550017
+
+	measure 'B2C Display - Generic costs' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Coûts Génériques],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Generic],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coûts Génériques], BLANK())
+					)
+				)
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: cc000018-1111-2222-3333-444455550018
+
+	measure 'B2C Display - Revenue YoY %' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR y =
+				IF(
+					ISBLANK(Country),
+					[Revenu (reconstruit) YoY %],
+					IF(
+						Country = "Rest of the world",
+						DIVIDE([B2C Rest Sales] - [B2C Rest Sales PY], [B2C Rest Sales PY]),
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit) YoY %], BLANK())
+					)
+				)
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		lineageTag: cc000020-1111-2222-3333-444455550020
+
+	measure 'B2C Display - GP YoY %' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR y =
+				IF(
+					ISBLANK(Country),
+					[Marge Brute YoY %],
+					IF(
+						Country = "Rest of the world",
+						DIVIDE([B2C Rest Gross profit] - [B2C Rest Gross profit PY], [B2C Rest Gross profit PY]),
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute YoY %], BLANK())
+					)
+				)
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		lineageTag: cc000021-1111-2222-3333-444455550021
+
+	measure 'B2C Display - GM YoY bps' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR RateCy = DIVIDE([B2C Rest GP reconstruit], [B2C Rest Sales])
+			VAR RatePy = DIVIDE([B2C Rest GP reconstruit PY], [B2C Rest Sales PY])
+			VAR y =
+				IF(
+					ISBLANK(Country),
+					[Taux Marge Brute (revenu reconstruit) YoY bps],
+					IF(
+						Country = "Rest of the world",
+						(RateCy - RatePy) * 10000,
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Taux Marge Brute (revenu reconstruit) YoY bps], BLANK())
+					)
+				)
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+		lineageTag: cc000022-1111-2222-3333-444455550022
+
+	measure 'B2C couleur - cout' = "#C86B5A"
+		lineageTag: cc000070-1111-2222-3333-444455550070
+
+	measure 'B2C couleur - profit' = "#6FA84B"
+		lineageTag: cc000071-1111-2222-3333-444455550071
+
+	/// Clé de tri tableau B2C (dans Values, isHidden) : Sales desc ; Rest = -1.
+	/// Top 15 via [B2C Rank] ici seulement — sinon toutes les lignes réapparaissent.
+	/// Pas de RANKX dans les mesures Display.
+	measure 'B2C Sort Key' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			RETURN
+				IF(
+					Country = "Rest of the world",
+					-1,
+					IF(
+						ISNUMBER(CountryRank) && CountryRank <= 15,
+						[Revenu (reconstruit)],
+						BLANK()
+					)
+				)
+		formatString: #,##0.00
+		lineageTag: cc000004-1111-2222-3333-444455550004
+
+	measure 'B2C couleur - Revenue YoY' = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
+		lineageTag: cc000072-1111-2222-3333-444455550072
+
+	measure 'B2C couleur - Gross Profit YoY' = IF([Marge Brute YoY %] >= 0, "#6FA84B", "#C0504D")
+		lineageTag: cc000073-1111-2222-3333-444455550073
+
+	measure 'B2C couleur - Gross Margin YoY' = IF([Taux Marge Brute (revenu reconstruit) YoY bps] >= 0, "#6FA84B", "#C0504D")
+		lineageTag: cc000074-1111-2222-3333-444455550074
+
+	measure 'B2C Rank' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			RETURN
+				IF(
+					OR(ISBLANK(Country), Country = "Rest of the world"),
+					BLANK(),
+					RANKX(
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						,
+						DESC,
+						DENSE
+					)
+				)
+		lineageTag: cc000003-1111-2222-3333-444455550003
+
+	measure 'B2C Rest Sales' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Revenu (reconstruit)]
+				)
+			VAR Total =
+				CALCULATE(
+					[Revenu (reconstruit)],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000030-1111-2222-3333-444455550030
+
+	measure 'B2C Rest Sales PY' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Revenu (reconstruit) PY]
+				)
+			VAR Total =
+				CALCULATE(
+					[Revenu (reconstruit) PY],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000031-1111-2222-3333-444455550031
+
+	measure 'B2C Rest COGS' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Coût Achat Total]
+				)
+			VAR Total =
+				CALCULATE(
+					[Coût Achat Total],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000032-1111-2222-3333-444455550032
+
+	measure 'B2C Rest Product profit' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Profit Produit Pur]
+				)
+			VAR Total =
+				CALCULATE(
+					[Profit Produit Pur],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000033-1111-2222-3333-444455550033
+
+	measure 'B2C Rest Returns' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Retours Remboursements]
+				)
+			VAR Total =
+				CALCULATE(
+					[Retours Remboursements],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000034-1111-2222-3333-444455550034
+
+	measure 'B2C Rest Inbound' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Coût Transport Amont]
+				)
+			VAR Total =
+				CALCULATE(
+					[Coût Transport Amont],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000035-1111-2222-3333-444455550035
+
+	measure 'B2C Rest Shipping' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Coût Transport Outbound (Retenu)]
+				)
+			VAR Total =
+				CALCULATE(
+					[Coût Transport Outbound (Retenu)],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000036-1111-2222-3333-444455550036
+
+	measure 'B2C Rest Duties' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Douanes Taxes]
+				)
+			VAR Total =
+				CALCULATE(
+					[Douanes Taxes],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000037-1111-2222-3333-444455550037
+
+	measure 'B2C Rest Supplies' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Fournitures Expédition]
+				)
+			VAR Total =
+				CALCULATE(
+					[Fournitures Expédition],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000038-1111-2222-3333-444455550038
+
+	measure 'B2C Rest Generic' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Coûts Génériques]
+				)
+			VAR Total =
+				CALCULATE(
+					[Coûts Génériques],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000039-1111-2222-3333-444455550039
+
+	measure 'B2C Rest Gross profit' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Marge Brute]
+				)
+			VAR Total =
+				CALCULATE(
+					[Marge Brute],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000040-1111-2222-3333-444455550040
+
+	measure 'B2C Rest Gross profit PY' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Marge Brute PY]
+				)
+			VAR Total =
+				CALCULATE(
+					[Marge Brute PY],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000041-1111-2222-3333-444455550041
+
+	measure 'B2C Rest GP reconstruit' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Marge Brute (reconstruit)]
+				)
+			VAR Total =
+				CALCULATE(
+					[Marge Brute (reconstruit)],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000042-1111-2222-3333-444455550042
+
+	measure 'B2C Rest GP reconstruit PY' =
+			VAR TopPart =
+				SUMX(
+					TOPN(
+						15,
+						FILTER(
+							ALLSELECTED(dim_pays[nom_pays_en]),
+							dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						[Revenu (reconstruit)],
+						DESC
+					),
+					[Marge Brute (reconstruit) PY]
+				)
+			VAR Total =
+				CALCULATE(
+					[Marge Brute (reconstruit) PY],
+					ALLSELECTED(dim_pays[nom_pays_en])
+				)
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		lineageTag: cc000043-1111-2222-3333-444455550043
+
 	column Dummy
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a
 		summarizeBy: none

@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
-  "name": "gv_slicer_canal",
+  "name": "b2c_slicer_langue",
   "position": {
     "x": 6,
-    "y": 310,
-    "z": 310,
+    "y": 388,
+    "z": 320,
     "height": 66,
     "width": 208,
-    "tabOrder": 310
+    "tabOrder": 320
   },
   "visual": {
     "visualType": "slicer",
@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "dim_type_commande"
+                      "Entity": "fact_lignes"
                     }
                   },
-                  "Property": "canal"
+                  "Property": "langue_livre"
                 }
               },
-              "queryRef": "dim_type_commande.canal",
-              "nativeQueryRef": "canal",
+              "queryRef": "fact_lignes.langue_livre",
+              "nativeQueryRef": "langue_livre",
               "active": true
             }
           ]
@@ -61,7 +61,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Channel'"
+                  "Value": "'Language'"
                 }
               }
             },

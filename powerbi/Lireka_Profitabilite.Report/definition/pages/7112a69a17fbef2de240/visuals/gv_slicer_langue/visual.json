@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "gv_slicer_langue",
   "position": {
-    "x": 3.1858407079646018,
-    "y": 449.20353982300884,
+    "x": 6,
+    "y": 388,
     "z": 320,
-    "height": 65.309734513274336,
-    "width": 207.0796460176991,
+    "height": 66,
+    "width": 208,
     "tabOrder": 320
   },
   "visual": {

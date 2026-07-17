@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
-  "name": "gv_kpi_revenue_title",
+  "name": "b2c_footer",
   "position": {
-    "x": 499,
-    "y": 21,
-    "z": 9001,
-    "height": 36,
-    "width": 248,
-    "tabOrder": 9001
+    "x": 237,
+    "y": 702,
+    "z": 4000,
+    "height": 16,
+    "width": 1035,
+    "tabOrder": 4000
   },
   "visual": {
     "visualType": "textbox",
@@ -19,10 +19,10 @@
               {
                 "textRuns": [
                   {
-                    "value": "Revenue",
+                    "value": "7/2026 · CONFIDENTIEL",
                     "textStyle": {
-                      "fontWeight": "bold",
-                      "fontSize": "9pt",
+                      "fontWeight": "normal",
+                      "fontSize": "8pt",
                       "color": "#1B3A5C"
                     }
                   }

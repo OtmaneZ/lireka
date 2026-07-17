@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
-  "name": "gv_kpi_revenue_title",
+  "name": "b2c_kpi_gm_title",
   "position": {
-    "x": 499,
+    "x": 1021,
     "y": 21,
-    "z": 9001,
+    "z": 9003,
     "height": 36,
     "width": 248,
-    "tabOrder": 9001
+    "tabOrder": 9003
   },
   "visual": {
     "visualType": "textbox",
@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Revenue",
+                    "value": "Gross Margin",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontSize": "9pt",

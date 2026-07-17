@@ -34,8 +34,9 @@ PRIMARY = "#1B3A5C"
 NAVBG = "#F4F7FB"
 CARDBG = "#FFFFFF"
 BORDER = "#D0D7E2"
-HEADER_BG = "#E8EDF3"  # réservé rail / bandes tableau
-TITLE_HDR_BG = PRIMARY  # bandeau titre KPI — navy + blanc (contraste max)
+HEADER_BG = "#E8EDF3"  # bandeau titre KPI + bandes tableau
+TITLE_HDR_BG = HEADER_BG  # gris clair validé (pas navy)
+TITLE_HDR_FG = PRIMARY  # titre KPI gris foncé / navy
 RAIL_FOOTER_BG = "#EBF0F5"
 SUBTXT = "#5A6A7A"
 GOOD = "#6FA84B"
@@ -230,7 +231,7 @@ def shape_rect(name: str, x, y, w, h, z, fill, line=False, radius=0) -> dict:
 
 
 def textbox_kpi_header(name: str, x, y, w, h, z, text: str, size: int = 9) -> dict:
-    """Bandeau titre KPI — fond navy opaque, texte blanc (lisible, z-index élevé)."""
+    """Titre KPI — texte gris foncé ; le fond gris est porté par la shape *_hdr."""
     return {
         "$schema": SCHEMA,
         "name": name,
@@ -248,7 +249,7 @@ def textbox_kpi_header(name: str, x, y, w, h, z, text: str, size: int = 9) -> di
                                         "textStyle": {
                                             "fontWeight": "bold",
                                             "fontSize": f"{size}pt",
-                                            "color": "#FFFFFF",
+                                            "color": TITLE_HDR_FG,
                                         },
                                     }
                                 ]
@@ -258,7 +259,7 @@ def textbox_kpi_header(name: str, x, y, w, h, z, text: str, size: int = 9) -> di
                 )
             },
             "visualContainerObjects": {
-                "background": prop({"show": lit("true"), "color": solid_lit(TITLE_HDR_BG)}),
+                "background": prop({"show": lit("false")}),
                 "border": prop({"show": lit("false")}),
                 "dropShadow": prop({"show": lit("false")}),
                 "title": prop({"show": lit("false")}),
@@ -267,7 +268,9 @@ def textbox_kpi_header(name: str, x, y, w, h, z, text: str, size: int = 9) -> di
     }
 
 
-def textbox_static(name: str, x, y, w, h, z, text: str, size: int = 9, bold: bool = True) -> dict:
+def textbox_static(
+    name: str, x, y, w, h, z, text: str, size: int = 9, bold: bool = True, color: str = PRIMARY
+) -> dict:
     return {
         "$schema": SCHEMA,
         "name": name,
@@ -285,7 +288,7 @@ def textbox_static(name: str, x, y, w, h, z, text: str, size: int = 9, bold: boo
                                         "textStyle": {
                                             "fontWeight": "bold" if bold else "normal",
                                             "fontSize": f"{size}pt",
-                                            "color": PRIMARY,
+                                            "color": color,
                                         },
                                     }
                                 ]
@@ -638,7 +641,7 @@ def kpi_card(
     x: int,
     card_index: int,
 ) -> list[tuple[str, dict]]:
-    """Carte KPI : bordure blanche · bandeau navy · valeur · PY.
+    """Carte KPI : bordure blanche · bandeau gris clair · valeur · PY.
 
     z-index : corps de carte fixe (1000), contenu (1100+i), titres (9000+i).
     Les titres passent au-dessus de toutes les cartes — évite le rognage quand
@@ -660,6 +663,21 @@ def kpi_card(
         (
             f"gv_kpi_{key}",
             shape_rect(f"gv_kpi_{key}", x, hdr_y, CARD_W, CARD_H, body_z, CARDBG, line=True, radius=6),
+        ),
+        # Bandeau gris en shape (évite le bleu navy par défaut si le fond textbox est ignoré).
+        (
+            f"gv_kpi_{key}_hdr",
+            shape_rect(
+                f"gv_kpi_{key}_hdr",
+                x + 1,
+                hdr_y + 1,
+                CARD_W - 2,
+                CARD_HDR,
+                body_z + 1,
+                TITLE_HDR_BG,
+                line=False,
+                radius=0,
+            ),
         ),
         (
             f"gv_kpi_{key}_title",
@@ -914,7 +932,8 @@ def main() -> None:
 
     pages_meta = REPORT / "definition" / "pages" / "pages.json"
     meta = json.loads(pages_meta.read_text(encoding="utf-8"))
-    meta["pageOrder"] = [PAGE_ID]
+    order = [p for p in meta.get("pageOrder", []) if p != PAGE_ID]
+    meta["pageOrder"] = [PAGE_ID] + order
     meta["activePageName"] = PAGE_ID
     pages_meta.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 

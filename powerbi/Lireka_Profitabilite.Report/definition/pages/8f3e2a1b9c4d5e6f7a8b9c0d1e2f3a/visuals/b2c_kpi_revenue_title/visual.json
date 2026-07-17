@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
-  "name": "gv_kpi_revenue_title",
+  "name": "b2c_kpi_revenue_title",
   "position": {
     "x": 499,
     "y": 21,

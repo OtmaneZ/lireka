@@ -1,34 +1,29 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
-  "name": "gv_kpi_revenue_title",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "b2c_logo",
   "position": {
-    "x": 499,
-    "y": 21,
-    "z": 9001,
-    "height": 36,
-    "width": 248,
-    "tabOrder": 9001
+    "x": 27,
+    "y": 8,
+    "z": 110,
+    "height": 163,
+    "width": 161,
+    "tabOrder": 110
   },
   "visual": {
-    "visualType": "textbox",
+    "visualType": "image",
     "objects": {
       "general": [
         {
           "properties": {
-            "paragraphs": [
-              {
-                "textRuns": [
-                  {
-                    "value": "Revenue",
-                    "textStyle": {
-                      "fontWeight": "bold",
-                      "fontSize": "9pt",
-                      "color": "#1B3A5C"
-                    }
-                  }
-                ]
+            "imageUrl": {
+              "expr": {
+                "ResourcePackageItem": {
+                  "PackageName": "RegisteredResources",
+                  "PackageType": 1,
+                  "ItemName": "LirekaLogo.png"
+                }
               }
-            ]
+            }
           }
         }
       ]

@@ -23,7 +23,7 @@
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontSize": "9pt",
-                      "color": "#FFFFFF"
+                      "color": "#1B3A5C"
                     }
                   }
                 ]
@@ -40,18 +40,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#1B3A5C'"
-                    }
-                  }
+                  "Value": "false"
                 }
               }
             }
