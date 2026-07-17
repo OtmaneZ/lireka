@@ -23,15 +23,16 @@ relationship rel_transport_transporteur
 	toColumn: dim_transporteur.transporteur
 
 relationship rel_factures_transporteur
+	isActive: false
 	fromColumn: fact_factures_transport.transporteur
 	toColumn: dim_transporteur.transporteur
-	isActive: false
 
 relationship rel_factures_date
+	isActive: false
 	fromColumn: fact_factures_transport.date_facture
 	toColumn: dim_date.date
-	isActive: false
 
 relationship rel_factures_colis
 	fromColumn: fact_factures_transport.id_package
 	toColumn: fact_transport.id_package
+

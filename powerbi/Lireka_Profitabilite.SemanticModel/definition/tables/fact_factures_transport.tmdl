@@ -1,9 +1,10 @@
 /// Faits — factures transporteurs unifiées (récaps Colissimo + Chronopost).
-/// Sources SharePoint (format français, séparateur ";", décimale virgule) :
+/// Sources locales (format français, séparateur ";", décimale virgule) :
 /// Dashboards_transporteurs/COLISSIMO Dashboard PowerBI/2025 & 2026 *.csv
 /// Dashboards_transporteurs/CHRONOPOST Dashboard PowerBI/2025 *.csv
 /// Colissimo est un service La Poste (suivi 6A...). Sert au rapprochement
 /// factures <-> colis via numero_suivi (contrôle du coût réel backend).
+/// Alimenté par stg_factures_transport_resolu (matching ensembliste F-11).
 table fact_factures_transport
 	lineageTag: 3e48232a-1883-4a3e-bf86-44d0d480d1fa
 
@@ -106,38 +107,17 @@ table fact_factures_transport
 		summarizeBy: none
 		sourceColumn: id_package
 
+	column nb_candidats_resolution
+		dataType: double
+		lineageTag: b6aa5601-0dc0-4bc9-bf43-70ab5ea68934
+		summarizeBy: sum
+		sourceColumn: nb_candidats_resolution
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
 	partition fact_factures_transport = m
 		mode: import
-		source =
-				let
-					// TEST ISOLATION R2 — true = table vide (skip refresh lourd). Remettre false pour réactiver.
-					IsolationSkipR2 = true,
-					Result =
-						if IsolationSkipR2 then
-							#table(
-								type table [
-									numero_facture = text,
-									date_facture = date,
-									numero_suivi = text,
-									transporteur = text,
-									service = text,
-									pays_destination = text,
-									poids = number,
-									cout_transport = number,
-									devise = text,
-									order_id = Int64.Type,
-									id_package = Int64.Type,
-									nb_candidats_resolution = Int64.Type
-								],
-								{}
-							)
-						else
-							let
-								// Logique unifiée dans stg_factures_transport_resolu (résolution par date, sans
-								// dépendance circulaire vers fact_transport — consommée aussi pour source_cout).
-								#"Devise ajoutee" = Table.AddColumn(stg_factures_transport_resolu, "devise", each "EUR", type text)
-							in
-								#"Devise ajoutee"
-				in
-					Result
+		source = Table.AddColumn(stg_factures_transport_resolu, "devise", each "EUR", type text)
 

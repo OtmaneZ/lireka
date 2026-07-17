@@ -9,12 +9,12 @@ table dim_date
 
 	column date
 		dataType: dateTime
+		isKey
 		formatString: yyyy-MM-dd
 		lineageTag: 3bdec9d9-5d0e-4b61-a426-61abab59c3a6
+		dataCategory: Time
 		summarizeBy: none
 		sourceColumn: date
-		isKey
-		dataCategory: Time
 
 		changedProperty = IsHidden
 

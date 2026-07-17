@@ -41,10 +41,16 @@ table dim_pays
 		mode: import
 		source =
 				let
-					// Codes pays distincts présents dans les commandes (via staging partagé)
-					#"Colonne pays" = Table.SelectColumns(stg_customer_order, {"destination_country"}),
-					#"Code pays normalise" = Table.AddColumn(#"Colonne pays", "code_pays", each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??" else Text.Upper(Text.Trim([destination_country])), type text),
-					#"Codes distincts" = Table.Distinct(Table.SelectColumns(#"Code pays normalise", {"code_pays"})),
+					// Distinct dynamique depuis stg_customer_order (SelectColumns tôt, pas de Buffer).
+					#"Codes bruts" = Table.SelectColumns(stg_customer_order, {"destination_country"}),
+					#"Codes normalises" = Table.AddColumn(
+						#"Codes bruts",
+						"code_pays",
+						each if [destination_country] = null or Text.Trim([destination_country]) = "" then "??"
+							else Text.Upper(Text.Trim([destination_country])),
+						type text
+					),
+					#"Codes distincts" = Table.Distinct(Table.SelectColumns(#"Codes normalises", {"code_pays"})),
 					// Table de correspondance code -> nom / zone / continent
 					Correspondance = #table(
 						type table [code_pays = text, nom_pays = text, zone_geo = text, continent = text],

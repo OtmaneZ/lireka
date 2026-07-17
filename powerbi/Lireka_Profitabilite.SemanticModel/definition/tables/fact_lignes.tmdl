@@ -1,5 +1,5 @@
 /// Faits — lignes d'articles par commande (grain : un article physique / customer_order_item).
-/// Source : stg_Commande_Items (customer_order_item) + customer_order_item_group.csv.
+/// Source : stg_Commande_Items (customer_order_item) ⋈ customer_order_item_group (ISBN / prix).
 /// Relié à fact_commandes par order_id. Alimente le nombre d'articles (COUNTROWS).
 table fact_lignes
 	lineageTag: 131fd8d8-579b-4f13-8a68-fe0b13ecbd52
@@ -115,20 +115,22 @@ table fact_lignes
 		mode: import
 		source =
 				let
-					// R3 : réutilise stg_Commande_Items (plus de 2e lecture de customer_order_item.csv)
-					#"Articles types" = stg_Commande_Items,
-					// Lecture des groupes (attributs titre/prix dupliqués sur chaque article)
-					#"Groupes source" = fnSharePointLireCsv("Données_Backend", "customer_order_item_group.csv"),
-					#"Groupes types" = Table.TransformColumnTypes(#"Groupes source", {
-						{"id", Int64.Type},
-						{"order_id", Int64.Type},
-						{"isbn", type text},
-						{"quantity", Int64.Type},
-						{"list_price_eur", type number},
-						{"customer_price_per_item_local", type number},
-						{"customer_price_per_item_eur", type number},
-						{"group_type", type text}
-					}, "en-US"),
+					#"Articles types" = Table.SelectColumns(stg_Commande_Items, {
+						"id", "order_id", "item_group_id", "internal_state", "package_id", "product_cost_eur"
+					}),
+					#"Groupes brut" = Csv.Document(File.Contents(LocalRootPath & "\Données_Backend\customer_order_item_group.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					#"Groupes source" = Table.PromoteHeaders(#"Groupes brut", [PromoteAllScalars = true]),
+					#"Groupes types" = Table.SelectColumns(
+						Table.TransformColumnTypes(#"Groupes source", {
+							{"id", Int64.Type},
+							{"isbn", type text},
+							{"quantity", Int64.Type},
+							{"list_price_eur", type number},
+							{"customer_price_per_item_eur", type number},
+							{"group_type", type text}
+						}, "en-US"),
+						{"id", "isbn", "quantity", "list_price_eur", "customer_price_per_item_eur", "group_type"}
+					),
 					#"Jointure articles groupes" = Table.NestedJoin(
 						#"Articles types",
 						{"item_group_id"},
@@ -151,3 +153,4 @@ table fact_lignes
 					})
 				in
 					#"Colonnes conservees"
+

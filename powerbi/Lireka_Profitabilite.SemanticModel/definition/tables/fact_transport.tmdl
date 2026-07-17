@@ -1,5 +1,5 @@
 /// Faits — colis / coûts de transport (grain : une ligne par colis).
-/// Source SharePoint : Données_Backend/package.csv
+/// Source locale : Données_Backend/package.csv (File.Contents).
 /// cout_transport = shipping_cost_eur (estimation backend ou coût saisi).
 /// Fix F-02 : cout_transport_facture = montant facturé rapproché ; cout_transport_retenu =
 /// facturé si disponible sinon estimé (poste "outbound" de la marge).
@@ -114,67 +114,57 @@ table fact_transport
 		mode: import
 		source =
 				let
-					// TEST ISOLATION R2 — true = table vide (skip refresh lourd). Remettre false pour réactiver.
-					IsolationSkipR2 = true,
-					Result =
-						if IsolationSkipR2 then
-							#table(
-								type table [
-									id_package = Int64.Type,
-									order_id = Int64.Type,
-									numero_suivi = text,
-									transporteur = text,
-									poids_kg = number,
-									cout_transport = number,
-									cout_transport_facture = number,
-									cout_transport_retenu = number,
-									shipping_supply_cost_eur = number,
-									duties_taxes_eur = number,
-									source_cout = text
-								],
-								{}
-							)
-						else
-							let
-								// Feuille combinatoire pure : stg_package (SharePoint) + stg_factures_transport_resolu.
-								// Pas d'appel SharePoint direct ici — évite Formula Firewall.
-								#"Types appliques" = stg_package,
-								// Inférence du transporteur par motif du numéro de suivi
-								#"Transporteur infere" = Table.AddColumn(#"Types appliques", "transporteur", each fnNormaliserTransporteur([tracking_id]), type text),
-								// Conversion du poids grammes -> kg
-								#"Poids en kg" = Table.AddColumn(#"Transporteur infere", "poids_kg", each [weight] / 1000, type number),
-								// Renommage vers le schéma cible
-								#"Colonnes renommees" = Table.RenameColumns(#"Poids en kg", {
-									{"id", "id_package"},
-									{"shipping_cost_eur", "cout_transport"}
-								}),
-								// Fix F-02 : colis ayant une facture rapprochée (résolution par date), en portant
-								// AUSSI le montant facturé (cout_transport) et pas seulement l'existence de la facture.
-								#"Ids factures" = Table.SelectRows(Table.SelectColumns(stg_factures_transport_resolu, {"id_package", "cout_transport"}), each [id_package] <> null),
-								#"Jointure facture" = Table.NestedJoin(#"Colonnes renommees", {"id_package"}, #"Ids factures", {"id_package"}, "fact", JoinKind.LeftOuter),
-								// Fix F-02 : montant total facturé pour ce colis (somme des lignes rapprochées), null si aucune.
-								#"Cout facture ajoute" = Table.AddColumn(#"Jointure facture", "cout_transport_facture", each
-									if Table.RowCount([fact]) > 0 then List.Sum(Table.Column([fact], "cout_transport"))
-									else null, type nullable number),
-								// Fix F-02 : coût outbound retenu = facturé si disponible, sinon estimé backend (conservé à part).
-								#"Cout retenu ajoute" = Table.AddColumn(#"Cout facture ajoute", "cout_transport_retenu", each
-									if [cout_transport_facture] <> null then [cout_transport_facture] else [cout_transport], type nullable number),
-								// Fix F-03 : modalités renommées (facture_rapprochee | backend_seul | aucun).
-								#"Source cout" = Table.AddColumn(#"Cout retenu ajoute", "source_cout", each
-									if Table.RowCount([fact]) > 0 then "facture_rapprochee"
-									else if [cout_transport] = null or [cout_transport] = 0 then "aucun"
-									else "backend_seul", type text),
-								#"Sans colonne jointure" = Table.RemoveColumns(#"Source cout", {"fact"}),
-								// Sélection finale des colonnes du modèle
-								#"Colonnes conservees" = Table.SelectColumns(#"Sans colonne jointure", {
-									"id_package", "order_id", "numero_suivi", "transporteur",
-									"poids_kg", "cout_transport", "cout_transport_facture", "cout_transport_retenu",
-									"shipping_supply_cost_eur", "duties_taxes_eur", "source_cout"
-								})
-							in
-								#"Colonnes conservees"
+					#"Types appliques" = stg_package,
+					#"Transporteur infere" = Table.AddColumn(#"Types appliques", "transporteur", each fnNormaliserTransporteur([tracking_id]), type text),
+					#"Poids en kg" = Table.AddColumn(#"Transporteur infere", "poids_kg", each [weight] / 1000, type number),
+					#"Colonnes renommees" = Table.RenameColumns(#"Poids en kg", {
+						{"id", "id_package"},
+						{"shipping_cost_eur", "cout_transport"}
+					}),
+					// Agrégat ensembliste des coûts facture par colis (évite Sum row-by-row sur nid).
+					#"Couts facture par colis" = Table.Group(
+						Table.SelectRows(
+							Table.SelectColumns(stg_factures_transport_resolu, {"id_package", "cout_transport"}),
+							each [id_package] <> null
+						),
+						{"id_package"},
+						{{"cout_transport_facture", each List.Sum(List.RemoveNulls([cout_transport])), type number}}
+					),
+					#"Jointure facture" = Table.ExpandTableColumn(
+						Table.NestedJoin(
+							#"Colonnes renommees",
+							{"id_package"},
+							#"Couts facture par colis",
+							{"id_package"},
+							"fact",
+							JoinKind.LeftOuter
+						),
+						"fact",
+						{"cout_transport_facture"},
+						{"cout_transport_facture"}
+					),
+					#"Cout retenu ajoute" = Table.AddColumn(
+						#"Jointure facture",
+						"cout_transport_retenu",
+						each if [cout_transport_facture] <> null then [cout_transport_facture] else [cout_transport],
+						type nullable number
+					),
+					#"Source cout" = Table.AddColumn(
+						#"Cout retenu ajoute",
+						"source_cout",
+						each
+							if [cout_transport_facture] <> null then "facture_rapprochee"
+							else if [cout_transport] = null or [cout_transport] = 0 then "aucun"
+							else "backend_seul",
+						type text
+					),
+					#"Colonnes conservees" = Table.SelectColumns(#"Source cout", {
+						"id_package", "order_id", "numero_suivi", "transporteur",
+						"poids_kg", "cout_transport", "cout_transport_facture", "cout_transport_retenu",
+						"shipping_supply_cost_eur", "duties_taxes_eur", "source_cout"
+					})
 				in
-					Result
+					#"Colonnes conservees"
 
 	annotation PBI_ResultType = Table
 

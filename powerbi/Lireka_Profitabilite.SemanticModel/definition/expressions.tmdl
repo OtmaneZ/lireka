@@ -1,27 +1,21 @@
-/// URL du tenant SharePoint Lireka. Donnée d'environnement (pas un secret), mais
-/// spécifique au client — à adapter si ce modèle est réutilisé pour un autre client.
-///
-/// Racine du site uniquement (pas l'URL de navigation avec ?id= / viewid=).
-/// Les chemins relatifs (Données_Backend\, Dashboards_transporteurs\, etc.) sont
-/// résolus par fnSharePointContenuFichier via SharePoint.Files sur cette racine.
-/// Exemple de structure côté bibliothèque :
-/// Documents partages/99_EXTERNE/OTMANE/Power_BI_Datawarehouse/Données_Backend/...
+/// URL du tenant SharePoint Lireka (dormant).
+/// Lecture actuelle = File.Contents local via LocalRootPath.
+/// Conservé pour réactivation SharePoint ultérieure.
 /// Modifier dans Power BI Desktop : Transformer les données > Gérer les paramètres.
 expression SharePointSiteURL = "https://lirekacom.sharepoint.com/sites/Lireka" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 54fba0a6-374f-4253-8139-bb1310f751e3
 
 	annotation PBI_ResultType = Text
 
-/// Mode de source des CSV : "Local" (dev, Folder.Files) ou "SharePoint" (prod).
-/// Basculé dans fnSharePointContenuFichier uniquement — wrappers et call sites inchangés.
-/// Modifier dans Power BI Desktop : Transformer les données > Gérer les paramètres.
+/// Mode de source (dormant). Lecture actuelle = File.Contents local uniquement.
+/// Conservé pour réactivation SharePoint ultérieure.
 expression SourceMode = "Local" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 7c4e9a21-6b8d-4f03-9e5a-2d1c8b0f4a67
 
 	annotation PBI_ResultType = Text
 
 /// Racine locale de l'entrepôt (copie miroir de SharePoint Power_BI_Datawarehouse).
-/// Utilisée uniquement si SourceMode = "Local".
+/// Toutes les lectures CSV utilisent File.Contents(LocalRootPath & "\...").
 expression LocalRootPath = "C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: b2c3d4e5-f6a7-8901-bcde-f12345678901
 
@@ -93,12 +87,13 @@ expression fnNormaliserSuivi =
 			Text.Upper(sansEspaces)
 	lineageTag: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e
 
-/// Staging (non chargé) — customer_order_item.csv nettoyé, lu une seule fois (R3).
-/// Partagé par stg_couts_bloc5_commande et fact_lignes. Table.Buffer évite le double parse.
+/// Staging (non chargé) — customer_order_item.csv nettoyé.
+/// Partagé par stg_couts_bloc5_commande et fact_lignes.
 expression stg_Commande_Items =
 		let
-			Source = fnSharePointLireCsv("Données_Backend", "customer_order_item.csv"),
-			#"Types appliques" = Table.TransformColumnTypes(Source, {
+			Source = Csv.Document(File.Contents(LocalRootPath & "\Données_Backend\customer_order_item.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
 				{"id", Int64.Type},
 				{"item_group_id", Int64.Type},
 				{"order_id", Int64.Type},
@@ -110,40 +105,31 @@ expression stg_Commande_Items =
 				{"shipping_cost_to_delivery_country_eur", type number},
 				{"shipping_supplies_cost_eur", type number},
 				{"generic_costs_eur", type number}
-			}, "en-US"),
-			Buffered = Table.Buffer(#"Types appliques")
+			}, "en-US")
 		in
-			Buffered
+			#"Types appliques"
 	lineageTag: 0a8b65e4-a441-4c67-9c33-2084f7ea6296
 
 /// Staging (non chargé) — coûts Bloc 5 agrégés par commande depuis customer_order_item.
 /// Grain article → grain commande (SUM par order_id). Consommé par fact_commandes.
 expression stg_couts_bloc5_commande =
 		let
-			Source = stg_Commande_Items,
+			Source = Table.SelectColumns(stg_Commande_Items, {"order_id", "returns_and_refunds_cost_eur", "generic_costs_eur"}),
 			#"Couts agreges par commande" = Table.Group(Source, {"order_id"}, {
-				{
-					"retours_remboursements",
-					each List.Sum(List.Transform([returns_and_refunds_cost_eur], each if _ = null then 0 else _)),
-					type number
-				},
-				{
-					"couts_generiques",
-					each List.Sum(List.Transform([generic_costs_eur], each if _ = null then 0 else _)),
-					type number
-				}
+				{"retours_remboursements", each List.Sum(List.RemoveNulls([returns_and_refunds_cost_eur])), type number},
+				{"couts_generiques", each List.Sum(List.RemoveNulls([generic_costs_eur])), type number}
 			})
 		in
 			#"Couts agreges par commande"
 	lineageTag: b5c6d7e8-f9a0-4123-b456-7890abcdef01
 
-/// Staging (non chargé) — customer_order.csv lu et typé une seule fois.
-/// Table.Buffer matérialise le résultat en mémoire : une seule lecture SharePoint
-/// partagée par fact_commandes, dim_pays, dim_type_commande et stg_factures_transport_resolu.
+/// Staging (non chargé) — customer_order.csv lu et typé.
+/// Consommé par fact_commandes, matching factures, dim_pays, dim_type_commande, stg_taux_moyen_mensuel.
 expression stg_customer_order =
 		let
-			Source = fnSharePointLireCsv("Données_Backend", "customer_order.csv"),
-			#"Types appliques" = Table.TransformColumnTypes(Source, {
+			Source = Csv.Document(File.Contents(LocalRootPath & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
 				{"id", Int64.Type},
 				{"origin_order_id", type text},
 				{"state", type text},
@@ -163,10 +149,9 @@ expression stg_customer_order =
 				{"gross_margin", type number},
 				{"contribution_profit_eur", type number},
 				{"contribution_margin", type number}
-			}, "en-US"),
-			Buffered = Table.Buffer(#"Types appliques")
+			}, "en-US")
 		in
-			Buffered
+			#"Types appliques"
 	lineageTag: b3c8e1f2-4a5d-6e7f-8091-a2b3c4d5e6f7
 
 /// Staging (non chargé) — taux de change moyen mensuel par devise.
@@ -200,85 +185,12 @@ expression stg_taux_moyen_mensuel =
 			#"Colonnes renommees"
 	lineageTag: c4d5e6f7-a8b9-4012-cdef-3456789abcde
 
-/// Index fichiers de l'entrepôt — une seule énumération par refresh (R1).
-/// Local → Folder.Files(LocalRootPath) ; SharePoint → SharePoint.Files.
-/// Table.Buffer matérialise l'index (Name / Folder Path / Content) pour tous les
-/// appels à fnSharePointContenuFichier. Content reste lu à la demande par Csv.Document.
-expression stg_entrepot_fichiers =
-		let
-			Mode = Text.Trim(SourceMode),
-			TousFichiers =
-				if Mode = "Local" then
-					let
-						Racine = Text.Trim(LocalRootPath)
-					in
-						if Racine = "" then
-							error "Le paramètre LocalRootPath est vide : renseignez le chemin local de l'entrepôt CSV (Transformer les données > Gérer les paramètres)."
-						else
-							Folder.Files(Racine)
-				else
-					let
-						UrlSite = Text.Trim(SharePointSiteURL)
-					in
-						if UrlSite = "" then
-							error "Le paramètre SharePointSiteURL est vide : renseignez l'URL du site SharePoint ou de la bibliothèque contenant l'entrepôt CSV (Transformer les données > Gérer les paramètres)."
-						else
-							SharePoint.Files(UrlSite, [ApiVersion = 15]),
-			Index = Table.SelectColumns(TousFichiers, {"Name", "Folder Path", "Content"}),
-			Buffered = Table.Buffer(Index)
-		in
-			Buffered
-	lineageTag: d1e2f3a4-b5c6-4789-9abc-def012345678
-
-/// Résout un fichier CSV (chemin relatif + nom) en contenu binaire.
-/// Consomme stg_entrepot_fichiers (index unique) — plus de Folder.Files / SharePoint.Files par fichier.
-/// Filtre par nom exact + segments de dossierRelatif dans Folder Path.
-expression fnSharePointContenuFichier =
-		(dossierRelatif as text, nomFichier as text) as binary =>
-		let
-			Segments = List.Select(Text.Split(Text.Replace(dossierRelatif, "/", "\"), "\"), each _ <> ""),
-			Correspondances = Table.SelectRows(
-				stg_entrepot_fichiers,
-				each
-					[Name] = nomFichier
-					and List.Count(List.Select(Segments, (s) => Text.Contains([Folder Path], s))) = List.Count(Segments)
-			),
-			Nb = Table.RowCount(Correspondances)
-		in
-			if Nb = 0 then
-				error "Fichier introuvable : '" & nomFichier & "' dans '" & dossierRelatif & "'. Vérifiez SourceMode, LocalRootPath / SharePointSiteURL et la structure des dossiers."
-			else if Nb > 1 then
-				error "Fichier ambigu : " & Text.From(Nb) & " fichiers nommés '" & nomFichier & "' correspondent à '" & dossierRelatif & "'."
-			else
-				Correspondances{0}[Content]
-	lineageTag: c8e4f1a2-9b3d-4e7f-a1c6-2d8b5e0f3a91
-
-/// Lit un CSV backend (séparateur virgule, UTF-8) depuis SharePoint et promeut les en-têtes.
-expression fnSharePointLireCsv =
-		(dossierRelatif as text, nomFichier as text) as table =>
-		let
-			Binaire = fnSharePointContenuFichier(dossierRelatif, nomFichier),
-			Source = Csv.Document(Binaire, [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv])
-		in
-			Table.PromoteHeaders(Source, [PromoteAllScalars = true])
-	lineageTag: d7f2a3b4-1c5e-4f8a-9d2b-6e0c7a1f4b82
-
-/// Lit un CSV récap transporteur (séparateur point-virgule, UTF-8) depuis SharePoint.
-expression fnSharePointLireCsvRecap =
-		(dossierRelatif as text, nomFichier as text) as table =>
-		let
-			Binaire = fnSharePointContenuFichier(dossierRelatif, nomFichier),
-			Source = Csv.Document(Binaire, [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv])
-		in
-			Table.PromoteHeaders(Source, [PromoteAllScalars = true])
-	lineageTag: e8a3b4c5-2d6f-4a9b-8e3c-7f1d8b2e5c93
-
-/// Staging (non chargé) — package.csv lu une seule fois (feuille SharePoint pure).
-/// Consommé par fact_transport et stg_factures_transport_resolu (évite Formula Firewall).
-/// Table.Buffer (R8) : une seule matérialisation partagée entre les deux consommateurs.
+/// Staging (non chargé) — package.csv (lecture File.Contents directe).
+/// Consommé par fact_transport et stg_factures_transport_resolu.
 expression stg_package =
 		let
-			#"En-tetes promus" = fnSharePointLireCsv("Données_Backend", "package.csv"),
+			Source = Csv.Document(File.Contents(LocalRootPath & "\Données_Backend\package.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
 			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
 				{"id", Int64.Type},
 				{"order_id", Int64.Type},
@@ -288,13 +200,12 @@ expression stg_package =
 				{"shipping_supply_cost_eur", type number},
 				{"duties_taxes_eur", type number}
 			}, "en-US"),
-			#"Suivi normalise" = Table.AddColumn(#"Types appliques", "numero_suivi", each fnNormaliserSuivi([tracking_id]), type text),
-			Buffered = Table.Buffer(#"Suivi normalise")
+			#"Suivi normalise" = Table.AddColumn(#"Types appliques", "numero_suivi", each fnNormaliserSuivi([tracking_id]), type text)
 		in
-			Buffered
+			#"Suivi normalise"
 	lineageTag: a7b8c9d0-e1f2-4a3b-9c0d-1e2f3a4b5c6d
 
-/// Staging (non chargé) — récaps Colissimo/Chronopost unifiés (feuille SharePoint pure, sans jointure).
+/// Staging (non chargé) — récaps Colissimo/Chronopost unifiés (sans jointure).
 /// Consommé uniquement par stg_factures_transport_resolu.
 expression stg_factures_brutes =
 		let
@@ -309,10 +220,10 @@ expression stg_factures_brutes =
 					pdst = Table.AddColumn(sv, "pays_destination", each null, type text)
 				in
 					Table.SelectColumns(pdst, {"numero_facture", "date_facture", "numero_suivi", "transporteur", "service", "pays_destination", "poids", "cout_transport"}),
-			ColisDossier = "Dashboards_transporteurs\COLISSIMO Dashboard PowerBI",
+			ColisRacine = LocalRootPath & "\Dashboards_transporteurs\COLISSIMO Dashboard PowerBI\",
 			#"Colissimo combine" = Table.Combine({
-				fnSharePointLireCsvRecap(ColisDossier, "2025_COLISSIMO_récap.csv"),
-				fnSharePointLireCsvRecap(ColisDossier, "2026_COLISSIMO_récap_au_30_juin_2026.csv")
+				Table.PromoteHeaders(Csv.Document(File.Contents(ColisRacine & "2025_COLISSIMO_récap.csv"), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]),
+				Table.PromoteHeaders(Csv.Document(File.Contents(ColisRacine & "2026_COLISSIMO_récap_au_30_juin_2026.csv"), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true])
 			}),
 			#"Colissimo types" = Table.TransformColumnTypes(#"Colissimo combine", {
 				{"Date", type date},
@@ -332,9 +243,9 @@ expression stg_factures_brutes =
 						"service", each "Colissimo", type text),
 					"pays_destination", each try Text.BeforeDelimiter(Text.Trim([Destination]), " ") otherwise null, type text),
 				{"numero_facture", "date_facture", "numero_suivi", "transporteur", "service", "pays_destination", "poids", "cout_transport"}),
-			ChronoDossier = "Dashboards_transporteurs\CHRONOPOST Dashboard PowerBI",
-			#"Chronopost 2025" = fnChronoUnifie(fnSharePointLireCsvRecap(ChronoDossier, "2025_CHRONOPOST_récap.csv"), "Facture", "N° de colis"),
-			#"Chronopost 2026" = fnChronoUnifie(fnSharePointLireCsvRecap(ChronoDossier, "2026_CHRONOPOST_V2.csv"), "N° Facture", "N° de colis (N° objet)"),
+			ChronoRacine = LocalRootPath & "\Dashboards_transporteurs\CHRONOPOST Dashboard PowerBI\",
+			#"Chronopost 2025" = fnChronoUnifie(Table.PromoteHeaders(Csv.Document(File.Contents(ChronoRacine & "2025_CHRONOPOST_récap.csv"), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]), "Facture", "N° de colis"),
+			#"Chronopost 2026" = fnChronoUnifie(Table.PromoteHeaders(Csv.Document(File.Contents(ChronoRacine & "2026_CHRONOPOST_V2.csv"), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]), "N° Facture", "N° de colis (N° objet)"),
 			#"Chronopost unifie" = Table.Combine({#"Chronopost 2025", #"Chronopost 2026"}),
 			#"Factures combinees" = Table.Combine({#"Colissimo unifie", #"Chronopost unifie"}),
 			#"Lignes valides" = Table.SelectRows(#"Factures combinees", each [cout_transport] <> null),
@@ -344,74 +255,124 @@ expression stg_factures_brutes =
 	lineageTag: b8c9d0e1-f2a3-4b5c-0d1e-2f3a4b5c6d7e
 
 /// Staging (non chargé) — résolution facture -> colis par proximité de date.
-/// Feuille combinatoire pure (refs stg_* uniquement) : évite Formula Firewall.
 /// Consommé par fact_factures_transport et fact_transport (colonne source_cout).
+/// Matching ensembliste (Join + Sort + Distinct) — même règle F-11 que l'ancien row-by-row :
+/// 1 candidat = accepté ; ≥2 = meilleur delta puis id_package, rejet si delta > 7j.
 expression stg_factures_transport_resolu =
 		let
-			// TEST ISOLATION R2 — true = table vide (skip matching). Remettre false pour réactiver.
-			// Ce staging n'est évalué que si un consommateur l'appelle ; les 2 facts sont aussi skippés.
-			IsolationSkipR2 = true,
-			Result =
-				if IsolationSkipR2 then
-					#table(
-						type table [
-							numero_facture = text,
-							date_facture = date,
-							numero_suivi = text,
-							transporteur = text,
-							service = text,
-							pays_destination = text,
-							poids = number,
-							cout_transport = number,
-							order_id = Int64.Type,
-							id_package = Int64.Type,
-							nb_candidats_resolution = Int64.Type
-						],
-						{}
-					)
-				else
-					let
-						// Fix F-11 : fenêtre de tolérance (en jours) pour accepter un rapprochement
-						// facture -> colis sur un numéro de suivi recyclé (branche >= 2 candidats).
-						// Au-delà de ce delta de dates, le rapprochement est rejeté (résolu = null).
-						// TODO Marc: seuil de tolérance à valider. Valeur par défaut conservatrice.
-						FenetreToleranceJours = 7,
-						#"Facture en texte" = stg_factures_brutes,
-						#"Pkg suivi" = stg_package,
-						#"Cmd dates" = Table.AddColumn(Table.SelectColumns(stg_customer_order, {"id", "origin_created"}), "date_commande", each try Date.FromText(Text.Start([origin_created], 10)) otherwise null, type date),
-						#"Colis dates" = Table.ExpandTableColumn(
-							Table.NestedJoin(Table.SelectColumns(Table.RenameColumns(#"Pkg suivi", {{"id", "id_package"}}), {"id_package", "order_id", "numero_suivi"}), {"order_id"}, #"Cmd dates", {"id"}, "cmd", JoinKind.LeftOuter),
-							"cmd", {"date_commande"}, {"date_commande"}),
-						// Exclut les suivis vides du matching uniquement (évite produit cartésien sur "").
-						// stg_package / fact_transport restent complets ; les colis sans suivi ne matchent juste pas.
-						#"Factures matching" = Table.SelectRows(#"Facture en texte", each [numero_suivi] <> null and [numero_suivi] <> ""),
-						#"Colis dates matching" = Table.SelectRows(#"Colis dates", each [numero_suivi] <> null and [numero_suivi] <> ""),
-						#"Colis dates buffer" = Table.Buffer(#"Colis dates matching"),
-						#"Factures + candidats" = Table.NestedJoin(#"Factures matching", {"numero_suivi"}, #"Colis dates buffer", {"numero_suivi"}, "candidats", JoinKind.LeftOuter),
-						#"Colis resolu" = Table.AddColumn(#"Factures + candidats", "resolu", each
-							let
-								candidats = [candidats],
-								dfac = [date_facture],
-								// delta = distance en jours entre date commande et date facture (1e9 si date manquante)
-								avecDelta = Table.AddColumn(candidats, "delta", each if [date_commande] = null or dfac = null then 1000000000.0 else Number.Abs(Duration.TotalDays([date_commande] - dfac)), type number),
-								// Fix F-11 : tri par delta croissant PUIS tie-break déterministe par id_package croissant
-								trie = Table.Sort(avecDelta, {{"delta", Order.Ascending}, {"id_package", Order.Ascending}}),
-								meilleur = if Table.RowCount(trie) = 0 then null else Table.First(trie)
-							in
-								if Table.RowCount(candidats) = 0 then null
-								else if Table.RowCount(candidats) = 1 then candidats{0}
-								// Fix F-11 : rejet si le meilleur candidat dépasse la fenêtre de tolérance
-								else if meilleur[delta] > FenetreToleranceJours then null
-								else meilleur),
-						#"order_id ajoute" = Table.AddColumn(#"Colis resolu", "order_id", each if [resolu] = null then null else Record.Field([resolu], "order_id"), Int64.Type),
-						#"id_package ajoute" = Table.AddColumn(#"order_id ajoute", "id_package", each if [resolu] = null then null else Record.Field([resolu], "id_package"), Int64.Type),
-						// Fix F-11 : traçabilité — nombre de candidats AVANT filtrage (audit des suivis recyclés).
-						#"nb candidats ajoute" = Table.AddColumn(#"id_package ajoute", "nb_candidats_resolution", each Table.RowCount([candidats]), Int64.Type),
-						#"Colonnes finales" = Table.RemoveColumns(#"nb candidats ajoute", {"candidats", "resolu"}),
-						Buffered = Table.Buffer(#"Colonnes finales")
-					in
-						Buffered
+			// Fix F-11 : fenêtre de tolérance (jours) si numéro de suivi recyclé (≥2 candidats).
+			// TODO Marc: seuil à valider. Valeur par défaut conservatrice.
+			FenetreToleranceJours = 7,
+			#"Facture en texte" = stg_factures_brutes,
+			#"Pkg suivi" = stg_package,
+			#"Cmd dates" = Table.AddColumn(
+				Table.SelectColumns(stg_customer_order, {"id", "origin_created"}),
+				"date_commande",
+				each try Date.FromText(Text.Start([origin_created], 10)) otherwise null,
+				type date
+			),
+			#"Colis dates" = Table.ExpandTableColumn(
+				Table.NestedJoin(
+					Table.SelectColumns(Table.RenameColumns(#"Pkg suivi", {{"id", "id_package"}}), {"id_package", "order_id", "numero_suivi"}),
+					{"order_id"},
+					#"Cmd dates",
+					{"id"},
+					"cmd",
+					JoinKind.LeftOuter
+				),
+				"cmd",
+				{"date_commande"},
+				{"date_commande"}
+			),
+			// Exclut les suivis vides du matching (évite produit cartésien sur "").
+			#"Factures matching" = Table.SelectRows(#"Facture en texte", each [numero_suivi] <> null and [numero_suivi] <> ""),
+			#"Colis dates matching" = Table.SelectRows(#"Colis dates", each [numero_suivi] <> null and [numero_suivi] <> ""),
+			#"Factures index" = Table.AddIndexColumn(#"Factures matching", "inv_idx", 0, 1, Int64.Type),
+			#"Candidats" = Table.Join(
+				#"Factures index",
+				{"numero_suivi"},
+				#"Colis dates matching",
+				{"numero_suivi"},
+				JoinKind.Inner
+			),
+			#"Avec delta" = Table.AddColumn(
+				#"Candidats",
+				"delta",
+				each if [date_commande] = null or [date_facture] = null then 1000000000.0
+					else Number.Abs(Duration.TotalDays([date_commande] - [date_facture])),
+				type number
+			),
+			#"Nb candidats" = Table.Group(
+				#"Avec delta",
+				{"inv_idx"},
+				{{"nb_candidats_resolution", each Table.RowCount(_), Int64.Type}}
+			),
+			#"Tries" = Table.Sort(
+				#"Avec delta",
+				{{"inv_idx", Order.Ascending}, {"delta", Order.Ascending}, {"id_package", Order.Ascending}}
+			),
+			#"Meilleur par facture" = Table.Distinct(#"Tries", {"inv_idx"}),
+			#"Meilleur + nb" = Table.ExpandTableColumn(
+				Table.NestedJoin(
+					#"Meilleur par facture",
+					{"inv_idx"},
+					#"Nb candidats",
+					{"inv_idx"},
+					"nb",
+					JoinKind.LeftOuter
+				),
+				"nb",
+				{"nb_candidats_resolution"},
+				{"nb_candidats_resolution"}
+			),
+			#"Id package resolu" = Table.AddColumn(
+				#"Meilleur + nb",
+				"id_package_final",
+				each
+					if [nb_candidats_resolution] = 1 then [id_package]
+					else if [delta] > FenetreToleranceJours then null
+					else [id_package],
+				Int64.Type
+			),
+			#"Order id resolu" = Table.AddColumn(
+				#"Id package resolu",
+				"order_id_final",
+				each if [id_package_final] = null then null else [order_id],
+				Int64.Type
+			),
+			#"Resolu colonnes" = Table.RenameColumns(
+				Table.SelectColumns(#"Order id resolu", {"inv_idx", "id_package_final", "order_id_final", "nb_candidats_resolution"}),
+				{{"id_package_final", "id_package"}, {"order_id_final", "order_id"}}
+			),
+			#"Factures resolues" = Table.ExpandTableColumn(
+				Table.NestedJoin(
+					#"Factures index",
+					{"inv_idx"},
+					#"Resolu colonnes",
+					{"inv_idx"},
+					"r",
+					JoinKind.LeftOuter
+				),
+				"r",
+				{"id_package", "order_id", "nb_candidats_resolution"},
+				{"id_package", "order_id", "nb_candidats_resolution"}
+			),
+			#"Nb zero" = Table.ReplaceValue(
+				#"Factures resolues",
+				null,
+				0,
+				Replacer.ReplaceValue,
+				{"nb_candidats_resolution"}
+			),
+			#"Colonnes finales" = Table.SelectColumns(
+				Table.RemoveColumns(#"Nb zero", {"inv_idx"}),
+				{
+					"numero_facture", "date_facture", "numero_suivi", "transporteur", "service",
+					"pays_destination", "poids", "cout_transport", "order_id", "id_package",
+					"nb_candidats_resolution"
+				}
+			)
 		in
-			Result
+			#"Colonnes finales"
 	lineageTag: f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c
 

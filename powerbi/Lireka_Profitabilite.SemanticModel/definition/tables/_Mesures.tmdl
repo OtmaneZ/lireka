@@ -75,22 +75,19 @@ table _Mesures
 		lineageTag: b4c5d6e7-f8a9-4012-d345-678901bcdef0
 
 	/// Bloc3 — articles annulés avant expédition (proxy package_id null).
-	measure 'Nb Articles Annulés Avant Expédition' =
-			CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_AVANT_EXPEDITION")
+	measure 'Nb Articles Annulés Avant Expédition' = CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_AVANT_EXPEDITION")
 		formatString: #,##0
 		lineageTag: c5d6e7f8-a9b0-4123-e456-789012cdef01
 
 	/// Bloc3 — articles annulés après expédition (proxy package_id non-null).
-	measure 'Nb Articles Annulés Après Expédition' =
-			CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_APRES_EXPEDITION")
+	measure 'Nb Articles Annulés Après Expédition' = CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_APRES_EXPEDITION")
 		formatString: #,##0
 		lineageTag: d6e7f8a9-b0c1-4234-f567-890123def012
 
 	/// Bloc3 — marge brute provisoire au grain article (contrôle/comparaison uniquement).
 	/// Ne remplace pas [Marge Brute] tant que les Blocs 5 (returns/generic costs) ne sont pas
 	/// intégrés au même grain. Ne pas publier dans le rapport final sans validation Marc.
-	measure 'Marge Brute (grain article, prov.)' =
-			[CA Total HT (grain article, ajusté annulation)] - [Coût Achat Total (grain article)]
+	measure 'Marge Brute (grain article, prov.)' = [CA Total HT (grain article, ajusté annulation)] - [Coût Achat Total (grain article)]
 		formatString: #,##0.00 €
 		lineageTag: e7f8a9b0-c1d2-4345-a678-901234ef0123
 
@@ -110,15 +107,13 @@ table _Mesures
 	/// Applique la règle Marc "CA=0 sur annulation" au grain commande.
 	/// Ne capture PAS les annulations partielles (state <> CANCELLED, ~8 900 cmd,
 	/// borne CA cf. limite-etf-annulation.md) — limite connue documentée.
-	measure 'CA HT Net Annulation' =
-			CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
+	measure 'CA HT Net Annulation' = CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
 		formatString: #,##0.00 €
 		lineageTag: f8091234-5678-9abc-def0-123456789abd
 
 	/// Bloc3 (grain commande) — CA HT reconstruit hors commandes annulées.
 	/// Variante marketplace (Bloc 1) de [CA HT Net Annulation].
-	measure 'CA HT Net Annulation (reconstruit)' =
-			CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
+	measure 'CA HT Net Annulation (reconstruit)' = CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
 		formatString: #,##0.00 €
 		lineageTag: f8091234-5678-9abc-def0-123456789abe
 
@@ -181,8 +176,7 @@ table _Mesures
 	/// Fix F-05 : écart entre le coût transport RETENU (facturé si dispo, sinon estimé) et
 	/// l'estimation backend commande. Remplace l'ancien [Écart Coût Transport] qui comparait
 	/// deux estimations backend (coût colis vs coût commande), sans valeur de pilotage.
-	measure 'Écart Coût Outbound vs Estimé Backend' =
-			[Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
+	measure 'Écart Coût Outbound vs Estimé Backend' = [Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
 		formatString: #,##0.00 €
 		lineageTag: f0b7ddaf-bbb7-42c0-9723-b40b9f621956
 
@@ -429,8 +423,7 @@ table _Mesures
 		lineageTag: a2b3c4d5-e6f7-4890-b123-456789abcdef
 
 	/// Colis sans order_id renseigné.
-	measure 'Colis Order ID Manquant' =
-			CALCULATE([Nb Colis], ISBLANK(fact_transport[order_id]))
+	measure 'Colis Order ID Manquant' = CALCULATE([Nb Colis], ISBLANK(fact_transport[order_id]))
 		formatString: #,##0
 		lineageTag: c3d4e5f6-a7b8-4901-c234-56789abcdef0
 
@@ -444,8 +437,7 @@ table _Mesures
 		lineageTag: d4e5f6a7-b8c9-4012-d345-6789abcdef01
 
 	/// Commandes dont le code pays est "??" (destination_country absent).
-	measure 'Commandes Code Pays Non Attribué' =
-			CALCULATE([Nb Commandes], fact_commandes[code_pays] = "??")
+	measure 'Commandes Code Pays Non Attribué' = CALCULATE([Nb Commandes], fact_commandes[code_pays] = "??")
 		formatString: #,##0
 		lineageTag: e5f6a7b8-c9d0-4123-e456-789abcdef012
 
