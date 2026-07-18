@@ -64,13 +64,13 @@ Le **taux moyen mensuel** (et non le taux du jour de la commande) est utilisé c
 2. **Pas de conversion officielle Lireka** : approximation interne, pas le calcul finance backend.
 3. **FNAC** : devise EUR, mais sans taux mensuel EUR de référence sur les périodes concernées → 0 % de récupération dans l'audit.
 4. **Marketplace Amazon historique** : fort volume de commandes avec `order_amount_local > 0` mais sans couple devise/mois couvert.
-5. **Snapshot SharePoint** : au 15/07/2026, le fichier `Données_Backend/customer_order.csv` de l'entrepôt Power BI avait `order_amount_local = 0` sur toutes les lignes marketplace (données apparemment dénormalisées). L'export backend brut (`data/raw/customer_order.csv`) reflète le comportement attendu avec `order_amount_local` renseigné. **Vérifier la fraîcheur de l'export SharePoint avant refresh Power BI.**
+5. **Snapshot SharePoint** : au 15/07/2026, le fichier `Données_Backend/customer_order.csv` de l'entrepôt Power BI avait `order_amount_local = 0` sur toutes les lignes marketplace (données apparemment dénormalisées). Un export backend brut local (hors dépôt) reflétait le comportement attendu avec `order_amount_local` renseigné. **Vérifier la fraîcheur de l'export SharePoint avant refresh Power BI.**
 
 ---
 
 ## Volumes de commandes concernées
 
-Analyse sur `data/raw/customer_order.csv` (1 007 110 lignes, backend brut représentatif) — logique identique au modèle Power BI.
+Analyse sur un export backend brut local (hors dépôt, 1 007 110 lignes, représentatif) — logique identique au modèle Power BI.
 
 ### Marketplace — avant / après reconstruction
 

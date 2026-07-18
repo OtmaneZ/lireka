@@ -1,13 +1,3 @@
-# Données sensibles — ne jamais versionner
-data/raw/**
-data/staging/**
-data/processed/**
-
-# Conserver la structure des dossiers
-!data/raw/.gitkeep
-!data/staging/.gitkeep
-!data/processed/.gitkeep
-
 # Power BI — fichiers locaux volumineux
 *.pbix
 *.pbit

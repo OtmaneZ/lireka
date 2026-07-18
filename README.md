@@ -23,6 +23,5 @@ lireka/
 │   └── 05-formation/     programme-formation.md, session-01-bases.md (L05)
 ├── powerbi/              modèle PBIP + rapport profitabilité L04
 ├── tools/audit-interne/  scripts de contrôle technique (usage interne)
-├── data/samples/         échantillons anonymisés
-└── templates/            schémas CSV cibles
+└── scripts/validation/   scripts de contrôle (usage interne)
 ```
