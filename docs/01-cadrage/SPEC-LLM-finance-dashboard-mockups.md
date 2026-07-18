@@ -10,6 +10,7 @@ visual_extract_method: PyMuPDF (fitz) page render → PNG
 related:
   - docs/01-cadrage/20260715_List_of_Data_fields_Finance_dashboard.csv
   - docs/notes-techniques/DEFERRED-LLM-powerbi-ui-backlog.md
+  - docs/notes-techniques/INTERIM-LLM-finance-dashboard-data-gaps.md
   - powerbi/Lireka_Profitabilite.Report/
 tags:
   - spec
@@ -28,7 +29,8 @@ tags:
 > **PDF** : [`20260716_Finance_dashboard_mockups.pdf`](20260716_Finance_dashboard_mockups.pdf)  
 > **Rendu pages** : [`_mockup_pages/`](_mockup_pages/) (PNG via PyMuPDF)  
 > **Champs** : [`20260715_List_of_Data_fields_Finance_dashboard.csv`](20260715_List_of_Data_fields_Finance_dashboard.csv)  
-> **UI reportée** : [`../notes-techniques/DEFERRED-LLM-powerbi-ui-backlog.md`](../notes-techniques/DEFERRED-LLM-powerbi-ui-backlog.md)
+> **UI reportée** : [`../notes-techniques/DEFERRED-LLM-powerbi-ui-backlog.md`](../notes-techniques/DEFERRED-LLM-powerbi-ui-backlog.md)  
+> **Intérims données** : [`../notes-techniques/INTERIM-LLM-finance-dashboard-data-gaps.md`](../notes-techniques/INTERIM-LLM-finance-dashboard-data-gaps.md)
 
 ---
 
@@ -199,13 +201,13 @@ Sous-titre type : *Data by … — current year, figures in EUR — YoY variatio
 |------|-------------|------|
 | 4 KPI | Oui | OK |
 | Table principale | **Revenue and profitability by customer** (P&L §4, axe client) | **INTERIM** — axe `Country (interim)` (= destination country) ; sous-titre explicite gap |
-| Table secondaire | **Top 10 B2B orders by revenue** (sous la P&L) | OK (TopN, y=460) |
+| Table secondaire | **Top 10 B2B orders by revenue** (sous la P&L) | OK (Keep + blanking mesures, y=460) |
 | Charts canal / langue | **Non** | OK (retirés) |
 
 **Page** : `b2b0a1c2d3e4f50617283a4b5c6d7e89` · `Website B2B`
 
 **Gap données (bloquant axe client)** : aucun `customer_name` / `company_name` dans `customer_order.csv` ni autres exports backend commandes.  
-→ Demander à Marc : champ nom client sur l’export commande.  
+→ Voir **[INTERIM I1](../notes-techniques/INTERIM-LLM-finance-dashboard-data-gaps.md)** · Demander à Marc : champ nom client sur l’export commande.  
 → À l’arrivée : swap axe country → client, retirer libellés INTERIM.
 
 Colonnes top 10 orders : Order ID · Ordered units · Revenue · Gross Profit.
@@ -222,45 +224,73 @@ Colonnes top 10 orders : Order ID · Ordered units · Revenue · Gross Profit.
 ### 5.5 Marketplaces — slide 9 · `page_09.png`
 
 **Scope** : Marketplaces.  
-**Pas de charts GV.**
+**Pas de charts GV.** **Pas de Top 15 / Rest** (liste finie de sources).
 
 | Zone | Spec mockup | Repo |
 |------|-------------|------|
-| 4 KPI | Oui | Absent |
-| Table | **Revenue and profitability by Marketplace** (Amazon FR, Cultura, Amazon UK, … Rakuten) | Absent |
+| 4 KPI | Oui | OK |
+| Table | **Revenue and profitability by Marketplace** (Amazon FR, Cultura, Amazon UK, … Rakuten) | OK |
+
+**Page** : `a9f0e1d2c3b4a5061728394a5b6c7d8e` · `Marketplaces`  
+**Modèle** :
+- Filtre page : `dim_type_commande[canal] = Marketplaces` (AMAZON*, CULTURA, RAKUTEN, FNAC).
+- Axe table : `dim_type_commande[libelle]` (ex. Amazon Fr, Cultura…).
+- Mesures d’affichage dédiées `Mkt Display - *` (format mockup, **sans** logique Top15 pays — contrairement à `B2C Display`).
+- Tri : `[Revenu (reconstruit)]` DESC · TOTAL natif table.
 
 **Actions** :
-- [ ] Page KPI + table P&L by Marketplace
+- [x] Page KPI + table P&L by Marketplace
+- [ ] Valider rendu Desktop
 
 ---
 
 ### 5.6 Top orders & top sellers — slide 10 · `page_10.png`
 
-**6 tables** = 3 canaux (B2C, B2B, Marketplaces) × (Orders / ISBNs).
+**6 tables** = 3 canaux (B2C, B2B, Marketplaces) × (Orders / ISBNs).  
+**Pas de KPI** — rail + 6 tables (orders gauche · ISBN droite).
+
+**Page** : `b0c1d2e3f405162738495a6b7c8d9e0f` · `Top sellers`
 
 **Top 10 orders** : Order ID · Ordered units · Revenue · Gross Profit  
 **Top 10 ISBNs** : ISBN · Title · Author · Ordered units · Revenue
 
 | Besoin données | Statut |
 |----------------|--------|
-| Title, Author | À brancher / manquant modèle |
+| Title, Author | **INTERIM I2** — tables ISBN sans Title/Author + bannière → [doc](../notes-techniques/INTERIM-LLM-finance-dashboard-data-gaps.md) |
 
-- [ ] Page + 6 tables
+**Modèle** :
+- Top 10 via **blanking mesures** (pattern B2C Display) — PAS filtre Rank/TopN PBIR (fragile).
+- Orders : `Top Keep Commande — Revenue` + `Top Unités/Revenu/Marge Commande` (+ Rank blank hors top 10) · filtre canal catégoriel
+- ISBN : `TOPN(10, …, Revenue DESC, isbn ASC)` + `KEEPFILTERS` (évite >>10 lignes si égalités Rank DENSE, ex. Marketplaces) · filtre `fact_lignes[canal_ligne]` · revenu = grain article
+
+**Actions** :
+- [x] Page + 6 tables (3 orders OK · 3 ISBN intérim I2)
+- [ ] Valider rendu Desktop
+- [ ] Ajouter Title / Author quand export disponible (clôturer I2)
 
 ---
 
 ### 5.7 Top loss makers — slide 11 · `page_11.png`
 
-**3 tables** (B2C, B2B, Marketplaces) — top 10 commandes à marge négative.
+**3 tables** (B2C, B2B, Marketplaces) — top 10 commandes à marge négative.  
+**Page** : `c0d1e2f3a405162738495a6b7c8d9e10` · `Top loss makers`
 
-Colonnes : Order ID · Customer name · Ordered units · Revenue · Gross Profit  
+Colonnes mockup : Order ID · Customer name · Ordered units · Revenue · Gross Profit  
 + **détail de chaque bucket** de Gross Profit (postes P&L).
 
 | Besoin données | Statut |
 |----------------|--------|
-| Customer name | À brancher / manquant modèle |
+| Customer name | **INTERIM I3** — colonne omise + bannière → [doc](../notes-techniques/INTERIM-LLM-finance-dashboard-data-gaps.md) |
 
-- [ ] Page + 3 tables + buckets GP
+**Modèle** :
+- Top 10 via **blanking mesures** (même pattern) — PAS filtre Rank PBIR.
+- Rank : `Top Rank Loss — Gross Profit` parmi `Marge Brute < 0` (ASC) · Keep + mesures `Top Loss — *` blankent hors top 10 · filtre canal catégoriel
+- Buckets colonnes : Revenue · COGS · Inbound · Shipping · Duties · Marketplace fees · Supplies · Returns · Generic · Gross Profit
+
+**Actions** :
+- [x] Page + 3 tables + buckets GP (Customer name intérim I3)
+- [ ] Valider rendu Desktop
+- [ ] Ajouter Customer name quand export disponible (clôturer I3)
 
 ---
 
@@ -270,10 +300,15 @@ Colonnes : Order ID · Customer name · Ordered units · Revenue · Gross Profit
 
 | Zone | Spec | Repo |
 |------|------|------|
-| Structure | Identique General View (KPI + Revenue by channel + GP by channel + table) | Absent |
-| Scope | Canal `Librairie Arthaud` only | — |
+| Structure | Identique General View (KPI + Revenue by channel + GP by channel + table) | OK |
+| Scope | Canal `Librairie Arthaud` only | OK |
 
-- [ ] Page clone structure GV + page filter Arthaud
+**Page** : `d0e1f2a3b405162738495a6b7c8d9e20` · `Librairie Arthaud`  
+**Modèle** : clone GV · filtre page `dim_type_commande[canal] = Librairie Arthaud` (source `ARTHAUD`).
+
+**Actions** :
+- [x] Page clone structure GV + page filter Arthaud
+- [ ] Valider rendu Desktop
 
 ---
 
@@ -294,7 +329,10 @@ Colonnes : Order ID · Customer name · Ordered units · Revenue · Gross Profit
 | B2C slide 6 (P&L pays) | `8f3e2a1b9c4d5e6f7a8b9c0d1e2f3a` (`Website B2C`) | **OK** |
 | B2C slide 7 (waterfalls) | `c7b2c0n7r1b000000000000000000001` (`Website B2C — Contribution`) | **OK** — valider Desktop |
 | B2B | `b2b0a1c2d3e4f50617283a4b5c6d7e89` | **OK intérim** — P&L by country + top 10 ; customer name pending |
-| Marketplaces / Top* / Arthaud | — | Absents |
+| Marketplaces | `a9f0e1d2c3b4a5061728394a5b6c7d8e` | **OK** — valider Desktop |
+| Top sellers | `b0c1d2e3f405162738495a6b7c8d9e0f` | **OK intérim I2** — 6 tables ; Title/Author pending |
+| Top loss | `c0d1e2f3a405162738495a6b7c8d9e10` | **OK intérim I3** — 3 tables + buckets ; Customer name pending |
+| Arthaud | `d0e1f2a3b405162738495a6b7c8d9e20` | **OK** — clone GV, filtre Arthaud only |
 
 ---
 
@@ -306,10 +344,11 @@ Colonnes : Order ID · Customer name · Ordered units · Revenue · Gross Profit
 | C2 | B2C : page slide 6 = KPI + P&L country (retirer clone charts) | **Done** |
 | C3 | B2C : page slide 7 = KPI + 2 waterfalls YoY by country | **Done** (valider Desktop) |
 | C4 | B2B : retirer charts GV ; P&L intérim country + top 10 | **Done** (customer name pending) |
-| C5 | Marketplaces : KPI + P&L by Marketplace | Haute |
-| C6 | Arthaud : clone structure GV, filtre Arthaud | Moyenne |
-| C7 | Données Title / Author / Customer name | Bloquant Top* |
-| C8 | Top sellers (6) + Top loss (3 + buckets) | Après C7 |
+| C5 | Marketplaces : KPI + P&L by Marketplace | **Done** (valider Desktop) |
+| C6 | Arthaud : clone structure GV, filtre Arthaud | **Done** (valider Desktop) |
+| C7 | Données Title / Author / Customer name | Gaps trackés → [INTERIM doc](../notes-techniques/INTERIM-LLM-finance-dashboard-data-gaps.md) (I1/I2/I3 actifs) |
+| C8 | Top sellers (6) — orders OK + ISBN intérim I2 | **Done** (valider Desktop ; clôturer I2) |
+| C8b | Top loss (3) + buckets GP — Customer name intérim I3 | **Done** (valider Desktop ; clôturer I3) |
 | C9 | Nav pages + recette slide-par-slide vs `_mockup_pages/` | Fin V1 |
 | D1 | Grain auto / FR-EN / date GA | **DEFERRED** |
 

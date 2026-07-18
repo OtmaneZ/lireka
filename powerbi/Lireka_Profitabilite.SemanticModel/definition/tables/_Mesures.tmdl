@@ -1621,7 +1621,8 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: ccccdd00-1111-2222-3333-444455556670
 
-	/// B2B top orders — rang par revenu (filtre visuel Rank <= 10 ; remplace TopN PBIR fragile).
+	/// B2B / Top sellers — rang par revenu (FULL ; ne blanke pas).
+	/// Affichage Top 10 via Keep + mesures Top * (pattern B2C Display) — PAS filtre Rank PBIR.
 	measure 'B2B Rank Commande — Revenue' =
 			IF(
 				ISBLANK([Revenu (reconstruit)]),
@@ -1689,6 +1690,288 @@ table _Mesures
 				)
 		formatString: #,##0.00 €
 		lineageTag: b2c0b711-1111-2222-3333-444455550002
+
+	/// Top sellers (slide 10) — Rank blank hors Top 10 ; valeurs via Top * Commande / ISBN.
+	/// Canal via filtre visuel catégoriel (fiable). PAS de filtre mesure Rank (fragile PBIR).
+	measure 'Top Rank Commande — Revenue' = IF([Top Keep Commande — Revenue] = 1, [B2B Rank Commande — Revenue], BLANK())
+		formatString: 0
+		lineageTag: top0rank-1111-2222-3333-444455550001
+
+	/// Top sellers ISBN — revenu au grain ligne (customer_price), PAS l'allocation commande.
+	/// L'allocation SUMX(commandes)×RANKX(ISBN) faisait tourner les visuels à l'infini.
+	measure 'Revenu (reconstruit, alloué ISBN)' = [CA Total HT (grain article, ajusté annulation)]
+		formatString: #,##0.00 €
+		lineageTag: top0isbn-1111-2222-3333-444455550002
+
+	/// TOPN + tie-break ISBN (PAS Rank DENSE) — sinon égalités Marketplaces → >> 10 lignes.
+	measure 'Top Rank ISBN — Revenue' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_lignes[isbn]),
+						NOT ISBLANK([Revenu (reconstruit, alloué ISBN)])
+					),
+					[Revenu (reconstruit, alloué ISBN)],
+					DESC,
+					fact_lignes[isbn],
+					ASC
+				)
+			VAR InTop =
+				CALCULATE(
+					COUNTROWS(fact_lignes),
+					KEEPFILTERS(TopSet)
+				)
+			RETURN
+				IF(
+					ISBLANK(InTop) || InTop = 0,
+					BLANK(),
+					RANKX(
+						TopSet,
+						[Revenu (reconstruit, alloué ISBN)],
+						,
+						DESC,
+						DENSE
+					)
+				)
+		formatString: 0
+		lineageTag: top0isbn-1111-2222-3333-444455550003
+
+	/// =====================================================================
+	/// Marketplaces (slide 9) — Display format mockup, SANS logique Top15 pays.
+	/// Axe table = dim_type_commande[libelle] ; filtre page canal = Marketplaces.
+	/// =====================================================================
+	measure 'Mkt Display - Sales' =
+			VAR v = [Revenu (reconstruit)]
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: mkt00010-1111-2222-3333-444455550010
+
+	measure 'Mkt Display - COGS' =
+			VAR v = [Coût Achat Total]
+			VAR sales = [Revenu (reconstruit)]
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+				)
+		lineageTag: mkt00011-1111-2222-3333-444455550011
+
+	measure 'Mkt Display - Product profit' =
+			VAR v = [Profit Produit Pur]
+			VAR sales = [Revenu (reconstruit)]
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+				)
+		lineageTag: mkt00012-1111-2222-3333-444455550012
+
+	measure 'Mkt Display - Returns and refunds' =
+			VAR v = [Retours Remboursements]
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: mkt00013-1111-2222-3333-444455550013
+
+	measure 'Mkt Display - Inbound freight' =
+			VAR v = [Coût Transport Amont]
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: mkt00014-1111-2222-3333-444455550014
+
+	measure 'Mkt Display - Shipping' =
+			VAR v = [Coût Transport Outbound (Retenu)]
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: mkt00015-1111-2222-3333-444455550015
+
+	measure 'Mkt Display - Duties and taxes' =
+			VAR v = [Douanes Taxes]
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: mkt00016-1111-2222-3333-444455550016
+
+	measure 'Mkt Display - Shipping supplies' =
+			VAR v = [Fournitures Expédition]
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: mkt00017-1111-2222-3333-444455550017
+
+	measure 'Mkt Display - Generic costs' =
+			VAR v = [Coûts Génériques]
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		lineageTag: mkt00018-1111-2222-3333-444455550018
+
+	measure 'Mkt Display - Gross profit' =
+			VAR v = [Marge Brute]
+			VAR sales = [Revenu (reconstruit)]
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+				)
+		lineageTag: mkt00019-1111-2222-3333-444455550019
+
+	measure 'Mkt Display - Revenue YoY %' =
+			VAR y = [Revenu (reconstruit) YoY %]
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		lineageTag: mkt00020-1111-2222-3333-444455550020
+
+	measure 'Mkt Display - GP YoY %' =
+			VAR y = [Marge Brute YoY %]
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		lineageTag: mkt00021-1111-2222-3333-444455550021
+
+	measure 'Mkt Display - GM YoY bps' =
+			VAR y = [Taux Marge Brute (revenu reconstruit) YoY bps]
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+		lineageTag: mkt00022-1111-2222-3333-444455550022
+
+	measure 'Top Rank Loss — Gross Profit' = IF([Top Keep Loss — Gross Profit] = 1, [Top Rank Loss — Gross Profit (full)], BLANK())
+		formatString: 0
+		lineageTag: loss0rank-1111-2222-3333-444455550001
+
+	measure 'Top Keep Commande — Revenue' =
+			VAR r = [B2B Rank Commande — Revenue]
+			RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
+		formatString: 0
+		lineageTag: top0keep-1111-2222-3333-444455550001
+
+	measure 'Top Unités Commande' = IF([Top Keep Commande — Revenue] = 1, [Unités commandées], BLANK())
+		formatString: #,##0
+		lineageTag: top0unit-1111-2222-3333-444455550001
+
+	measure 'Top Revenu Commande' = IF([Top Keep Commande — Revenue] = 1, [Revenu (reconstruit)], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: top0rev0-1111-2222-3333-444455550001
+
+	measure 'Top Marge Commande' = IF([Top Keep Commande — Revenue] = 1, [Marge Brute], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: top0gp00-1111-2222-3333-444455550001
+
+	measure 'Top Keep ISBN — Revenue' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_lignes[isbn]),
+						NOT ISBLANK([Revenu (reconstruit, alloué ISBN)])
+					),
+					[Revenu (reconstruit, alloué ISBN)],
+					DESC,
+					fact_lignes[isbn],
+					ASC
+				)
+			VAR InTop =
+				CALCULATE(
+					COUNTROWS(fact_lignes),
+					KEEPFILTERS(TopSet)
+				)
+			RETURN IF(NOT ISBLANK(InTop) && InTop > 0, 1, BLANK())
+		formatString: 0
+		lineageTag: top0isbn-1111-2222-3333-444455550005
+
+	measure 'Top Unités ISBN' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_lignes[isbn]),
+						NOT ISBLANK([Revenu (reconstruit, alloué ISBN)])
+					),
+					[Revenu (reconstruit, alloué ISBN)],
+					DESC,
+					fact_lignes[isbn],
+					ASC
+				)
+			RETURN CALCULATE([Unités commandées], KEEPFILTERS(TopSet))
+		formatString: #,##0
+		lineageTag: top0isbn-1111-2222-3333-444455550006
+
+	measure 'Top Revenu ISBN' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_lignes[isbn]),
+						NOT ISBLANK([Revenu (reconstruit, alloué ISBN)])
+					),
+					[Revenu (reconstruit, alloué ISBN)],
+					DESC,
+					fact_lignes[isbn],
+					ASC
+				)
+			RETURN CALCULATE([Revenu (reconstruit, alloué ISBN)], KEEPFILTERS(TopSet))
+		formatString: #,##0.00 €
+		lineageTag: top0isbn-1111-2222-3333-444455550007
+
+	/// Top loss makers (slide 11) — rang parmi commandes à Marge Brute < 0 (ASC = plus négatif d'abord).
+	/// Affichage Top 10 via Keep + mesures Top Loss * (pattern B2C) — PAS filtre Rank PBIR.
+	/// Customer name = INTERIM I3 (absent).
+	measure 'Top Rank Loss — Gross Profit (full)' =
+			IF(
+				NOT ISNUMBER([Marge Brute]) || [Marge Brute] >= 0,
+				BLANK(),
+				RANKX(
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute] < 0
+					),
+					[Marge Brute],
+					,
+					ASC,
+					DENSE
+				)
+			)
+		formatString: 0
+		lineageTag: loss0rank-1111-2222-3333-444455550002
+
+	measure 'Top Keep Loss — Gross Profit' =
+			VAR r = [Top Rank Loss — Gross Profit (full)]
+			RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
+		formatString: 0
+		lineageTag: loss0keep-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Unités' = IF([Top Keep Loss — Gross Profit] = 1, [Unités commandées], BLANK())
+		formatString: #,##0
+		lineageTag: loss0unit-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Revenue' = IF([Top Keep Loss — Gross Profit] = 1, [Revenu (reconstruit)], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0rev0-1111-2222-3333-444455550001
+
+	measure 'Top Loss — COGS' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Achat Total], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0cogs-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Inbound' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Transport Amont], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0inbd-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Shipping' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Transport Outbound (Retenu)], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0ship-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Duties' = IF([Top Keep Loss — Gross Profit] = 1, [Douanes Taxes], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0duty-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Marketplace fees' = IF([Top Keep Loss — Gross Profit] = 1, [Commissions Marketplace], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0mktf-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Supplies' = IF([Top Keep Loss — Gross Profit] = 1, [Fournitures Expédition], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0supp-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Returns' = IF([Top Keep Loss — Gross Profit] = 1, [Retours Remboursements], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0retn-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Generic' = IF([Top Keep Loss — Gross Profit] = 1, [Coûts Génériques], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0genr-1111-2222-3333-444455550001
+
+	measure 'Top Loss — Gross Profit' = IF([Top Keep Loss — Gross Profit] = 1, [Marge Brute], BLANK())
+		formatString: #,##0.00 €
+		lineageTag: loss0gp00-1111-2222-3333-444455550001
 
 	column Dummy
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a

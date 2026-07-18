@@ -38,11 +38,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Unités commandées"
+                  "Property": "Top Unités Commande"
                 }
               },
-              "queryRef": "_Mesures.Unités commandées",
-              "nativeQueryRef": "Unités commandées",
+              "queryRef": "_Mesures.Top Unités Commande",
+              "nativeQueryRef": "Top Unités Commande",
               "displayName": "Ordered units"
             },
             {
@@ -53,11 +53,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Revenu (reconstruit)"
+                  "Property": "Top Revenu Commande"
                 }
               },
-              "queryRef": "_Mesures.Revenu (reconstruit)",
-              "nativeQueryRef": "Revenu (reconstruit)",
+              "queryRef": "_Mesures.Top Revenu Commande",
+              "nativeQueryRef": "Top Revenu Commande",
               "displayName": "Revenue"
             },
             {
@@ -68,11 +68,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Marge Brute"
+                  "Property": "Top Marge Commande"
                 }
               },
-              "queryRef": "_Mesures.Marge Brute",
-              "nativeQueryRef": "Marge Brute",
+              "queryRef": "_Mesures.Top Marge Commande",
+              "nativeQueryRef": "Top Marge Commande",
               "displayName": "Gross Profit"
             },
             {
@@ -83,12 +83,12 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "B2B Rank Commande — Revenue"
+                  "Property": "Top Rank Commande — Revenue"
                 }
               },
-              "queryRef": "_Mesures.B2B Rank Commande — Revenue",
-              "nativeQueryRef": "B2B Rank Commande — Revenue",
-              "displayName": "Rank"
+              "queryRef": "_Mesures.Top Rank Commande — Revenue",
+              "nativeQueryRef": "Top Rank Commande — Revenue",
+              "displayName": "​"
             }
           ]
         }
@@ -103,7 +103,7 @@
                     "Entity": "_Mesures"
                   }
                 },
-                "Property": "B2B Rank Commande — Revenue"
+                "Property": "Top Rank Commande — Revenue"
               }
             },
             "direction": "Ascending"
@@ -290,58 +290,5 @@
         }
       ]
     }
-  },
-  "filterConfig": {
-    "filters": [
-      {
-        "name": "rankTop10",
-        "field": {
-          "Measure": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "_Mesures"
-              }
-            },
-            "Property": "B2B Rank Commande — Revenue"
-          }
-        },
-        "type": "Advanced",
-        "filter": {
-          "Version": 2,
-          "From": [
-            {
-              "Name": "_",
-              "Entity": "_Mesures",
-              "Type": 0
-            }
-          ],
-          "Where": [
-            {
-              "Condition": {
-                "Comparison": {
-                  "ComparisonKind": 4,
-                  "Left": {
-                    "Measure": {
-                      "Expression": {
-                        "SourceRef": {
-                          "Source": "_"
-                        }
-                      },
-                      "Property": "B2B Rank Commande — Revenue"
-                    }
-                  },
-                  "Right": {
-                    "Literal": {
-                      "Value": "10L"
-                    }
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "howCreated": "User"
-      }
-    ]
   }
 }
