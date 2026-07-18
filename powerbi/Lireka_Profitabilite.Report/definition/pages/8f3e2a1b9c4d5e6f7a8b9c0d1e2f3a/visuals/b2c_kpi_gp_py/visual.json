@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "GV sous-titre — Gross Profit"
+                  "Property": "KPI Sous-titre — Gross Profit"
                 }
               },
-              "queryRef": "_Mesures.GV sous-titre — Gross Profit",
-              "nativeQueryRef": "GV sous-titre — Gross Profit"
+              "queryRef": "_Mesures.KPI Sous-titre — Gross Profit",
+              "nativeQueryRef": "KPI Sous-titre — Gross Profit"
             }
           ]
         }
@@ -47,7 +47,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Gross Profit YoY"
+                      "Property": "Couleur YoY — Gross Profit"
                     }
                   }
                 }

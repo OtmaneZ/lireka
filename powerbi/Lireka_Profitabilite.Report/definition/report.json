@@ -66,7 +66,7 @@
       "items": [
         {
           "name": "LirekaProfitabilite",
-          "path": "LirekaProfitabilite",
+          "path": "LirekaTheme.json",
           "type": "CustomTheme"
         },
         {

@@ -343,7 +343,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Unités YoY"
+                      "Property": "Couleur YoY — Unités"
                     }
                   }
                 }
@@ -366,7 +366,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Cancellation YoY"
+                      "Property": "Couleur YoY — Cancellation"
                     }
                   }
                 }
@@ -389,7 +389,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Revenue YoY"
+                      "Property": "Couleur YoY — Revenue"
                     }
                   }
                 }
@@ -412,7 +412,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Revenue YoY"
+                      "Property": "Couleur YoY — Revenue"
                     }
                   }
                 }
@@ -435,7 +435,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Gross Profit YoY"
+                      "Property": "Couleur YoY — Gross Profit"
                     }
                   }
                 }
@@ -458,7 +458,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Gross Margin YoY"
+                      "Property": "Couleur YoY — Gross Margin"
                     }
                   }
                 }

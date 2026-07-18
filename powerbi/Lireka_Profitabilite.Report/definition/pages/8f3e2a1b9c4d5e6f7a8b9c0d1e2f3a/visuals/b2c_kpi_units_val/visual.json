@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "GV KPI — Ordered units"
+                  "Property": "KPI Compact — Ordered units"
                 }
               },
-              "queryRef": "_Mesures.GV KPI — Ordered units",
-              "nativeQueryRef": "GV KPI — Ordered units"
+              "queryRef": "_Mesures.KPI Compact — Ordered units",
+              "nativeQueryRef": "KPI Compact — Ordered units"
             }
           ]
         }

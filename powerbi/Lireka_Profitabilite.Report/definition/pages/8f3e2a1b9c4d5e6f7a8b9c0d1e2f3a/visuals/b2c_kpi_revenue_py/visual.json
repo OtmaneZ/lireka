@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "GV sous-titre — Revenue"
+                  "Property": "KPI Sous-titre — Revenue"
                 }
               },
-              "queryRef": "_Mesures.GV sous-titre — Revenue",
-              "nativeQueryRef": "GV sous-titre — Revenue"
+              "queryRef": "_Mesures.KPI Sous-titre — Revenue",
+              "nativeQueryRef": "KPI Sous-titre — Revenue"
             }
           ]
         }
@@ -47,7 +47,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Revenue YoY"
+                      "Property": "Couleur YoY — Revenue"
                     }
                   }
                 }

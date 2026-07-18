@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "GV sous-titre — Unités"
+                  "Property": "KPI Sous-titre — Unités"
                 }
               },
-              "queryRef": "_Mesures.GV sous-titre — Unités",
-              "nativeQueryRef": "GV sous-titre — Unités"
+              "queryRef": "_Mesures.KPI Sous-titre — Unités",
+              "nativeQueryRef": "KPI Sous-titre — Unités"
             }
           ]
         }
@@ -47,7 +47,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Unités YoY"
+                      "Property": "Couleur YoY — Unités"
                     }
                   }
                 }

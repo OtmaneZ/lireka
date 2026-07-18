@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "GV sous-titre — Gross Margin"
+                  "Property": "KPI Sous-titre — Gross Margin"
                 }
               },
-              "queryRef": "_Mesures.GV sous-titre — Gross Margin",
-              "nativeQueryRef": "GV sous-titre — Gross Margin"
+              "queryRef": "_Mesures.KPI Sous-titre — Gross Margin",
+              "nativeQueryRef": "KPI Sous-titre — Gross Margin"
             }
           ]
         }
@@ -47,7 +47,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "GV couleur — Gross Margin YoY"
+                      "Property": "Couleur YoY — Gross Margin"
                     }
                   }
                 }

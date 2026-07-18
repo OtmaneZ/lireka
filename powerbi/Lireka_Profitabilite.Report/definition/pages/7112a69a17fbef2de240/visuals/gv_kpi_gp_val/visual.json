@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "GV KPI — Gross Profit"
+                  "Property": "KPI Compact — Gross Profit"
                 }
               },
-              "queryRef": "_Mesures.GV KPI — Gross Profit",
-              "nativeQueryRef": "GV KPI — Gross Profit"
+              "queryRef": "_Mesures.KPI Compact — Gross Profit",
+              "nativeQueryRef": "KPI Compact — Gross Profit"
             }
           ]
         }

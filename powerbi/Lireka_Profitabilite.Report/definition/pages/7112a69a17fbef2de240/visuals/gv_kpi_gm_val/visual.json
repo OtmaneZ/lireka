@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "GV KPI — Gross Margin"
+                  "Property": "KPI Compact — Gross Margin"
                 }
               },
-              "queryRef": "_Mesures.GV KPI — Gross Margin",
-              "nativeQueryRef": "GV KPI — Gross Margin"
+              "queryRef": "_Mesures.KPI Compact — Gross Margin",
+              "nativeQueryRef": "KPI Compact — Gross Margin"
             }
           ]
         }

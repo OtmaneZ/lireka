@@ -616,7 +616,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "B2C couleur - Revenue YoY"
+                      "Property": "Couleur YoY — Revenue"
                     }
                   }
                 }
@@ -639,7 +639,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "B2C couleur - Gross Profit YoY"
+                      "Property": "Couleur YoY — Gross Profit"
                     }
                   }
                 }
@@ -662,7 +662,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "B2C couleur - Gross Margin YoY"
+                      "Property": "Couleur YoY — Gross Margin"
                     }
                   }
                 }

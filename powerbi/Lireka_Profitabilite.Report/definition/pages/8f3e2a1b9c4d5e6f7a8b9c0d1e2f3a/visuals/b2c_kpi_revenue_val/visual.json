@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "GV KPI — Revenue"
+                  "Property": "KPI Compact — Revenue"
                 }
               },
-              "queryRef": "_Mesures.GV KPI — Revenue",
-              "nativeQueryRef": "GV KPI — Revenue"
+              "queryRef": "_Mesures.KPI Compact — Revenue",
+              "nativeQueryRef": "KPI Compact — Revenue"
             }
           ]
         }

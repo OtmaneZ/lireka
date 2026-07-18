@@ -793,7 +793,7 @@ table _Mesures
 	/// Couleurs alignées charte : good #6FA84B / bad #C0504D.
 	/// =====================================================================
 	/// Carte General View — sous-titre "PY: 1.23k (▲ +45.2% YoY)" (unités, compact).
-	measure 'GV sous-titre — Unités' =
+	measure 'KPI Sous-titre — Unités' =
 			VAR py = [Unités commandées PY]
 			VAR yoy = [Unités commandées YoY %]
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
@@ -814,7 +814,7 @@ table _Mesures
 		lineageTag: aa000001-1111-2222-3333-444455550001
 
 	/// Carte General View — sous-titre "PY: €120k (▲ +48.3% YoY)" (revenu reconstruit, compact €).
-	measure 'GV sous-titre — Revenue' =
+	measure 'KPI Sous-titre — Revenue' =
 			VAR py = [Revenu (reconstruit) PY]
 			VAR yoy = [Revenu (reconstruit) YoY %]
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
@@ -835,7 +835,7 @@ table _Mesures
 		lineageTag: aa000002-1111-2222-3333-444455550002
 
 	/// Carte General View — sous-titre "PY: €20k (▲ +52.8% YoY)" (marge brute, compact €).
-	measure 'GV sous-titre — Gross Profit' =
+	measure 'KPI Sous-titre — Gross Profit' =
 			VAR py = [Marge Brute PY]
 			VAR yoy = [Marge Brute YoY %]
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
@@ -856,7 +856,7 @@ table _Mesures
 		lineageTag: aa000003-1111-2222-3333-444455550003
 
 	/// Carte General View — sous-titre "PY: 16.8% (▲ +500 bps YoY)" (taux marge, delta en bps).
-	measure 'GV sous-titre — Gross Margin' =
+	measure 'KPI Sous-titre — Gross Margin' =
 			VAR py = [Taux Marge Brute (revenu reconstruit) PY]
 			VAR bps = [Taux Marge Brute (revenu reconstruit) YoY bps]
 			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
@@ -869,27 +869,27 @@ table _Mesures
 		lineageTag: aa000004-1111-2222-3333-444455550004
 
 	/// Couleur conditionnelle YoY — unités (hausse = vert). Cartes + tableau.
-	measure 'GV couleur — Unités YoY' = IF([Unités commandées YoY %] >= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Unités' = IF([Unités commandées YoY %] >= 0, "#6FA84B", "#C0504D")
 		lineageTag: aa000005-1111-2222-3333-444455550005
 
 	/// Couleur conditionnelle YoY — revenu reconstruit (hausse = vert). Cartes + tableau.
-	measure 'GV couleur — Revenue YoY' = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Revenue' = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
 		lineageTag: aa000006-1111-2222-3333-444455550006
 
 	/// Couleur conditionnelle YoY — marge brute (hausse = vert). Cartes + tableau.
-	measure 'GV couleur — Gross Profit YoY' = IF([Marge Brute YoY %] >= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Gross Profit' = IF([Marge Brute YoY %] >= 0, "#6FA84B", "#C0504D")
 		lineageTag: aa000007-1111-2222-3333-444455550007
 
 	/// Couleur conditionnelle YoY — taux marge, delta bps (hausse = vert). Cartes + tableau.
-	measure 'GV couleur — Gross Margin YoY' = IF([Taux Marge Brute (revenu reconstruit) YoY bps] >= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Gross Margin' = IF([Taux Marge Brute (revenu reconstruit) YoY bps] >= 0, "#6FA84B", "#C0504D")
 		lineageTag: aa000008-1111-2222-3333-444455550008
 
 	/// Couleur conditionnelle YoY — taux d'annulation, delta bps. Baisse = vert (inversé).
-	measure 'GV couleur — Cancellation YoY' = IF([Taux Annulation YoY bps] <= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Cancellation' = IF([Taux Annulation YoY bps] <= 0, "#6FA84B", "#C0504D")
 		lineageTag: aa000009-1111-2222-3333-444455550009
 
 	/// General View — data label YoY sur graphe Revenue (combo CY/PY).
-	measure 'GV chart label Revenue YoY' =
+	measure 'Chart label — Revenue YoY' =
 			VAR y = [Revenu (reconstruit) YoY %]
 			RETURN
 				IF(
@@ -900,7 +900,7 @@ table _Mesures
 		lineageTag: aa000010-1111-2222-3333-444455550010
 
 	/// General View — data label YoY sur graphe Gross Profit (combo CY/PY).
-	measure 'GV chart label Gross Profit YoY' =
+	measure 'Chart label — Gross Profit YoY' =
 			VAR y = [Marge Brute YoY %]
 			RETURN
 				IF(
@@ -912,7 +912,7 @@ table _Mesures
 
 	/// General View — KPI card valeur compacte (texte : 521.6k / €11.2M).
 	/// formatString DAX (,,M / ,"k") ne s'applique pas aux cartes en locale FR.
-	measure 'GV KPI — Ordered units' =
+	measure 'KPI Compact — Ordered units' =
 			VAR v = [Unités commandées]
 			VAR a = ABS(v)
 			RETURN
@@ -928,7 +928,7 @@ table _Mesures
 				)
 		lineageTag: bb000001-1111-2222-3333-444455550001
 
-	measure 'GV KPI — Revenue' =
+	measure 'KPI Compact — Revenue' =
 			VAR v = [Revenu (reconstruit)]
 			VAR a = ABS(v)
 			RETURN
@@ -944,7 +944,7 @@ table _Mesures
 				)
 		lineageTag: bb000002-1111-2222-3333-444455550002
 
-	measure 'GV KPI — Gross Profit' =
+	measure 'KPI Compact — Gross Profit' =
 			VAR v = [Marge Brute]
 			VAR a = ABS(v)
 			RETURN
@@ -960,17 +960,17 @@ table _Mesures
 				)
 		lineageTag: bb000003-1111-2222-3333-444455550003
 
-	measure 'GV KPI — Gross Margin' = FORMAT([Taux Marge Brute (revenu reconstruit)], "0.0%")
+	measure 'KPI Compact — Gross Margin' = FORMAT([Taux Marge Brute (revenu reconstruit)], "0.0%")
 		lineageTag: bb000004-1111-2222-3333-444455550004
 
 	/// General View — tableau KPI, formats compacts (texte).
-	measure 'GV Display — Ordered units' = [GV KPI — Ordered units]
+	measure 'GV Display — Ordered units' = [KPI Compact — Ordered units]
 		lineageTag: bb000011-1111-2222-3333-444455550011
 
-	measure 'GV Display — Revenue' = [GV KPI — Revenue]
+	measure 'GV Display — Revenue' = [KPI Compact — Revenue]
 		lineageTag: bb000012-1111-2222-3333-444455550012
 
-	measure 'GV Display — Gross Profit' = [GV KPI — Gross Profit]
+	measure 'GV Display — Gross Profit' = [KPI Compact — Gross Profit]
 		lineageTag: bb000013-1111-2222-3333-444455550013
 
 	measure 'GV Display — YoY€' =
@@ -1275,15 +1275,6 @@ table _Mesures
 				)
 		formatString: #,##0.00
 		lineageTag: cc000004-1111-2222-3333-444455550004
-
-	measure 'B2C couleur - Revenue YoY' = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
-		lineageTag: cc000072-1111-2222-3333-444455550072
-
-	measure 'B2C couleur - Gross Profit YoY' = IF([Marge Brute YoY %] >= 0, "#6FA84B", "#C0504D")
-		lineageTag: cc000073-1111-2222-3333-444455550073
-
-	measure 'B2C couleur - Gross Margin YoY' = IF([Taux Marge Brute (revenu reconstruit) YoY bps] >= 0, "#6FA84B", "#C0504D")
-		lineageTag: cc000074-1111-2222-3333-444455550074
 
 	measure 'B2C Rank' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
