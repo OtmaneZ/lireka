@@ -1,7 +1,7 @@
 # Documentation du processus — modèle profitabilité Lireka
 
 > **Livrable contractuel** : L06 — Documentation du processus  
-> **Référence** : [`../../project/devis.md`](../../project/devis.md)  
+> **Référence** : [`../01-cadrage/devis.md`](../01-cadrage/devis.md)  
 > **Date** : 14 juillet 2026
 
 Ce document décrit **comment le modèle livré se recharge**, tel qu'implémenté dans  
@@ -18,9 +18,9 @@ du processus. Concrètement :
 
 | Livrable devis | Implémentation |
 |----------------|----------------|
-| 3 transporteurs intégrés (La Poste, Colis Privé, Chronopost) | Récaps Colissimo + Chronopost chargés dans `fact_factures_transport` |
+| 3 transporteurs intégrés (La Poste, Colis Privé, Chronopost) | Récaps Colissimo + Chronopost → `fact_factures_transport` ; Colis Privé via backend (`fnNormaliserTransporteur`), coût estimé |
 | Dataset commandes structuré | `fact_commandes`, `fact_transport`, `fact_lignes` depuis le backend |
-| Jointure factures ↔ commandes | Rapprochement facture → colis par `id_package` (résolution par date dans Power Query) |
+| Jointure factures ↔ commandes | Clé métier = n° de suivi ; rapprochement opérationnel facture → colis par `id_package` (proximité de date en Power Query) |
 | Dashboard profitabilité | Rapport `Lireka_Profitabilite.Report` |
 | Documentation du processus | Ce fichier |
 

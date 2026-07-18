@@ -1,6 +1,6 @@
 # Programme de formation Power BI — Lireka
 
-> **Référence contractuelle** : [`../../project/devis.md`](../../project/devis.md)  
+> **Référence contractuelle** : [`../01-cadrage/devis.md`](../01-cadrage/devis.md)  
 > **Formateur** : Otmane Boulahia — ZineInsights  
 > **Durée** : session(s) proposée(s) durant la mission (**J4**), sous réserve de disponibilité des équipes Lireka
 

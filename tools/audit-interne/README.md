@@ -4,7 +4,7 @@ Ce dossier contient des scripts de contrôle qualité et de validation technique
 
 **Statut : usage interne, non contractuel.**
 
-Ces scripts ne sont pas un livrable du devis (voir `project/devis.md`). Ils servent de preuve et de contrôle pour les livrables suivants :
+Ces scripts ne sont pas un livrable du devis (voir `docs/01-cadrage/devis.md`). Ils servent de preuve et de contrôle pour les livrables suivants :
 - Intégration des transporteurs (devis #1)
 - Jointure factures ↔ commandes (devis #3)
 - Dashboard profitabilité (devis #4)

@@ -46,10 +46,11 @@ secrets/
 Power_BI_Datawarehouse/**
 !Power_BI_Datawarehouse/.gitkeep
 
-# Sorties d'audit validation (données réelles — NDA)
-tools/audit-interne/*_output.json
-tools/audit-interne/*_output.txt
-tools/audit-interne/rapport_backend.txt
-scripts/validation/*_output.json
-scripts/validation/*_output.txt
-scripts/validation/rapport_*.txt
+# Scripts / tools : versionnés (.py, README, fixtures)
+# Sorties uniquement : ignorées (données réelles — NDA)
+tools/**/*_output.json
+tools/**/*_output.txt
+tools/**/rapport_*.txt
+scripts/**/*_output.json
+scripts/**/*_output.txt
+scripts/**/rapport_*.txt

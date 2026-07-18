@@ -19,9 +19,9 @@
 
 | ID | Livrable | Jour cible | Statut | Validé par |
 |----|----------|------------|--------|------------|
-| L01 | Intégration La Poste, Colis Privé, Chronopost dans Power BI | J2 | ⬜ | Marc Bordier |
+| L01 | Intégration La Poste, Colis Privé, Chronopost dans Power BI *(Colis Privé : colis backend + coût estimé si pas de factures)* | J2 | ⬜ | Marc Bordier |
 | L02 | CSV commandes importé et structuré dans Power BI | J2 | ⬜ | Marc Bordier |
-| L03 | Jointure factures ↔ commandes par numéro de suivi | J3 | ⬜ | Marc Bordier |
+| L03 | Jointure factures ↔ commandes par numéro de suivi *(résolution opérationnelle via `id_package` / proximité de date — voir L06)* | J3 | ⬜ | Marc Bordier |
 | L04 | Dashboard profitabilité — marge brute par pays et par type de commande *(1 rapport, 2 axes ; mesure `[Marge Brute]` dans `_Mesures.tmdl`)* | J3 | ⬜ | Marc Bordier |
 | L05 | Formation utilisateurs *(selon disponibilité)* | J4 | ⬜ | Participants |
 | L06 | Documentation du processus | J4 | ⬜ | Marc Bordier |
@@ -46,16 +46,17 @@
 ## Critères d'acceptation
 
 ### Transporteurs
-- [ ] La Poste, Colis Privé et Chronopost intégrés dans Power BI
+- [ ] La Poste (Colissimo) et Chronopost : factures intégrées dans Power BI
+- [ ] Colis Privé : colis identifiés dans le modèle *(coût estimé backend si pas de factures)*
 - [ ] Postes Canada : colis backend (`package.csv`) intégrés au modèle profitabilité *(dans le périmètre — confirmé Marc ; coût estimé, pas de dashboard dédié)*
-- [ ] Données importées depuis CSV sur au moins 1 mois de factures
+- [ ] Données importées depuis CSV sur au moins 1 mois de factures *(là où des factures existent)*
 
 ### Commandes
 - [ ] Export backend intégré dans Power BI
 - [ ] Schéma documenté dans la documentation du processus
 
 ### Jointure
-- [ ] Liaison opérationnelle par numéro de suivi
+- [ ] Liaison opérationnelle facture ↔ colis/commande (clé métier : n° de suivi ; résolution modèle : `id_package`)
 - [ ] Taux de matching documenté (objectif indicatif, non contractuel)
 
 ### Profitabilité
@@ -72,4 +73,4 @@
 
 ---
 
-*Mis à jour le 14 juillet 2026*
+*Mis à jour le 18 juillet 2026*

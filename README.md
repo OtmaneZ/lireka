@@ -11,14 +11,14 @@ Mission 4 jours (1 800 € HT) : intégration transporteurs et commandes, jointu
 5. **Formation** des utilisateurs
 6. **Documentation du processus**
 
-→ [`project/devis.md`](project/devis.md) · [`project/livrables.md`](project/livrables.md)
+→ [`docs/01-cadrage/devis.md`](docs/01-cadrage/devis.md) · [`docs/01-cadrage/livrables.md`](docs/01-cadrage/livrables.md)
 
 ## Structure du dépôt
 
 ```
 lireka/
-├── project/              devis.md, livrables.md
 ├── docs/
+│   ├── 01-cadrage/       devis.md, livrables.md, cadrage
 │   ├── 04-processus/     processus-etl-gouvernance.md (L06)
 │   └── 05-formation/     programme-formation.md, session-01-bases.md (L05)
 ├── powerbi/              modèle PBIP + rapport profitabilité L04

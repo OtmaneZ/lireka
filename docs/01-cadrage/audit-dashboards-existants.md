@@ -1,7 +1,7 @@
 # Note d'audit — Dashboards transporteurs existants
 
 > **Statut** : 🟡 À réaliser (J1, audit rapide)  
-> **Référence** : [`../../project/devis.md`](../../project/devis.md)  
+> **Référence** : [`devis.md`](devis.md)  
 > **Objectif** : comprendre le modèle existant pour intégrer les 3 nouveaux transporteurs — **pas** créer 3 dashboards dédiés (hors devis).
 
 ---

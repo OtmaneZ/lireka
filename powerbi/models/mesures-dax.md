@@ -1,6 +1,6 @@
 # Mesures DAX — Lireka Power BI
 
-> **Référence** : [`../../project/devis.md`](../../project/devis.md)  
+> **Référence** : [`../../docs/01-cadrage/devis.md`](../../docs/01-cadrage/devis.md)  
 > Référentiel des mesures DAX du dashboard profitabilité.  
 > **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
 > Ne pas éditer à la main : régénérer depuis `_Mesures.tmdl` (script one-shot).

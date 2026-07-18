@@ -1,6 +1,6 @@
 # Modèles sémantiques Power BI — Lireka
 
-> **Référence** : [`../../project/devis.md`](../../project/devis.md)  
+> **Référence** : [`../../docs/01-cadrage/devis.md`](../../docs/01-cadrage/devis.md)  
 > Document de travail technique — aligné sur `Lireka_Profitabilite` (14/07/2026).
 
 ---
