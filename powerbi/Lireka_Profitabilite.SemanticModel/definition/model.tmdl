@@ -24,6 +24,7 @@ ref table dim_type_commande
 ref table _Mesures
 ref table _ParamLangueUI
 ref table _ParamAxePeriode
+ref table _BridgePaysYoY
 
 ref cultureInfo fr-FR
 

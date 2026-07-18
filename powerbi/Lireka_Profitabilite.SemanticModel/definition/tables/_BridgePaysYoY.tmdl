@@ -1,0 +1,57 @@
+/// Axe waterfall B2C contribution (slide 7).
+/// Structure : Prior year | Top 15 pays (CA reconstruit) | Rest of the world.
+/// Top 15 figé au refresh (simple + robuste) : le visuel n'affiche QUE ces lignes,
+/// aucun filtre de mesure nécessaire. Total auto waterfall = Current year (PY + ΣΔ).
+table _BridgePaysYoY
+	lineageTag: e1e2e3e4-f5a6-7890-bcde-f01234567890
+
+	column Label
+		dataType: string
+		lineageTag: e1e2e3e4-f5a6-7890-bcde-f01234567891
+		summarizeBy: none
+		sourceColumn: [Label]
+		sortByColumn: SortOrder
+
+	column SortOrder
+		dataType: int64
+		lineageTag: e1e2e3e4-f5a6-7890-bcde-f01234567892
+		summarizeBy: none
+		sourceColumn: [SortOrder]
+
+		changedProperty = IsHidden
+
+	column Kind
+		dataType: string
+		lineageTag: e1e2e3e4-f5a6-7890-bcde-f01234567893
+		summarizeBy: none
+		sourceColumn: [Kind]
+
+		changedProperty = IsHidden
+
+	partition _BridgePaysYoY = calculated
+		mode: import
+		source =
+				VAR CountryRev =
+					ADDCOLUMNS(
+						FILTER(
+							VALUES(dim_pays[nom_pays_en]),
+							NOT ISBLANK(dim_pays[nom_pays_en])
+								&& dim_pays[nom_pays_en] <> "Rest of the world"
+						),
+						"@Rev", CALCULATE([Revenu (reconstruit)])
+					)
+				VAR Top15 = TOPN(15, CountryRev, [@Rev], DESC)
+				VAR Countries =
+					SELECTCOLUMNS(
+						Top15,
+						"Label", dim_pays[nom_pays_en],
+						"SortOrder", RANKX(Top15, [@Rev], , DESC, DENSE),
+						"Kind", "Country"
+					)
+				RETURN
+					UNION(
+						ROW("Label", "Prior year", "SortOrder", 0, "Kind", "Start"),
+						Countries,
+						ROW("Label", "Rest of the world", "SortOrder", 9999, "Kind", "Rest")
+					)
+

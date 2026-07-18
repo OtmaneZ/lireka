@@ -1617,6 +1617,79 @@ table _Mesures
 		formatString: #,##0.00 €
 		lineageTag: cc000043-1111-2222-3333-444455550043
 
+	measure 'Revenu (reconstruit, alloué langue) PY' = CALCULATE([Revenu (reconstruit, alloué langue)], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		lineageTag: ccccdd00-1111-2222-3333-444455556670
+
+	/// B2B top orders — rang par revenu (filtre visuel Rank <= 10 ; remplace TopN PBIR fragile).
+	measure 'B2B Rank Commande — Revenue' =
+			IF(
+				ISBLANK([Revenu (reconstruit)]),
+				BLANK(),
+				RANKX(
+					ALLSELECTED(fact_commandes[id_commande]),
+					[Revenu (reconstruit)],
+					,
+					DESC,
+					DENSE
+				)
+			)
+		formatString: 0
+		lineageTag: b2b0rank-1111-2222-3333-444455550001
+
+	/// =====================================================================
+	/// B2C contribution bridges (slide 7). Axe _BridgePaysYoY = Prior year + Top 15 + Rest.
+	/// Le Top 15 est figé dans la table : ces mesures rendent juste le delta de chaque
+	/// ligne présente (Start = PY · Country = Δ YoY · Rest = Δ Rest). Total auto ≈ CY.
+	/// =====================================================================
+	measure 'B2C Bridge — Revenue' =
+			VAR k = SELECTEDVALUE(_BridgePaysYoY[Kind])
+			VAR label = SELECTEDVALUE(_BridgePaysYoY[Label])
+			RETURN
+				SWITCH(
+					TRUE(),
+					k = "Start",
+						CALCULATE([Revenu (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
+					k = "Rest",
+						CALCULATE(
+							[B2C Rest Sales] - [B2C Rest Sales PY],
+							REMOVEFILTERS(_BridgePaysYoY)
+						),
+					k = "Country",
+						CALCULATE(
+							[Revenu (reconstruit) YoY Δ],
+							TREATAS({ label }, dim_pays[nom_pays_en]),
+							REMOVEFILTERS(_BridgePaysYoY)
+						),
+					BLANK()
+				)
+		formatString: #,##0.00 €
+		lineageTag: b2c0b711-1111-2222-3333-444455550001
+
+	measure 'B2C Bridge — Gross Profit' =
+			VAR k = SELECTEDVALUE(_BridgePaysYoY[Kind])
+			VAR label = SELECTEDVALUE(_BridgePaysYoY[Label])
+			RETURN
+				SWITCH(
+					TRUE(),
+					k = "Start",
+						CALCULATE([Marge Brute PY], REMOVEFILTERS(_BridgePaysYoY)),
+					k = "Rest",
+						CALCULATE(
+							[B2C Rest Gross profit] - [B2C Rest Gross profit PY],
+							REMOVEFILTERS(_BridgePaysYoY)
+						),
+					k = "Country",
+						CALCULATE(
+							[Marge Brute YoY Δ],
+							TREATAS({ label }, dim_pays[nom_pays_en]),
+							REMOVEFILTERS(_BridgePaysYoY)
+						),
+					BLANK()
+				)
+		formatString: #,##0.00 €
+		lineageTag: b2c0b711-1111-2222-3333-444455550002
+
 	column Dummy
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a
 		summarizeBy: none

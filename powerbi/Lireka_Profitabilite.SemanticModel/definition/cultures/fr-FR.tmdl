@@ -75,7 +75,19 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Unités commandées"
 			        }
 			      },
-			      "State": "Generated"
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Ordered units": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
 			    },
 			    "table_mesures.unités_commandées_yoy_": {
 			      "Definition": {
@@ -147,7 +159,19 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Revenu (reconstruit)"
 			        }
 			      },
-			      "State": "Generated"
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Revenue": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
 			    },
 			    "table_mesures.revenu_reconstruit_yoy_δ": {
 			      "Definition": {
@@ -186,7 +210,19 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Marge Brute"
 			        }
 			      },
-			      "State": "Generated"
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Gross Profit": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
 			    },
 			    "table_mesures.marge_brute_yoy_": {
 			      "Definition": {
@@ -656,6 +692,16 @@ cultureInfo fr-FR
 			            },
 			            "Weight": 0.9
 			          }
+			        },
+			        {
+			          "Country (interim)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
 			        }
 			      ]
 			    },
@@ -670,6 +716,66 @@ cultureInfo fr-FR
 			      "Terms": [
 			        {
 			          "​": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_mesures.revenu_reconstruit_alloué_langue_py": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Mesures",
+			          "ConceptualProperty": "Revenu (reconstruit, alloué langue) PY"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "fact_lignes.langue_livre": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_lignes",
+			          "ConceptualProperty": "langue_livre"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_mesures.b2b_rank_commande__revenue": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Mesures",
+			          "ConceptualProperty": "B2B Rank Commande — Revenue"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Rank": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_commandes.id_commande": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_commandes",
+			          "ConceptualProperty": "id_commande"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Order ID": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",
