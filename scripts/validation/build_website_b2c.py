@@ -251,6 +251,14 @@ def update_pages_json() -> None:
 
 
 def main() -> None:
+    raise SystemExit(
+        "SCRIPT OBSOLETE - execution bloquee.\n"
+        "1. Reecrit pageOrder sur 2 entrees : supprimerait 6 des 8 pages.\n"
+        "2. shutil.rmtree(VIS) inconditionnel.\n"
+        "3. Noms de mesures anterieurs au refactor (GV KPI -> KPI Compact).\n"
+        "Le rapport se maintient desormais a la main dans Power BI Desktop.\n"
+        "Pour reactiver : corriger les 3 points puis retirer ce garde-fou."
+    )
     if LOGO_SRC.exists():
         LOGO_DST.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(LOGO_SRC, LOGO_DST)
