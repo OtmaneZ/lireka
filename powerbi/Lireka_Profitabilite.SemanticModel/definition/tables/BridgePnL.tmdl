@@ -63,3 +63,4 @@ table BridgePnL
 					#"Trie par Ordre"
 
 	annotation PBI_ResultType = Table
+
