@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Coût Transport Outbound (Retenu) YoY %"
+                  "Property": "Taux Transport sortant"
                 }
               },
-              "queryRef": "_Mesures.Coût Transport Outbound (Retenu) YoY %",
-              "nativeQueryRef": "Coût Transport Outbound (Retenu) YoY %"
+              "queryRef": "_Mesures.Taux Transport sortant",
+              "nativeQueryRef": "Taux Transport sortant"
             }
           ]
         }

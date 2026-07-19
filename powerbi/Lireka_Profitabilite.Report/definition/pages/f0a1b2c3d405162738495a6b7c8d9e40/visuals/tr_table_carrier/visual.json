@@ -98,6 +98,21 @@
                       "Entity": "_Mesures"
                     }
                   },
+                  "Property": "Douanes Taxes YoY %"
+                }
+              },
+              "queryRef": "_Mesures.Douanes Taxes YoY %",
+              "nativeQueryRef": "Douanes Taxes YoY %",
+              "displayName": "Duties YoY%"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
                   "Property": "Fournitures Expédition"
                 }
               },

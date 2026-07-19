@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Douanes Taxes YoY %"
+                  "Property": "Taux Douanes Taxes"
                 }
               },
-              "queryRef": "_Mesures.Douanes Taxes YoY %",
-              "nativeQueryRef": "Douanes Taxes YoY %"
+              "queryRef": "_Mesures.Taux Douanes Taxes",
+              "nativeQueryRef": "Taux Douanes Taxes"
             }
           ]
         }
