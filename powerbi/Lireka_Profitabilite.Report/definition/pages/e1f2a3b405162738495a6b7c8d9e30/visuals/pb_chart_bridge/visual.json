@@ -3,9 +3,9 @@
   "name": "pb_chart_bridge",
   "position": {
     "x": 237,
-    "y": 40,
+    "y": 124,
     "z": 3000,
-    "height": 650,
+    "height": 566,
     "width": 1035,
     "tabOrder": 3000
   },

@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
-  "name": "pb_subtitle",
+  "name": "pb_kpi_ship_unit_title",
   "position": {
-    "x": 237,
-    "y": 20,
-    "z": 2999,
-    "height": 14,
-    "width": 1035,
-    "tabOrder": 2999
+    "x": 760,
+    "y": 21,
+    "z": 9002,
+    "height": 36,
+    "width": 248,
+    "tabOrder": 9002
   },
   "visual": {
     "visualType": "textbox",
@@ -19,11 +19,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "Amounts in EUR. Current year vs the same period of the prior year",
+                    "value": "Outbound shipping per unit",
                     "textStyle": {
-                      "fontWeight": "normal",
-                      "fontSize": "8pt",
-                      "color": "#5A6A7A"
+                      "fontWeight": "bold",
+                      "fontSize": "9pt",
+                      "color": "#1B3A5C"
                     }
                   }
                 ]
