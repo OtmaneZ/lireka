@@ -604,7 +604,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Units, revenue and profitability by sales channel — KPI summary'"
+                  "Value": "'Units, revenue and profitability by sales channel'"
                 }
               }
             },

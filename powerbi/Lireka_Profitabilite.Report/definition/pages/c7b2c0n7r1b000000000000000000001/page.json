@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
   "name": "c7b2c0n7r1b000000000000000000001",
-  "displayName": "Website B2C — Contribution",
+  "displayName": "Website B2C Contribution",
   "displayOption": "FitToPage",
   "height": 720,
   "width": 1280,

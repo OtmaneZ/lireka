@@ -229,7 +229,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Top 10 ISBNs — Website B2B (interim)'"
+                  "Value": "'Top 10 ISBNs, Website B2B (interim)'"
                 }
               }
             },

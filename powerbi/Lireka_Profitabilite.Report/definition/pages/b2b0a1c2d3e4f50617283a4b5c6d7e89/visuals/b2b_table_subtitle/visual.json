@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "INTERIM: by destination country (customer name missing from backend). Current year, EUR · YoY vs prior year",
+                    "value": "INTERIM: by destination country (customer name missing from backend). Current year, EUR - YoY vs prior year",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontSize": "8pt",

@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "INTERIM I3 — Customer name missing from backend · columns = Order ID + units + Revenue + GP buckets",
+                    "value": "INTERIM I3 : Customer name missing from backend, columns = Order ID + units + Revenue + GP buckets",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontSize": "7.5pt",
