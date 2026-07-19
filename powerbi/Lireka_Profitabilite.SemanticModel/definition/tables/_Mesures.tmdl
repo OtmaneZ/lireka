@@ -5,31 +5,42 @@ table _Mesures
 	/// Nombre de commandes (grain fact_commandes).
 	measure 'Nb Commandes' = COUNTROWS(fact_commandes)
 		formatString: #,##0
+		displayFolder: "01 KPI publiés"
 		lineageTag: 2a5e017f-d3b9-4fc8-bc92-1f1b103b9945
 
 	/// Nombre de colis (grain fact_transport).
 	measure 'Nb Colis' = COUNTROWS(fact_transport)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 7f531780-6ee8-4ea5-a56f-17fb98fca792
 
 	/// Colis dont le coût provient d'une facture Colissimo/Chronopost rapprochée.
 	measure 'Nb Colis (coût réel)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "facture_rapprochee")
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
 
 	/// Colis dont le coût provient du backend (shipping_cost_eur) sans facture transporteur.
 	measure 'Nb Colis (coût estimé)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "backend_seul")
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f
 
 	/// Colis sans facture ni coût backend renseigné (visibles en volume, exclus du coût).
 	measure 'Nb Colis (coût non disponible)' = CALCULATE([Nb Colis], fact_transport[source_cout] = "aucun")
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: d3e4f5a6-b7c8-4d9e-0f1a-2b3c4d5e6f7a
 
 	/// Nombre de lignes de facture transporteur (Colissimo + Chronopost).
 	measure 'Nb Colis Facturés' = COUNTROWS(fact_factures_transport)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: e8d8c253-ebbc-411c-a7c6-70f93389efb0
 
 	/// Fix Bloc2 — grain passé de groupe/titre à article physique le 15/07/2026.
@@ -37,6 +48,7 @@ table _Mesures
 	/// voir [Nb Articles (contrôle grain groupe)].
 	measure 'Nb Articles' = COUNTROWS(fact_lignes)
 		formatString: #,##0
+		displayFolder: "03 Coûts"
 		lineageTag: 58c14c19-db5c-4284-aecc-b00079f4d9b6
 
 	/// Contrôle Bloc2 — recalcule l'ancien total par somme des quantity_groupe distincts par groupe.
@@ -46,11 +58,14 @@ table _Mesures
 				CALCULATE(MAX(fact_lignes[quantity_groupe]))
 			)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: e1f2a3b4-c5d6-4789-a012-3456789abcde
 
 	/// Granularité Bloc2 — articles dont internal_state = CANCELLED (pas la logique de marge Bloc 3).
 	measure 'Nb Articles Annulés' = CALCULATE([Nb Articles], fact_lignes[internal_state] = "CANCELLED")
 		formatString: #,##0
+		displayFolder: "03 Coûts"
 		lineageTag: f2a3b4c5-d6e7-4890-b123-456789abcdef
 
 	/// Bloc3 — CA HT au grain article, zéro sur les lignes annulées (avant ET après expédition).
@@ -66,22 +81,29 @@ table _Mesures
 				)
 			)
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: a3b4c5d6-e7f8-4901-c234-567890abcdef
 
 	/// Bloc3 — coût d'achat au grain article. Conservé dans TOUS les cas d'annulation
 	/// (avant ET après expédition, décision Marc) — contrôle vs [Coût Achat Total] (grain commande).
 	measure 'Coût Achat Total (grain article)' = SUM(fact_lignes[product_cost_eur])
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: b4c5d6e7-f8a9-4012-d345-678901bcdef0
 
 	/// Bloc3 — articles annulés avant expédition (proxy package_id null).
 	measure 'Nb Articles Annulés Avant Expédition' = CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_AVANT_EXPEDITION")
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: c5d6e7f8-a9b0-4123-e456-789012cdef01
 
 	/// Bloc3 — articles annulés après expédition (proxy package_id non-null).
 	measure 'Nb Articles Annulés Après Expédition' = CALCULATE([Nb Articles], fact_lignes[statut_annulation_ligne] = "ANNULE_APRES_EXPEDITION")
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: d6e7f8a9-b0c1-4234-f567-890123def012
 
 	/// Bloc3 — marge brute provisoire au grain article (contrôle/comparaison uniquement).
@@ -89,11 +111,14 @@ table _Mesures
 	/// intégrés au même grain. Ne pas publier dans le rapport final sans validation Marc.
 	measure 'Marge Brute (grain article, prov.)' = [CA Total HT (grain article, ajusté annulation)] - [Coût Achat Total (grain article)]
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: e7f8a9b0-c1d2-4345-a678-901234ef0123
 
 	/// Chiffre d'affaires HT (order_amount_eur).
 	measure 'CA Total HT' = SUM(fact_commandes[ca_ht])
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: dda226fa-8e6c-4c56-acbd-56fa1c84d136
 
 	/// CA HT reconstruit — order_amount_eur natif si présent, sinon order_amount_local / taux mensuel moyen.
@@ -101,6 +126,7 @@ table _Mesures
 	/// Voir docs/notes-techniques/reconstruction-ca-marketplace.md.
 	measure 'CA Total HT (reconstruit)' = SUM(fact_commandes[ca_ht_reconstruit])
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: f8091234-5678-9abc-def0-123456789abc
 
 	/// Bloc3 (grain commande) — CA HT hors commandes annulées.
@@ -109,12 +135,14 @@ table _Mesures
 	/// borne CA cf. limite-etf-annulation.md) — limite connue documentée.
 	measure 'CA HT Net Annulation' = CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: f8091234-5678-9abc-def0-123456789abd
 
 	/// Bloc3 (grain commande) — CA HT reconstruit hors commandes annulées.
 	/// Variante marketplace (Bloc 1) de [CA HT Net Annulation].
 	measure 'CA HT Net Annulation (reconstruit)' = CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: f8091234-5678-9abc-def0-123456789abe
 
 	/// Bloc3 (grain commande) — transparence : CA porté par les commandes en annulation
@@ -141,21 +169,28 @@ table _Mesures
 				)
 			)
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: f8091234-5678-9abc-def0-123456789abf
 
 	/// Coût d'achat total des livres (product_cost_eur).
 	measure 'Coût Achat Total' = SUM(fact_commandes[cout_achat])
 		formatString: #,##0.00 €
+		displayFolder: "03 Coûts"
 		lineageTag: 494ae678-7bb6-4cd5-a3c8-0e49d6296417
 
 	/// Coût transport estimé par le backend (total_shipping_cost_to_delivery_country_eur).
 	measure 'Coût Transport Estimé' = SUM(fact_commandes[cout_transport_estime])
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: d0af07eb-f680-4e05-bc4b-b69de2131850
 
 	/// Coût transport réel, issu des colis backend (package.shipping_cost_eur).
 	measure 'Coût Transport Réel' = SUM(fact_transport[cout_transport])
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: c596d85e-75bd-4785-88ba-ca8931c8a1b0
 
 	/// Coût transport facturé par Colissimo/Chronopost (contrôle croisé).
@@ -171,6 +206,8 @@ table _Mesures
 				CROSSFILTER(fact_factures_transport[id_package], fact_transport[id_package], None)
 			)
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 0c73b641-d4e0-421c-af69-cdc593a9582e
 
 	/// Fix F-05 : écart entre le coût transport RETENU (facturé si dispo, sinon estimé) et
@@ -178,16 +215,22 @@ table _Mesures
 	/// deux estimations backend (coût colis vs coût commande), sans valeur de pilotage.
 	measure 'Écart Coût Outbound vs Estimé Backend' = [Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: f0b7ddaf-bbb7-42c0-9723-b40b9f621956
 
 	/// Fix F-05 : écart coût outbound en % de l'estimé backend.
 	measure 'Taux Écart Coût' = DIVIDE([Écart Coût Outbound vs Estimé Backend], [Coût Transport Estimé], 0)
 		formatString: 0.0%
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 831022a0-57dc-4efe-b01b-6eee24553f25
 
 	/// Coût transport réel moyen par colis.
 	measure 'Coût Moyen Colis' = DIVIDE([Coût Transport Réel], [Nb Colis], 0)
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 82e52ba9-cea9-4b63-bbe3-1eac0361816e
 
 	/// MARGE BRUTE — FORMULE PROVISOIRE. CA HT - coût d'achat - coût transport réel.
@@ -195,52 +238,59 @@ table _Mesures
 	/// À VALIDER avec Marc / finance avant de considérer comme définitive.
 	measure 'Marge Brute (prov.)' = [CA Total HT] - [Coût Achat Total] - [Coût Transport Réel]
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 540144b1-b58e-46b7-8ca6-a31cc2c1da61
-
-	/// Taux de marge brute (provisoire) = Marge Brute (prov.) / CA HT.
-	measure 'Taux Marge Brute (prov.)' = DIVIDE([Marge Brute (prov.)], [CA Total HT], 0)
-		formatString: 0.0%
-		lineageTag: 55093196-dbb1-4824-bdbb-3de0469d326b
 
 	/// Marge brute calculée par le backend (gross_profit_eur) — RÉFÉRENCE de contrôle.
 	measure 'Marge Brute Backend (réf.)' = SUM(fact_commandes[gross_profit_eur])
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: d5933b33-f893-4bba-862c-8a410050dbf1
 
 	/// Écart entre la marge provisoire et la marge backend (aide à la validation finance).
 	measure 'Écart Marge vs Backend' = [Marge Brute (prov.)] - [Marge Brute Backend (réf.)]
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 96da7a44-3aa5-400a-ae45-f6122da0451e
 
 	/// Fix F-04 : frais de port encaissés par le client (marketplace notamment).
 	/// Périmètre d'inclusion ("if relevant") non tranché — inclus par défaut dans [Marge Brute].
 	measure 'Frais Port Encaissés' = SUM(fact_commandes[frais_port_encaisse])
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: 5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a9b
 
 	/// Fix F-04 : coût de transport amont (inbound_transportation_cost_eur).
 	measure 'Coût Transport Amont' = SUM(fact_commandes[cout_transport_amont])
 		formatString: #,##0.00 €
+		displayFolder: "03 Coûts"
 		lineageTag: 6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b0c
 
 	/// Fix F-02/F-04 : coût transport outbound RETENU (facturé si rapproché, sinon estimé backend).
 	measure 'Coût Transport Outbound (Retenu)' = SUM(fact_transport[cout_transport_retenu])
 		formatString: #,##0.00 €
+		displayFolder: "03 Coûts"
 		lineageTag: 7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c1d
 
 	/// Fix F-04 : douanes et taxes (duties_taxes_eur) — poste "duties and taxes" de la formule Marc.
 	measure 'Douanes Taxes' = SUM(fact_transport[duties_taxes_eur])
 		formatString: #,##0.00 €
+		displayFolder: "03 Coûts"
 		lineageTag: 8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d2e
 
 	/// Fix F-04 : commissions marketplace (marketplace_fees_eur).
 	measure 'Commissions Marketplace' = SUM(fact_commandes[commissions_marketplace])
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: 9c0d1e2f-3a4b-4c5d-6e7f-8a9b0c1d2e3f
 
 	/// Fix F-04 : fournitures d'expédition (shipping_supply_cost_eur).
 	measure 'Fournitures Expédition' = SUM(fact_transport[shipping_supply_cost_eur])
 		formatString: #,##0.00 €
+		displayFolder: "03 Coûts"
 		lineageTag: 0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a
 
 	/// Bloc5 (dette technique) — retours et remboursements (returns_and_refunds_cost_eur,
@@ -250,6 +300,7 @@ table _Mesures
 	/// données (pas d'identité rr≈pc ; ratio médian rr/pc ≈ 2,4 %). Voir dette-technique-bloc5.md.
 	measure 'Retours Remboursements' = SUM(fact_commandes[retours_remboursements])
 		formatString: #,##0.00 €
+		displayFolder: "03 Coûts"
 		lineageTag: e8f9a0b1-c2d3-4456-e789-0123def01234
 
 	/// Bloc5 (dette technique) — coûts génériques (generic_costs_eur, agrégé par commande).
@@ -257,6 +308,7 @@ table _Mesures
 	/// de son côté avant de figer ce poste dans la marge.
 	measure 'Coûts Génériques' = SUM(fact_commandes[couts_generiques])
 		formatString: #,##0.00 €
+		displayFolder: "03 Coûts"
 		lineageTag: f9a0b1c2-d3e4-4567-f890-1234ef012345
 
 	/// MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).
@@ -286,6 +338,7 @@ table _Mesures
 				- [Retours Remboursements]
 				- [Coûts Génériques]
 		formatString: #,##0.00 €
+		displayFolder: "04 Marge"
 		lineageTag: 1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b
 
 	/// Fix F-04 / C-01 : taux = Marge Brute / revenu net annulation
@@ -298,26 +351,35 @@ table _Mesures
 				0
 			)
 		formatString: 0.0%
+		displayFolder: "04 Marge"
 		lineageTag: 2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b6c
 
 	/// Fix F-04 : écart entre la marge conforme Marc et la marge backend (contrôle v2).
 	measure 'Écart Marge vs Backend (v2)' = [Marge Brute] - [Marge Brute Backend (réf.)]
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 3a4b5c6d-7e8f-4a9b-0c1d-2e3f4a5b6c7d
 
 	/// Nombre de commandes ayant au moins un colis avec facture transporteur rapprochée (source_cout = facture_rapprochee).
 	measure 'Nb Commandes Matchées' = CALCULATE(DISTINCTCOUNT(fact_transport[order_id]), fact_transport[source_cout] = "facture_rapprochee")
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: baae1892-caaa-4c58-be8e-a24bbf35a559
 
 	/// Taux de matching facture = commandes avec coût réel (facture) / total commandes.
 	measure 'Taux Matching' = DIVIDE([Nb Commandes Matchées], [Nb Commandes], 0)
 		formatString: 0.0%
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: c9fe02d1-af86-4e43-b409-66721938de41
 
 	/// Commandes sans aucun colis rapproché à une facture transporteur.
 	measure 'Nb Commandes Non Matchées' = [Nb Commandes] - [Nb Commandes Matchées]
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: e49b07fe-49a0-4f51-8316-32d54fe32163
 
 	/// Coût facturé (Colissimo/Chronopost) rapproché du colis via la relation rel_factures_colis
@@ -334,6 +396,8 @@ table _Mesures
 				USERELATIONSHIP(fact_factures_transport[id_package], fact_transport[id_package])
 			)
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: c96ba0bc-9091-4ace-8974-29e4ffe02b25
 
 	/// Écart entre le coût réel backend et le coût facturé transporteur (contrôle).
@@ -341,41 +405,50 @@ table _Mesures
 	/// aligné au grain colis avec [Coût Transport Réel].
 	measure 'Écart Réel vs Facturé' = [Coût Transport Réel] - [Coût Facturé Rapproché]
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: e8bd1f63-4bcc-46c4-940e-133635ca4aac
 
 	/// Nombre de colis rapprochés à une facture Colissimo/Chronopost (aligné sur source_cout = facture_rapprochee).
 	measure 'Nb Colis Avec Facture' = [Nb Colis (coût réel)]
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: cf7eab3c-beff-47d9-a425-381d83e6a41a
 
 	/// Taux de rapprochement facture = colis avec facture / total colis.
 	measure 'Taux Matching Factures' = DIVIDE([Nb Colis Avec Facture], [Nb Colis], 0)
 		formatString: 0.0%
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 83eb47a3-ddff-4106-a391-6f55c64f38f7
 
 	/// Panier moyen HT par commande.
 	measure 'Panier Moyen' = DIVIDE([CA Total HT], [Nb Commandes], 0)
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 1b392be4-7f29-413b-8881-e29c3d1c99ed
 
 	/// Poids total expédié (kg).
 	measure 'Poids Total (kg)' = SUM(fact_transport[poids_kg])
 		formatString: #,##0.000
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 594bb787-db4c-4e44-b6d2-184b63c29975
-
-	/// Marge brute provisoire cumulée sur l'année (YTD).
-	measure 'Marge YTD (prov.)' = TOTALYTD([Marge Brute (prov.)], dim_date[date])
-		formatString: #,##0.00 €
-		lineageTag: 28cf665e-0ecc-4980-b6cd-40f0dd3b6f10
 
 	/// CA HT du mois précédent (time intelligence).
 	measure 'CA Mois Précédent' = CALCULATE([CA Total HT], DATEADD(dim_date[date], -1, MONTH))
 		formatString: #,##0.00 €
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 0868e48b-09c3-46ed-a947-9930a529aedf
 
 	/// Évolution du CA vs mois précédent (%).
 	measure 'Évolution CA' = DIVIDE([CA Total HT] - [CA Mois Précédent], [CA Mois Précédent], 0)
 		formatString: 0.0%
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: 97de0e8d-69dd-49d3-8d74-7a8a41d51a9e
 
 	/// Chronopost : lignes au-delà de la 1re par numero_facture (grain multi-colis, pas un doublon qualité).
@@ -392,6 +465,8 @@ table _Mesures
 			RETURN
 				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: f1a2b3c4-d5e6-4789-a012-3456789abcde
 
 	/// Vrais doublons qualité : même numero_facture ET même numero_suivi sur plusieurs lignes.
@@ -408,6 +483,8 @@ table _Mesures
 			RETURN
 				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: e6f78901-2345-4567-f567-89abcdef0123
 
 	/// Lignes de facture dont numero_suivi apparaît plus d'une fois (surplus hors 1re occurrence).
@@ -420,11 +497,15 @@ table _Mesures
 			RETURN
 				SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: a2b3c4d5-e6f7-4890-b123-456789abcdef
 
 	/// Colis sans order_id renseigné.
 	measure 'Colis Order ID Manquant' = CALCULATE([Nb Colis], ISBLANK(fact_transport[order_id]))
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: c3d4e5f6-a7b8-4901-c234-56789abcdef0
 
 	/// Colis sans numero_suivi renseigné.
@@ -434,11 +515,15 @@ table _Mesures
 			    ISBLANK(fact_transport[numero_suivi]) || fact_transport[numero_suivi] = ""
 			)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: d4e5f6a7-b8c9-4012-d345-6789abcdef01
 
 	/// Commandes dont le code pays est "??" (destination_country absent).
 	measure 'Commandes Code Pays Non Attribué' = CALCULATE([Nb Commandes], fact_commandes[code_pays] = "??")
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: e5f6a7b8-c9d0-4123-e456-789abcdef012
 
 	/// Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).
@@ -451,6 +536,8 @@ table _Mesures
 				)
 			)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: b3c4d5e6-f789-4012-c234-56789abcdef0
 
 	/// Colis dont order_id ne correspond à aucune commande (intégrité référentielle).
@@ -462,6 +549,8 @@ table _Mesures
 				)
 			)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: c4d5e6f7-8901-4234-d345-6789abcdef01
 
 	/// Lignes de facture chargées avec cout_transport nul ou absent.
@@ -474,6 +563,8 @@ table _Mesures
 				)
 			)
 		formatString: #,##0
+		displayFolder: "08 Contrôles"
+		isHidden: true
 		lineageTag: d5e6f789-0123-4345-e456-789abcdef012
 
 	/// =====================================================================
@@ -484,6 +575,7 @@ table _Mesures
 	/// Finance KPI — Ordered Units (alias [Nb Articles], grain article / date_commande).
 	measure 'Unités commandées' = [Nb Articles]
 		formatString: #,##0
+		displayFolder: "03 Coûts"
 		lineageTag: 62d36844-d7c6-4108-bb36-42ec9c44c92c
 
 	/// Finance KPI — Revenue = CA produit net annulation + frais de port (hors CANCELLED).
@@ -492,187 +584,232 @@ table _Mesures
 			[CA HT Net Annulation]
 				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: 4449f741-c626-42a0-95c8-c0226f4e7f11
 
 	/// --- KPI cards : Unités commandées (Ordered Units) ---
 	measure 'Unités commandées PY' = CALCULATE([Unités commandées], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0
+		displayFolder: "05 YoY"
 		lineageTag: dc99c916-a9a6-42a2-acfa-e7dd0b88b42a
 
 	measure 'Unités commandées YoY Δ' = [Unités commandées] - [Unités commandées PY]
 		formatString: #,##0
+		displayFolder: "05 YoY"
 		lineageTag: 63169707-a053-4e3b-a825-b5ac033932d0
 
 	measure 'Unités commandées YoY %' = DIVIDE([Unités commandées] - [Unités commandées PY], [Unités commandées PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: b2b7b172-1298-4d91-ba61-d1142ba285a3
 
 	/// --- KPI cards : Revenu (Revenue) ---
 	measure 'Revenu PY' = CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: b6b7aeab-d880-4342-8a60-5663277104df
 
 	measure 'Revenu YoY Δ' = [Revenu] - [Revenu PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 61fb369e-68bb-4d68-9514-2c4448bb0e73
 
 	measure 'Revenu YoY %' = DIVIDE([Revenu] - [Revenu PY], [Revenu PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 2891b13d-7576-4fae-acc3-746871b32126
 
 	/// --- KPI cards : Marge Brute (Gross Profit) ---
 	measure 'Marge Brute PY' = CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 7e2bb4b1-508f-4fec-b635-ced01e74cc21
 
 	measure 'Marge Brute YoY Δ' = [Marge Brute] - [Marge Brute PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 2bccadc5-5cad-4801-83a0-b72471a37ece
 
 	measure 'Marge Brute YoY %' = DIVIDE([Marge Brute] - [Marge Brute PY], [Marge Brute PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 0c2bedcf-84e7-4297-8deb-7507f03ee820
 
 	/// --- KPI cards : Taux Marge Brute (Gross Margin %) — YoY en bps, pas en % ---
 	measure 'Taux Marge Brute PY' = CALCULATE([Taux Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 671212f3-1065-4868-adce-a3a95fe37ea4
 
 	measure 'Taux Marge Brute YoY bps' = ([Taux Marge Brute] - [Taux Marge Brute PY]) * 10000
 		formatString: #,##0
+		displayFolder: "05 YoY"
 		lineageTag: 90ed7a8b-a675-4b89-9642-5b5798c3ed86
 
 	/// --- Tableaux détaillés P&L : même logique PY / YoY Δ / YoY % ---
 	measure 'Nb Commandes PY' = CALCULATE([Nb Commandes], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0
+		displayFolder: "05 YoY"
 		lineageTag: c06ad058-babd-4af3-9382-8e8f7d87de2a
 
 	measure 'Nb Commandes YoY Δ' = [Nb Commandes] - [Nb Commandes PY]
 		formatString: #,##0
+		displayFolder: "05 YoY"
 		lineageTag: 4f1666f1-50a1-45a9-a53e-a1707d2e6b4e
 
 	measure 'Nb Commandes YoY %' = DIVIDE([Nb Commandes] - [Nb Commandes PY], [Nb Commandes PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: a9eaf4fa-cdb1-42bc-b812-4e4175876d98
 
 	measure 'CA HT Net Annulation PY' = CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: b375dae1-e80e-4327-8270-83f36c50a2ad
 
 	measure 'CA HT Net Annulation YoY Δ' = [CA HT Net Annulation] - [CA HT Net Annulation PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 41d555c8-ff35-47ba-89b9-8b94949401bc
 
 	measure 'CA HT Net Annulation YoY %' = DIVIDE([CA HT Net Annulation] - [CA HT Net Annulation PY], [CA HT Net Annulation PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 4d5f0088-0032-49e6-a591-1f1adb7f0e7a
 
 	measure 'Frais Port Encaissés PY' = CALCULATE([Frais Port Encaissés], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 3c8c29e4-4493-41b2-b9c5-62213d939366
 
 	measure 'Frais Port Encaissés YoY Δ' = [Frais Port Encaissés] - [Frais Port Encaissés PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 875190ab-308d-46c5-bcfd-60658b92d4cb
 
 	measure 'Frais Port Encaissés YoY %' = DIVIDE([Frais Port Encaissés] - [Frais Port Encaissés PY], [Frais Port Encaissés PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 875b244b-fff6-4c17-94a1-9d8b16639d33
 
 	measure 'Coût Achat Total PY' = CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 62fde7f2-0dab-4203-859c-3f41e6b8e8c9
 
 	measure 'Coût Achat Total YoY Δ' = [Coût Achat Total] - [Coût Achat Total PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 6a77f5e5-4ac2-45d1-98c9-58927eb3a98b
 
 	measure 'Coût Achat Total YoY %' = DIVIDE([Coût Achat Total] - [Coût Achat Total PY], [Coût Achat Total PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: c1b2cbdc-fcbd-4283-85bb-f8633178bfc9
 
 	measure 'Coût Transport Amont PY' = CALCULATE([Coût Transport Amont], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 51d9ecde-f889-44e4-940e-026bab6fc47c
 
 	measure 'Coût Transport Amont YoY Δ' = [Coût Transport Amont] - [Coût Transport Amont PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 9666c508-db96-4550-a7d8-87c287095111
 
 	measure 'Coût Transport Amont YoY %' = DIVIDE([Coût Transport Amont] - [Coût Transport Amont PY], [Coût Transport Amont PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 0fca9897-d9bd-4ff6-8c5c-8cd4727b1cef
 
 	measure 'Coût Transport Outbound (Retenu) PY' = CALCULATE([Coût Transport Outbound (Retenu)], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: c4ce4585-9c86-47ea-a88d-d7d89b50e5fd
 
 	measure 'Coût Transport Outbound (Retenu) YoY Δ' = [Coût Transport Outbound (Retenu)] - [Coût Transport Outbound (Retenu) PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 5f0b3520-1bcd-4770-8dba-25664442aa5c
 
 	measure 'Coût Transport Outbound (Retenu) YoY %' = DIVIDE([Coût Transport Outbound (Retenu)] - [Coût Transport Outbound (Retenu) PY], [Coût Transport Outbound (Retenu) PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 8bcbd401-4e41-421b-9af7-3ccc383fb0ba
 
 	measure 'Douanes Taxes PY' = CALCULATE([Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: f000cb0d-655f-4ba1-a763-e8ab5d69a443
 
 	measure 'Douanes Taxes YoY Δ' = [Douanes Taxes] - [Douanes Taxes PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 16fbcfd2-dde6-4481-b4cf-b65158d16e68
 
 	measure 'Douanes Taxes YoY %' = DIVIDE([Douanes Taxes] - [Douanes Taxes PY], [Douanes Taxes PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 6147462f-8305-4568-8404-63a1abee626f
 
 	measure 'Commissions Marketplace PY' = CALCULATE([Commissions Marketplace], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 09d9cbe9-ce73-470d-97d0-6cba4c2de600
 
 	measure 'Commissions Marketplace YoY Δ' = [Commissions Marketplace] - [Commissions Marketplace PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 4028c4bb-382f-458c-94cf-316ab739d77a
 
 	measure 'Commissions Marketplace YoY %' = DIVIDE([Commissions Marketplace] - [Commissions Marketplace PY], [Commissions Marketplace PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 2f8200f8-dd17-43d9-b73f-c499062f2d77
 
 	measure 'Fournitures Expédition PY' = CALCULATE([Fournitures Expédition], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 99df3b5d-eab6-4918-b040-24adefd6b1b0
 
 	measure 'Fournitures Expédition YoY Δ' = [Fournitures Expédition] - [Fournitures Expédition PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: ffb87dd7-ee17-425c-bae7-67260d253f0f
 
 	measure 'Fournitures Expédition YoY %' = DIVIDE([Fournitures Expédition] - [Fournitures Expédition PY], [Fournitures Expédition PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 86d98470-ce8d-45aa-979d-fc7701f189d4
 
 	measure 'Retours Remboursements PY' = CALCULATE([Retours Remboursements], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: e430624b-7acd-4eec-a764-b0dd52df83d0
 
 	measure 'Retours Remboursements YoY Δ' = [Retours Remboursements] - [Retours Remboursements PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 8ccd792d-079b-4dbd-956d-b44fac89a5c3
 
 	measure 'Retours Remboursements YoY %' = DIVIDE([Retours Remboursements] - [Retours Remboursements PY], [Retours Remboursements PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 0fe4f423-5830-4f64-880f-93e2e40ab98b
 
 	measure 'Coûts Génériques PY' = CALCULATE([Coûts Génériques], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: b962c013-7f99-440e-9eee-43f9219e752f
 
 	measure 'Coûts Génériques YoY Δ' = [Coûts Génériques] - [Coûts Génériques PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 1747e9bb-8b28-4b36-8697-5932f1cc2918
 
 	measure 'Coûts Génériques YoY %' = DIVIDE([Coûts Génériques] - [Coûts Génériques PY], [Coûts Génériques PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 625464b5-de13-4b23-8028-5c54a97ab079
 
 	/// Finance KPI — Revenue (reconstruit) = CA HT net annulation reconstruit + frais port hors CANCELLED.
@@ -681,18 +818,22 @@ table _Mesures
 			[CA HT Net Annulation (reconstruit)]
 				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: 11112222-3333-4444-5555-666677778888
 
 	measure 'Revenu (reconstruit) PY' = CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 22223333-4444-5555-6666-777788889999
 
 	measure 'Revenu (reconstruit) YoY Δ' = [Revenu (reconstruit)] - [Revenu (reconstruit) PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 33334444-5555-6666-7777-888899990000
 
 	measure 'Revenu (reconstruit) YoY %' = DIVIDE([Revenu (reconstruit)] - [Revenu (reconstruit) PY], [Revenu (reconstruit) PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 44445555-6666-7777-8888-999900001111
 
 	/// Marge brute avec CA reconstruit (même formule Marc que [Marge Brute]).
@@ -708,43 +849,53 @@ table _Mesures
 				- [Retours Remboursements]
 				- [Coûts Génériques]
 		formatString: #,##0.00 €
+		displayFolder: "04 Marge"
 		lineageTag: 55556666-7777-8888-9999-000011112222
 
 	measure 'Marge Brute (reconstruit) PY' = CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 66667777-8888-9999-0000-111122223333
 
 	measure 'Marge Brute (reconstruit) YoY Δ' = [Marge Brute (reconstruit)] - [Marge Brute (reconstruit) PY]
 		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
 		lineageTag: 77778888-9999-0000-1111-222233334444
 
 	measure 'Marge Brute (reconstruit) YoY %' = DIVIDE([Marge Brute (reconstruit)] - [Marge Brute (reconstruit) PY], [Marge Brute (reconstruit) PY])
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 88889999-0000-1111-2222-333344445555
 
 	measure 'Taux Marge Brute (reconstruit)' = DIVIDE([Marge Brute (reconstruit)], [Revenu (reconstruit)], 0)
 		formatString: 0.0%
+		displayFolder: "04 Marge"
 		lineageTag: 99990000-1111-2222-3333-444455556666
 
 	measure 'Taux Marge Brute (reconstruit) PY' = CALCULATE([Taux Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: aaaabb00-1111-2222-3333-444455556666
 
 	measure 'Taux Marge Brute (reconstruit) YoY bps' = ([Taux Marge Brute (reconstruit)] - [Taux Marge Brute (reconstruit) PY]) * 10000
 		formatString: #,##0
+		displayFolder: "05 YoY"
 		lineageTag: bbbbcc00-1111-2222-3333-444455556666
 
 	/// Gross Margin % dashboard — numérateur [Marge Brute] Marc, dénominateur [Revenu (reconstruit)].
 	measure 'Taux Marge Brute (revenu reconstruit)' = DIVIDE([Marge Brute], [Revenu (reconstruit)], 0)
 		formatString: 0.0%
+		displayFolder: "04 Marge"
 		lineageTag: ccddcc00-1111-2222-3333-444455556667
 
 	measure 'Taux Marge Brute (revenu reconstruit) PY' = CALCULATE([Taux Marge Brute (revenu reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: ddeedd00-1111-2222-3333-444455556668
 
 	measure 'Taux Marge Brute (revenu reconstruit) YoY bps' = ([Taux Marge Brute (revenu reconstruit)] - [Taux Marge Brute (revenu reconstruit) PY]) * 10000
 		formatString: #,##0
+		displayFolder: "05 YoY"
 		lineageTag: eeffee00-1111-2222-3333-444455556669
 
 	/// General View — alloue le revenu commande (reconstruit) au prorata des unités par langue livre.
@@ -768,6 +919,7 @@ table _Mesures
 				RETURN IF(UnitsTotal = 0, BLANK(), Rev * DIVIDE(UnitsSlice, UnitsTotal))
 			)
 		formatString: #,##0.00 €
+		displayFolder: "09 Dette technique"
 		lineageTag: ccccdd00-1111-2222-3333-444455556666
 
 	/// --- KPI cards : Taux Annulation (Cancellation rate) — YoY en bps, pas en % ---
@@ -776,14 +928,17 @@ table _Mesures
 	/// [Unités commandées] (= [Nb Articles], toutes lignes y compris annulées).
 	measure 'Taux Annulation' = DIVIDE([Nb Articles Annulés], [Unités commandées], 0)
 		formatString: 0.0%
+		displayFolder: "01 KPI publiés"
 		lineageTag: 3a1c5e7d-2b48-4f16-9c03-1d5e7f9a0b21
 
 	measure 'Taux Annulation PY' = CALCULATE([Taux Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: 0.0%
+		displayFolder: "05 YoY"
 		lineageTag: 4b2d6f8e-3c59-4027-ad14-2e6f80ab1c32
 
 	measure 'Taux Annulation YoY bps' = ([Taux Annulation] - [Taux Annulation PY]) * 10000
 		formatString: #,##0
+		displayFolder: "05 YoY"
 		lineageTag: 5c3e709f-4d6a-4138-be25-3f7091bc2d43
 
 	/// =====================================================================
@@ -811,6 +966,7 @@ table _Mesures
 					"PY: n/a",
 					"PY: " & pytxt & "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)"
 				)
+		displayFolder: "01 KPI publiés"
 		lineageTag: aa000001-1111-2222-3333-444455550001
 
 	/// Carte General View — sous-titre "PY: €120k (▲ +48.3% YoY)" (revenu reconstruit, compact €).
@@ -832,6 +988,7 @@ table _Mesures
 					"PY: n/a",
 					"PY: " & pytxt & "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)"
 				)
+		displayFolder: "01 KPI publiés"
 		lineageTag: aa000002-1111-2222-3333-444455550002
 
 	/// Carte General View — sous-titre "PY: €20k (▲ +52.8% YoY)" (marge brute, compact €).
@@ -853,6 +1010,7 @@ table _Mesures
 					"PY: n/a",
 					"PY: " & pytxt & "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)"
 				)
+		displayFolder: "01 KPI publiés"
 		lineageTag: aa000003-1111-2222-3333-444455550003
 
 	/// Carte General View — sous-titre "PY: 16.8% (▲ +500 bps YoY)" (taux marge, delta en bps).
@@ -866,26 +1024,32 @@ table _Mesures
 					"PY: n/a",
 					"PY: " & FORMAT(py, "0.0%") & "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)"
 				)
+		displayFolder: "01 KPI publiés"
 		lineageTag: aa000004-1111-2222-3333-444455550004
 
 	/// Couleur conditionnelle YoY — unités (hausse = vert). Cartes + tableau.
 	measure 'Couleur YoY — Unités' = IF([Unités commandées YoY %] >= 0, "#6FA84B", "#C0504D")
+		displayFolder: "05 YoY"
 		lineageTag: aa000005-1111-2222-3333-444455550005
 
 	/// Couleur conditionnelle YoY — revenu reconstruit (hausse = vert). Cartes + tableau.
 	measure 'Couleur YoY — Revenue' = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
+		displayFolder: "05 YoY"
 		lineageTag: aa000006-1111-2222-3333-444455550006
 
 	/// Couleur conditionnelle YoY — marge brute (hausse = vert). Cartes + tableau.
 	measure 'Couleur YoY — Gross Profit' = IF([Marge Brute YoY %] >= 0, "#6FA84B", "#C0504D")
+		displayFolder: "05 YoY"
 		lineageTag: aa000007-1111-2222-3333-444455550007
 
 	/// Couleur conditionnelle YoY — taux marge, delta bps (hausse = vert). Cartes + tableau.
 	measure 'Couleur YoY — Gross Margin' = IF([Taux Marge Brute (revenu reconstruit) YoY bps] >= 0, "#6FA84B", "#C0504D")
+		displayFolder: "05 YoY"
 		lineageTag: aa000008-1111-2222-3333-444455550008
 
 	/// Couleur conditionnelle YoY — taux d'annulation, delta bps. Baisse = vert (inversé).
 	measure 'Couleur YoY — Cancellation' = IF([Taux Annulation YoY bps] <= 0, "#6FA84B", "#C0504D")
+		displayFolder: "05 YoY"
 		lineageTag: aa000009-1111-2222-3333-444455550009
 
 	/// General View — data label YoY sur graphe Revenue (combo CY/PY).
@@ -897,6 +1061,7 @@ table _Mesures
 					BLANK(),
 					FORMAT(y, "+0%;-0%") & " YoY"
 				)
+		displayFolder: "05 YoY"
 		lineageTag: aa000010-1111-2222-3333-444455550010
 
 	/// General View — data label YoY sur graphe Gross Profit (combo CY/PY).
@@ -908,6 +1073,7 @@ table _Mesures
 					BLANK(),
 					FORMAT(y, "+0%;-0%") & " YoY"
 				)
+		displayFolder: "05 YoY"
 		lineageTag: aa000011-1111-2222-3333-444455550011
 
 	/// General View — KPI card valeur compacte (texte : 521.6k / €11.2M).
@@ -926,6 +1092,7 @@ table _Mesures
 						FORMAT(v, "#,##0")
 					)
 				)
+		displayFolder: "01 KPI publiés"
 		lineageTag: bb000001-1111-2222-3333-444455550001
 
 	measure 'KPI Compact — Revenue' =
@@ -942,6 +1109,7 @@ table _Mesures
 						"€" & FORMAT(v, "#,##0")
 					)
 				)
+		displayFolder: "01 KPI publiés"
 		lineageTag: bb000002-1111-2222-3333-444455550002
 
 	measure 'KPI Compact — Gross Profit' =
@@ -958,19 +1126,24 @@ table _Mesures
 						"€" & FORMAT(v, "#,##0")
 					)
 				)
+		displayFolder: "01 KPI publiés"
 		lineageTag: bb000003-1111-2222-3333-444455550003
 
 	measure 'KPI Compact — Gross Margin' = FORMAT([Taux Marge Brute (revenu reconstruit)], "0.0%")
+		displayFolder: "01 KPI publiés"
 		lineageTag: bb000004-1111-2222-3333-444455550004
 
 	/// General View — tableau KPI, formats compacts (texte).
 	measure 'GV Display — Ordered units' = [KPI Compact — Ordered units]
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: bb000011-1111-2222-3333-444455550011
 
 	measure 'GV Display — Revenue' = [KPI Compact — Revenue]
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: bb000012-1111-2222-3333-444455550012
 
 	measure 'GV Display — Gross Profit' = [KPI Compact — Gross Profit]
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: bb000013-1111-2222-3333-444455550013
 
 	measure 'GV Display — YoY€' =
@@ -987,6 +1160,7 @@ table _Mesures
 						"€" & FORMAT(v, "#,##0")
 					)
 				)
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: bb000014-1111-2222-3333-444455550014
 
 	/// =====================================================================
@@ -994,6 +1168,7 @@ table _Mesures
 	/// =====================================================================
 	measure 'Profit Produit Pur' = [Revenu (reconstruit)] - [Coût Achat Total]
 		formatString: #,##0.00 €
+		displayFolder: "04 Marge"
 		lineageTag: cc000001-1111-2222-3333-444455550001
 
 	measure 'B2C Display - Sales' =
@@ -1010,6 +1185,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000010-1111-2222-3333-444455550010
 
 	measure 'B2C Display - COGS' =
@@ -1041,6 +1217,7 @@ table _Mesures
 					BLANK(),
 					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
 				)
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000011-1111-2222-3333-444455550011
 
 	measure 'B2C Display - Product profit' =
@@ -1072,6 +1249,7 @@ table _Mesures
 					BLANK(),
 					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
 				)
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000012-1111-2222-3333-444455550012
 
 	measure 'B2C Display - Gross profit' =
@@ -1103,6 +1281,7 @@ table _Mesures
 					BLANK(),
 					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
 				)
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000019-1111-2222-3333-444455550019
 
 	measure 'B2C Display - Returns and refunds' =
@@ -1119,6 +1298,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000013-1111-2222-3333-444455550013
 
 	measure 'B2C Display - Inbound freight' =
@@ -1135,6 +1315,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000014-1111-2222-3333-444455550014
 
 	measure 'B2C Display - Shipping' =
@@ -1151,6 +1332,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000015-1111-2222-3333-444455550015
 
 	measure 'B2C Display - Duties and taxes' =
@@ -1167,6 +1349,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000016-1111-2222-3333-444455550016
 
 	measure 'B2C Display - Shipping supplies' =
@@ -1183,6 +1366,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000017-1111-2222-3333-444455550017
 
 	measure 'B2C Display - Generic costs' =
@@ -1199,6 +1383,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000018-1111-2222-3333-444455550018
 
 	measure 'B2C Display - Revenue YoY %' =
@@ -1215,6 +1400,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000020-1111-2222-3333-444455550020
 
 	measure 'B2C Display - GP YoY %' =
@@ -1231,6 +1417,7 @@ table _Mesures
 					)
 				)
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000021-1111-2222-3333-444455550021
 
 	measure 'B2C Display - GM YoY bps' =
@@ -1249,12 +1436,15 @@ table _Mesures
 					)
 				)
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000022-1111-2222-3333-444455550022
 
 	measure 'B2C couleur - cout' = "#C86B5A"
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000070-1111-2222-3333-444455550070
 
 	measure 'B2C couleur - profit' = "#6FA84B"
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000071-1111-2222-3333-444455550071
 
 	/// Clé de tri tableau B2C (dans Values, isHidden) : Sales desc ; Rest = -1.
@@ -1274,6 +1464,7 @@ table _Mesures
 					)
 				)
 		formatString: #,##0.00
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000004-1111-2222-3333-444455550004
 
 	measure 'B2C Rank' =
@@ -1293,6 +1484,7 @@ table _Mesures
 						DENSE
 					)
 				)
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000003-1111-2222-3333-444455550003
 
 	measure 'B2C Rest Sales' =
@@ -1316,6 +1508,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000030-1111-2222-3333-444455550030
 
 	measure 'B2C Rest Sales PY' =
@@ -1339,6 +1532,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000031-1111-2222-3333-444455550031
 
 	measure 'B2C Rest COGS' =
@@ -1362,6 +1556,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000032-1111-2222-3333-444455550032
 
 	measure 'B2C Rest Product profit' =
@@ -1385,6 +1580,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000033-1111-2222-3333-444455550033
 
 	measure 'B2C Rest Returns' =
@@ -1408,6 +1604,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000034-1111-2222-3333-444455550034
 
 	measure 'B2C Rest Inbound' =
@@ -1431,6 +1628,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000035-1111-2222-3333-444455550035
 
 	measure 'B2C Rest Shipping' =
@@ -1454,6 +1652,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000036-1111-2222-3333-444455550036
 
 	measure 'B2C Rest Duties' =
@@ -1477,6 +1676,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000037-1111-2222-3333-444455550037
 
 	measure 'B2C Rest Supplies' =
@@ -1500,6 +1700,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000038-1111-2222-3333-444455550038
 
 	measure 'B2C Rest Generic' =
@@ -1523,6 +1724,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000039-1111-2222-3333-444455550039
 
 	measure 'B2C Rest Gross profit' =
@@ -1546,6 +1748,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000040-1111-2222-3333-444455550040
 
 	measure 'B2C Rest Gross profit PY' =
@@ -1569,6 +1772,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000041-1111-2222-3333-444455550041
 
 	measure 'B2C Rest GP reconstruit' =
@@ -1592,6 +1796,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000042-1111-2222-3333-444455550042
 
 	measure 'B2C Rest GP reconstruit PY' =
@@ -1615,10 +1820,12 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: cc000043-1111-2222-3333-444455550043
 
 	measure 'Revenu (reconstruit, alloué langue) PY' = CALCULATE([Revenu (reconstruit, alloué langue)], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		displayFolder: "09 Dette technique"
 		lineageTag: ccccdd00-1111-2222-3333-444455556670
 
 	/// B2B / Top sellers — rang par revenu (FULL ; ne blanke pas).
@@ -1636,6 +1843,7 @@ table _Mesures
 				)
 			)
 		formatString: 0
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: b2b0rank-1111-2222-3333-444455550001
 
 	/// =====================================================================
@@ -1665,6 +1873,7 @@ table _Mesures
 					BLANK()
 				)
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: b2c0b711-1111-2222-3333-444455550001
 
 	measure 'B2C Bridge — Gross Profit' =
@@ -1689,18 +1898,21 @@ table _Mesures
 					BLANK()
 				)
 		formatString: #,##0.00 €
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: b2c0b711-1111-2222-3333-444455550002
 
 	/// Top sellers (slide 10) — Rank blank hors Top 10 ; valeurs via Top * Commande / ISBN.
 	/// Canal via filtre visuel catégoriel (fiable). PAS de filtre mesure Rank (fragile PBIR).
 	measure 'Top Rank Commande — Revenue' = IF([Top Keep Commande — Revenue] = 1, [B2B Rank Commande — Revenue], BLANK())
 		formatString: 0
+		displayFolder: "07 Top / Loss"
 		lineageTag: top0rank-1111-2222-3333-444455550001
 
 	/// Top sellers ISBN — revenu au grain ligne (customer_price), PAS l'allocation commande.
 	/// L'allocation SUMX(commandes)×RANKX(ISBN) faisait tourner les visuels à l'infini.
 	measure 'Revenu (reconstruit, alloué ISBN)' = [CA Total HT (grain article, ajusté annulation)]
 		formatString: #,##0.00 €
+		displayFolder: "02 Revenus"
 		lineageTag: top0isbn-1111-2222-3333-444455550002
 
 	/// TOPN + tie-break ISBN (PAS Rank DENSE) — sinon égalités Marketplaces → >> 10 lignes.
@@ -1735,6 +1947,7 @@ table _Mesures
 					)
 				)
 		formatString: 0
+		displayFolder: "07 Top / Loss"
 		lineageTag: top0isbn-1111-2222-3333-444455550003
 
 	/// =====================================================================
@@ -1744,6 +1957,7 @@ table _Mesures
 	measure 'Mkt Display - Sales' =
 			VAR v = [Revenu (reconstruit)]
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00010-1111-2222-3333-444455550010
 
 	measure 'Mkt Display - COGS' =
@@ -1755,6 +1969,7 @@ table _Mesures
 					BLANK(),
 					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
 				)
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00011-1111-2222-3333-444455550011
 
 	measure 'Mkt Display - Product profit' =
@@ -1766,36 +1981,43 @@ table _Mesures
 					BLANK(),
 					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
 				)
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00012-1111-2222-3333-444455550012
 
 	measure 'Mkt Display - Returns and refunds' =
 			VAR v = [Retours Remboursements]
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00013-1111-2222-3333-444455550013
 
 	measure 'Mkt Display - Inbound freight' =
 			VAR v = [Coût Transport Amont]
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00014-1111-2222-3333-444455550014
 
 	measure 'Mkt Display - Shipping' =
 			VAR v = [Coût Transport Outbound (Retenu)]
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00015-1111-2222-3333-444455550015
 
 	measure 'Mkt Display - Duties and taxes' =
 			VAR v = [Douanes Taxes]
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00016-1111-2222-3333-444455550016
 
 	measure 'Mkt Display - Shipping supplies' =
 			VAR v = [Fournitures Expédition]
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00017-1111-2222-3333-444455550017
 
 	measure 'Mkt Display - Generic costs' =
 			VAR v = [Coûts Génériques]
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00018-1111-2222-3333-444455550018
 
 	measure 'Mkt Display - Gross profit' =
@@ -1807,66 +2029,53 @@ table _Mesures
 					BLANK(),
 					FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
 				)
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00019-1111-2222-3333-444455550019
 
 	measure 'Mkt Display - Revenue YoY %' =
 			VAR y = [Revenu (reconstruit) YoY %]
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00020-1111-2222-3333-444455550020
 
 	measure 'Mkt Display - GP YoY %' =
 			VAR y = [Marge Brute YoY %]
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00021-1111-2222-3333-444455550021
 
 	measure 'Mkt Display - GM YoY bps' =
 			VAR y = [Taux Marge Brute (revenu reconstruit) YoY bps]
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: mkt00022-1111-2222-3333-444455550022
 
 	measure 'Top Rank Loss — Gross Profit' = IF([Top Keep Loss — Gross Profit] = 1, [Top Rank Loss — Gross Profit (full)], BLANK())
 		formatString: 0
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0rank-1111-2222-3333-444455550001
 
 	measure 'Top Keep Commande — Revenue' =
 			VAR r = [B2B Rank Commande — Revenue]
 			RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
 		formatString: 0
+		displayFolder: "07 Top / Loss"
 		lineageTag: top0keep-1111-2222-3333-444455550001
 
 	measure 'Top Unités Commande' = IF([Top Keep Commande — Revenue] = 1, [Unités commandées], BLANK())
 		formatString: #,##0
+		displayFolder: "07 Top / Loss"
 		lineageTag: top0unit-1111-2222-3333-444455550001
 
 	measure 'Top Revenu Commande' = IF([Top Keep Commande — Revenue] = 1, [Revenu (reconstruit)], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: top0rev0-1111-2222-3333-444455550001
 
 	measure 'Top Marge Commande' = IF([Top Keep Commande — Revenue] = 1, [Marge Brute], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: top0gp00-1111-2222-3333-444455550001
-
-	measure 'Top Keep ISBN — Revenue' =
-			VAR TopSet =
-				TOPN(
-					10,
-					FILTER(
-						ALLSELECTED(fact_lignes[isbn]),
-						NOT ISBLANK([Revenu (reconstruit, alloué ISBN)])
-					),
-					[Revenu (reconstruit, alloué ISBN)],
-					DESC,
-					fact_lignes[isbn],
-					ASC
-				)
-			VAR InTop =
-				CALCULATE(
-					COUNTROWS(fact_lignes),
-					KEEPFILTERS(TopSet)
-				)
-			RETURN IF(NOT ISBLANK(InTop) && InTop > 0, 1, BLANK())
-		formatString: 0
-		lineageTag: top0isbn-1111-2222-3333-444455550005
 
 	measure 'Top Unités ISBN' =
 			VAR TopSet =
@@ -1883,6 +2092,7 @@ table _Mesures
 				)
 			RETURN CALCULATE([Unités commandées], KEEPFILTERS(TopSet))
 		formatString: #,##0
+		displayFolder: "07 Top / Loss"
 		lineageTag: top0isbn-1111-2222-3333-444455550006
 
 	measure 'Top Revenu ISBN' =
@@ -1900,6 +2110,7 @@ table _Mesures
 				)
 			RETURN CALCULATE([Revenu (reconstruit, alloué ISBN)], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: top0isbn-1111-2222-3333-444455550007
 
 	/// Top loss makers (slide 11) — rang parmi commandes à Marge Brute < 0 (ASC = plus négatif d'abord).
@@ -1921,56 +2132,69 @@ table _Mesures
 				)
 			)
 		formatString: 0
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0rank-1111-2222-3333-444455550002
 
 	measure 'Top Keep Loss — Gross Profit' =
 			VAR r = [Top Rank Loss — Gross Profit (full)]
 			RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
 		formatString: 0
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0keep-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Unités' = IF([Top Keep Loss — Gross Profit] = 1, [Unités commandées], BLANK())
 		formatString: #,##0
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0unit-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Revenue' = IF([Top Keep Loss — Gross Profit] = 1, [Revenu (reconstruit)], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0rev0-1111-2222-3333-444455550001
 
 	measure 'Top Loss — COGS' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Achat Total], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0cogs-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Inbound' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Transport Amont], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0inbd-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Shipping' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Transport Outbound (Retenu)], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0ship-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Duties' = IF([Top Keep Loss — Gross Profit] = 1, [Douanes Taxes], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0duty-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Marketplace fees' = IF([Top Keep Loss — Gross Profit] = 1, [Commissions Marketplace], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0mktf-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Supplies' = IF([Top Keep Loss — Gross Profit] = 1, [Fournitures Expédition], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0supp-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Returns' = IF([Top Keep Loss — Gross Profit] = 1, [Retours Remboursements], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0retn-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Generic' = IF([Top Keep Loss — Gross Profit] = 1, [Coûts Génériques], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0genr-1111-2222-3333-444455550001
 
 	measure 'Top Loss — Gross Profit' = IF([Top Keep Loss — Gross Profit] = 1, [Marge Brute], BLANK())
 		formatString: #,##0.00 €
+		displayFolder: "07 Top / Loss"
 		lineageTag: loss0gp00-1111-2222-3333-444455550001
 
 	column Dummy
@@ -1981,4 +2205,3 @@ table _Mesures
 	partition _Mesures = calculated
 		mode: import
 		source = ROW("Dummy", BLANK())
-

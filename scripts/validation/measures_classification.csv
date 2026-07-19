@@ -1,0 +1,219 @@
+nom,ligne,categorie,ref_report,ref_mesure,ref_python
+Nb Commandes,6,LIVREE,oui,oui,oui
+Nb Colis,11,CONTROLE,non,oui,non
+Nb Colis (coût réel),16,CONTROLE,non,oui,non
+Nb Colis (coût estimé),21,CONTROLE,non,non,non
+Nb Colis (coût non disponible),26,CONTROLE,non,non,non
+Nb Colis Facturés,31,CONTROLE,non,non,non
+Nb Articles,38,DEPENDANCE,non,oui,non
+Nb Articles (contrôle grain groupe),43,CONTROLE,non,non,non
+Nb Articles Annulés,52,DEPENDANCE,non,oui,non
+"CA Total HT (grain article, ajusté annulation)",59,DEPENDANCE,non,oui,non
+Coût Achat Total (grain article),73,CONTROLE,non,oui,non
+Nb Articles Annulés Avant Expédition,78,CONTROLE,non,non,non
+Nb Articles Annulés Après Expédition,83,CONTROLE,non,non,non
+"Marge Brute (grain article, prov.)",90,CONTROLE,non,non,non
+CA Total HT,95,DEPENDANCE,non,oui,oui
+CA Total HT (reconstruit),102,DEPENDANCE,non,oui,non
+CA HT Net Annulation,110,DEPENDANCE,non,oui,oui
+CA HT Net Annulation (reconstruit),116,DEPENDANCE,non,oui,non
+CA Commandes Annulation Partielle,123,CONTROLE,non,non,non
+Coût Achat Total,147,DEPENDANCE,non,oui,oui
+Coût Transport Estimé,152,CONTROLE,non,oui,non
+Coût Transport Réel,157,CONTROLE,non,oui,non
+Coût Transport Facturé,166,CONTROLE,non,non,non
+Écart Coût Outbound vs Estimé Backend,179,CONTROLE,non,oui,non
+Taux Écart Coût,184,CONTROLE,non,non,non
+Coût Moyen Colis,189,CONTROLE,non,non,non
+Marge Brute (prov.),196,CONTROLE,non,oui,non
+Taux Marge Brute (prov.),201,MORTE,non,non,non
+Marge Brute Backend (réf.),206,CONTROLE,non,oui,non
+Écart Marge vs Backend,211,CONTROLE,non,non,non
+Frais Port Encaissés,217,DEPENDANCE,non,oui,oui
+Coût Transport Amont,222,DEPENDANCE,non,oui,oui
+Coût Transport Outbound (Retenu),227,DEPENDANCE,non,oui,oui
+Douanes Taxes,232,DEPENDANCE,non,oui,oui
+Commissions Marketplace,237,DEPENDANCE,non,oui,oui
+Fournitures Expédition,242,DEPENDANCE,non,oui,oui
+Retours Remboursements,251,DEPENDANCE,non,oui,oui
+Coûts Génériques,258,DEPENDANCE,non,oui,oui
+Marge Brute,277,LIVREE,oui,oui,oui
+Taux Marge Brute,293,ATTENTE,non,oui,non
+Écart Marge vs Backend (v2),304,CONTROLE,non,non,non
+Nb Commandes Matchées,309,CONTROLE,non,oui,oui
+Taux Matching,314,CONTROLE,non,non,oui
+Nb Commandes Non Matchées,319,CONTROLE,non,non,non
+Coût Facturé Rapproché,331,CONTROLE,non,oui,non
+Écart Réel vs Facturé,342,CONTROLE,non,non,non
+Nb Colis Avec Facture,347,CONTROLE,non,oui,oui
+Taux Matching Factures,352,CONTROLE,non,non,non
+Panier Moyen,357,CONTROLE,non,non,non
+Poids Total (kg),362,CONTROLE,non,non,non
+Marge YTD (prov.),367,MORTE,non,non,non
+CA Mois Précédent,372,CONTROLE,non,oui,non
+Évolution CA,377,CONTROLE,non,non,non
+Lignes Colis par Facture (hors 1re),382,CONTROLE,non,non,non
+Vrais Doublons (Facture + Suivi),398,CONTROLE,non,non,non
+Doublons Numero Suivi Factures,414,CONTROLE,non,non,non
+Colis Order ID Manquant,426,CONTROLE,non,non,non
+Colis Numero Suivi Manquant,431,CONTROLE,non,non,non
+Commandes Code Pays Non Attribué,440,CONTROLE,non,non,non
+Commandes Sans Colis,445,CONTROLE,non,non,non
+Colis Sans Commande,457,CONTROLE,non,non,non
+Lignes Facture Coût Transport Zero ou Null,468,CONTROLE,non,non,non
+Unités commandées,485,DEPENDANCE,non,oui,non
+Revenu,491,ATTENTE,non,oui,non
+Unités commandées PY,498,DEPENDANCE,non,oui,non
+Unités commandées YoY Δ,502,ATTENTE,non,non,non
+Unités commandées YoY %,506,LIVREE,oui,oui,oui
+Revenu PY,511,ATTENTE,non,oui,non
+Revenu YoY Δ,515,ATTENTE,non,non,non
+Revenu YoY %,519,ATTENTE,non,non,non
+Marge Brute PY,524,LIVREE,oui,oui,oui
+Marge Brute YoY Δ,528,DEPENDANCE,non,oui,non
+Marge Brute YoY %,532,LIVREE,oui,oui,oui
+Taux Marge Brute PY,537,ATTENTE,non,oui,non
+Taux Marge Brute YoY bps,541,ATTENTE,non,non,non
+Nb Commandes PY,546,ATTENTE,non,oui,non
+Nb Commandes YoY Δ,550,ATTENTE,non,non,non
+Nb Commandes YoY %,554,ATTENTE,non,non,non
+CA HT Net Annulation PY,558,ATTENTE,non,oui,non
+CA HT Net Annulation YoY Δ,562,ATTENTE,non,non,non
+CA HT Net Annulation YoY %,566,ATTENTE,non,non,non
+Frais Port Encaissés PY,570,ATTENTE,non,oui,non
+Frais Port Encaissés YoY Δ,574,ATTENTE,non,non,non
+Frais Port Encaissés YoY %,578,ATTENTE,non,non,non
+Coût Achat Total PY,582,ATTENTE,non,oui,non
+Coût Achat Total YoY Δ,586,ATTENTE,non,non,non
+Coût Achat Total YoY %,590,ATTENTE,non,non,non
+Coût Transport Amont PY,594,ATTENTE,non,oui,non
+Coût Transport Amont YoY Δ,598,ATTENTE,non,non,non
+Coût Transport Amont YoY %,602,ATTENTE,non,non,non
+Coût Transport Outbound (Retenu) PY,606,ATTENTE,non,oui,non
+Coût Transport Outbound (Retenu) YoY Δ,610,ATTENTE,non,non,non
+Coût Transport Outbound (Retenu) YoY %,614,ATTENTE,non,non,non
+Douanes Taxes PY,618,ATTENTE,non,oui,non
+Douanes Taxes YoY Δ,622,ATTENTE,non,non,non
+Douanes Taxes YoY %,626,ATTENTE,non,non,non
+Commissions Marketplace PY,630,ATTENTE,non,oui,non
+Commissions Marketplace YoY Δ,634,ATTENTE,non,non,non
+Commissions Marketplace YoY %,638,ATTENTE,non,non,non
+Fournitures Expédition PY,642,ATTENTE,non,oui,non
+Fournitures Expédition YoY Δ,646,ATTENTE,non,non,non
+Fournitures Expédition YoY %,650,ATTENTE,non,non,non
+Retours Remboursements PY,654,ATTENTE,non,oui,non
+Retours Remboursements YoY Δ,658,ATTENTE,non,non,non
+Retours Remboursements YoY %,662,ATTENTE,non,non,non
+Coûts Génériques PY,666,ATTENTE,non,oui,non
+Coûts Génériques YoY Δ,670,ATTENTE,non,non,non
+Coûts Génériques YoY %,674,ATTENTE,non,non,non
+Revenu (reconstruit),680,LIVREE,oui,oui,oui
+Revenu (reconstruit) PY,686,LIVREE,oui,oui,oui
+Revenu (reconstruit) YoY Δ,690,DEPENDANCE,non,oui,non
+Revenu (reconstruit) YoY %,694,LIVREE,oui,oui,oui
+Marge Brute (reconstruit),699,DEPENDANCE,non,oui,oui
+Marge Brute (reconstruit) PY,713,DEPENDANCE,non,oui,non
+Marge Brute (reconstruit) YoY Δ,717,ATTENTE,non,non,non
+Marge Brute (reconstruit) YoY %,721,ATTENTE,non,non,non
+Taux Marge Brute (reconstruit),725,ATTENTE,non,oui,non
+Taux Marge Brute (reconstruit) PY,729,ATTENTE,non,oui,non
+Taux Marge Brute (reconstruit) YoY bps,733,ATTENTE,non,non,non
+Taux Marge Brute (revenu reconstruit),738,LIVREE,oui,oui,oui
+Taux Marge Brute (revenu reconstruit) PY,742,DEPENDANCE,non,oui,non
+Taux Marge Brute (revenu reconstruit) YoY bps,746,LIVREE,oui,oui,oui
+"Revenu (reconstruit, alloué langue)",751,MORTE,non,oui,non
+Taux Annulation,777,LIVREE,oui,oui,oui
+Taux Annulation PY,781,DEPENDANCE,non,oui,non
+Taux Annulation YoY bps,785,LIVREE,oui,oui,oui
+KPI Sous-titre — Unités,796,LIVREE,oui,non,non
+KPI Sous-titre — Revenue,817,LIVREE,oui,non,non
+KPI Sous-titre — Gross Profit,838,LIVREE,oui,non,non
+KPI Sous-titre — Gross Margin,859,LIVREE,oui,non,non
+Couleur YoY — Unités,872,LIVREE,oui,non,non
+Couleur YoY — Revenue,876,LIVREE,oui,non,non
+Couleur YoY — Gross Profit,880,LIVREE,oui,non,non
+Couleur YoY — Gross Margin,884,LIVREE,oui,non,non
+Couleur YoY — Cancellation,888,LIVREE,oui,non,non
+Chart label — Revenue YoY,892,ATTENTE,non,non,non
+Chart label — Gross Profit YoY,903,ATTENTE,non,non,non
+KPI Compact — Ordered units,915,LIVREE,oui,oui,non
+KPI Compact — Revenue,931,LIVREE,oui,oui,oui
+KPI Compact — Gross Profit,947,LIVREE,oui,oui,non
+KPI Compact — Gross Margin,963,LIVREE,oui,non,non
+GV Display — Ordered units,967,LIVREE,oui,non,oui
+GV Display — Revenue,970,LIVREE,oui,non,oui
+GV Display — Gross Profit,973,LIVREE,oui,non,oui
+GV Display — YoY€,976,LIVREE,oui,non,oui
+Profit Produit Pur,995,DEPENDANCE,non,oui,non
+B2C Display - Sales,999,LIVREE,oui,non,oui
+B2C Display - COGS,1015,LIVREE,oui,non,oui
+B2C Display - Product profit,1046,LIVREE,oui,non,oui
+B2C Display - Gross profit,1077,LIVREE,oui,non,oui
+B2C Display - Returns and refunds,1108,LIVREE,oui,non,oui
+B2C Display - Inbound freight,1124,LIVREE,oui,non,oui
+B2C Display - Shipping,1140,LIVREE,oui,non,oui
+B2C Display - Duties and taxes,1156,LIVREE,oui,non,oui
+B2C Display - Shipping supplies,1172,LIVREE,oui,non,oui
+B2C Display - Generic costs,1188,LIVREE,oui,non,oui
+B2C Display - Revenue YoY %,1204,LIVREE,oui,non,oui
+B2C Display - GP YoY %,1220,LIVREE,oui,non,oui
+B2C Display - GM YoY bps,1236,LIVREE,oui,non,oui
+B2C couleur - cout,1254,LIVREE,oui,non,oui
+B2C couleur - profit,1257,LIVREE,oui,non,oui
+B2C Sort Key,1263,LIVREE,oui,non,oui
+B2C Rank,1279,DEPENDANCE,non,oui,non
+B2C Rest Sales,1298,DEPENDANCE,non,oui,non
+B2C Rest Sales PY,1321,DEPENDANCE,non,oui,non
+B2C Rest COGS,1344,DEPENDANCE,non,oui,non
+B2C Rest Product profit,1367,DEPENDANCE,non,oui,non
+B2C Rest Returns,1390,DEPENDANCE,non,oui,non
+B2C Rest Inbound,1413,DEPENDANCE,non,oui,non
+B2C Rest Shipping,1436,DEPENDANCE,non,oui,non
+B2C Rest Duties,1459,DEPENDANCE,non,oui,non
+B2C Rest Supplies,1482,DEPENDANCE,non,oui,non
+B2C Rest Generic,1505,DEPENDANCE,non,oui,non
+B2C Rest Gross profit,1528,DEPENDANCE,non,oui,non
+B2C Rest Gross profit PY,1551,DEPENDANCE,non,oui,non
+B2C Rest GP reconstruit,1574,DEPENDANCE,non,oui,non
+B2C Rest GP reconstruit PY,1597,DEPENDANCE,non,oui,non
+"Revenu (reconstruit, alloué langue) PY",1620,MORTE,non,non,non
+B2B Rank Commande — Revenue,1626,DEPENDANCE,non,oui,non
+B2C Bridge — Revenue,1646,LIVREE,oui,non,non
+B2C Bridge — Gross Profit,1670,LIVREE,oui,non,non
+Top Rank Commande — Revenue,1696,LIVREE,oui,non,non
+"Revenu (reconstruit, alloué ISBN)",1702,DEPENDANCE,non,oui,non
+Top Rank ISBN — Revenue,1707,LIVREE,oui,non,non
+Mkt Display - Sales,1744,LIVREE,oui,non,non
+Mkt Display - COGS,1749,LIVREE,oui,non,non
+Mkt Display - Product profit,1760,LIVREE,oui,non,non
+Mkt Display - Returns and refunds,1771,LIVREE,oui,non,non
+Mkt Display - Inbound freight,1776,LIVREE,oui,non,non
+Mkt Display - Shipping,1781,LIVREE,oui,non,non
+Mkt Display - Duties and taxes,1786,LIVREE,oui,non,non
+Mkt Display - Shipping supplies,1791,LIVREE,oui,non,non
+Mkt Display - Generic costs,1796,LIVREE,oui,non,non
+Mkt Display - Gross profit,1801,LIVREE,oui,non,non
+Mkt Display - Revenue YoY %,1812,LIVREE,oui,non,non
+Mkt Display - GP YoY %,1817,LIVREE,oui,non,non
+Mkt Display - GM YoY bps,1822,LIVREE,oui,non,non
+Top Rank Loss — Gross Profit,1827,LIVREE,oui,non,oui
+Top Keep Commande — Revenue,1831,DEPENDANCE,non,oui,non
+Top Unités Commande,1837,LIVREE,oui,non,non
+Top Revenu Commande,1841,LIVREE,oui,non,non
+Top Marge Commande,1845,LIVREE,oui,non,non
+Top Keep ISBN — Revenue,1849,MORTE,non,non,non
+Top Unités ISBN,1871,LIVREE,oui,non,non
+Top Revenu ISBN,1888,LIVREE,oui,non,non
+Top Rank Loss — Gross Profit (full),1908,DEPENDANCE,non,oui,non
+Top Keep Loss — Gross Profit,1926,DEPENDANCE,non,oui,non
+Top Loss — Unités,1932,LIVREE,oui,non,non
+Top Loss — Revenue,1936,LIVREE,oui,non,oui
+Top Loss — COGS,1940,LIVREE,oui,non,non
+Top Loss — Inbound,1944,LIVREE,oui,non,non
+Top Loss — Shipping,1948,LIVREE,oui,non,non
+Top Loss — Duties,1952,LIVREE,oui,non,non
+Top Loss — Marketplace fees,1956,LIVREE,oui,non,non
+Top Loss — Supplies,1960,LIVREE,oui,non,non
+Top Loss — Returns,1964,LIVREE,oui,non,non
+Top Loss — Generic,1968,LIVREE,oui,non,non
+Top Loss — Gross Profit,1972,LIVREE,oui,non,non
