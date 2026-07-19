@@ -241,12 +241,11 @@ table fact_commandes
 						"order_amount_eur_reconstruit",
 						each
 							let
-								eurNatif = [order_amount_eur],
-								montantLocal = [order_amount_local],
-								taux = [taux_moyen_mensuel]
+								eurNatif = [order_amount_eur]
+								// Neutralisation fallback FX (19/07) : order_amount_eur natif partout ;
+								// branche local/taux non validée (sous-éval. x10 AMAZON) → null si absent.
 							in
 								if eurNatif <> null and eurNatif <> 0 then eurNatif
-								else if montantLocal <> null and montantLocal <> 0 and taux <> null and taux <> 0 then montantLocal / taux
 								else null,
 						type nullable number
 					),
