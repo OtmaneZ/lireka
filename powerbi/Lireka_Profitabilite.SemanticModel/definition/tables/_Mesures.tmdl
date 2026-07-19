@@ -2241,6 +2241,44 @@ table _Mesures
 		displayFolder: 10 Bridge
 		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0004
 
+	/// Page 11 Loss analysis : nombre de commandes a marge_brute_commande < 0.
+	measure 'Nb Commandes Deficitaires' =
+			CALCULATE(
+				COUNTROWS(fact_commandes),
+				fact_commandes[marge_brute_commande] < 0
+			)
+		formatString: #,##0
+		displayFolder: 11 Loss analysis
+		lineageTag: c011b001-4e11-4b11-8b11-000000000001
+
+	/// Page 11 Loss analysis : part des commandes deficitaires dans le total.
+	measure 'Part Commandes Deficitaires' = DIVIDE([Nb Commandes Deficitaires], [Nb Commandes], 0)
+		formatString: 0.0%
+		displayFolder: 11 Loss analysis
+		lineageTag: c011b001-4e11-4b11-8b11-000000000002
+
+	/// Page 11 Loss analysis : somme des pertes (marge negative), valeur negative.
+	measure 'Pertes Totales' =
+			CALCULATE(
+				SUM(fact_commandes[marge_brute_commande]),
+				fact_commandes[marge_brute_commande] < 0
+			)
+		formatString: #,##0.00 €
+		displayFolder: 11 Loss analysis
+		lineageTag: c011b001-4e11-4b11-8b11-000000000003
+
+	/// Page 11 Loss analysis : |pertes| / marge brute globale.
+	measure 'Part Pertes Marge Brute' = DIVIDE(-[Pertes Totales], [Marge Brute], 0)
+		formatString: 0.0%
+		displayFolder: 11 Loss analysis
+		lineageTag: c011b001-4e11-4b11-8b11-000000000004
+
+	/// Page 11 Loss analysis : perte moyenne par commande deficitaire.
+	measure 'Perte Moyenne' = DIVIDE([Pertes Totales], [Nb Commandes Deficitaires], 0)
+		formatString: #,##0.00 €
+		displayFolder: 11 Loss analysis
+		lineageTag: c011b001-4e11-4b11-8b11-000000000005
+
 	column Dummy
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a
 		summarizeBy: none
