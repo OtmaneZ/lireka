@@ -692,6 +692,23 @@ table _Mesures
 		displayFolder: "05 YoY"
 		lineageTag: 875b244b-fff6-4c17-94a1-9d8b16639d33
 
+	/// Frais de port hors CANCELLED - meme perimetre que [Marge Brute] L331.
+	/// Necessaire pour que la somme des Delta postes du bridge PnL boucle sur [Marge Brute YoY Δ].
+	measure 'Frais Port Net Annulation' = CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
+		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
+		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0001
+
+	measure 'Frais Port Net Annulation PY' = CALCULATE([Frais Port Net Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
+		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0002
+
+	measure 'Frais Port Net Annulation YoY Δ' = [Frais Port Net Annulation] - [Frais Port Net Annulation PY]
+		formatString: #,##0.00 €
+		displayFolder: "05 YoY"
+		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0003
+
 	measure 'Coût Achat Total PY' = CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
 		displayFolder: "05 YoY"
@@ -1845,6 +1862,33 @@ table _Mesures
 		formatString: 0
 		displayFolder: "06 Display (familles GV / B2C / Mkt)"
 		lineageTag: b2b0rank-1111-2222-3333-444455550001
+
+	/// =====================================================================
+	/// Profit bridge PnL (page 9). Axe BridgePnL = Marge brute N-1 + 10 postes signes.
+	/// MB_PY = [Marge Brute PY] ; autres postes = YoY Delta * Signe (revenu +1, couts -1).
+	/// =====================================================================
+	measure 'Bridge PnL YoY' =
+			VAR poste = SELECTEDVALUE(BridgePnL[Poste])
+			VAR signe = SELECTEDVALUE(BridgePnL[Signe])
+			RETURN
+				SWITCH(
+					poste,
+					"MB_PY", [Marge Brute PY],
+					"CA", [CA HT Net Annulation YoY Δ] * signe,
+					"PORT", [Frais Port Net Annulation YoY Δ] * signe,
+					"ACHAT", [Coût Achat Total YoY Δ] * signe,
+					"AMONT", [Coût Transport Amont YoY Δ] * signe,
+					"OUTBOUND", [Coût Transport Outbound (Retenu) YoY Δ] * signe,
+					"DOUANES", [Douanes Taxes YoY Δ] * signe,
+					"COMMISSIONS", [Commissions Marketplace YoY Δ] * signe,
+					"FOURNITURES", [Fournitures Expédition YoY Δ] * signe,
+					"RETOURS", [Retours Remboursements YoY Δ] * signe,
+					"GENERIQUES", [Coûts Génériques YoY Δ] * signe,
+					BLANK()
+				)
+		formatString: #,##0.00 €
+		displayFolder: "10 Bridge"
+		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0004
 
 	/// =====================================================================
 	/// B2C contribution bridges (slide 7). Axe _BridgePaysYoY = Prior year + Top 15 + Rest.
