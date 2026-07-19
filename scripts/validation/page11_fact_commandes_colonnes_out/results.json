@@ -1,0 +1,165 @@
+{
+  "variante_outbound": "cout_transport_retenu",
+  "sum_marge_brute_commande": 8619962.7655,
+  "ref_marge_globale_retenu_eur": 8619962.7655,
+  "n_deficitaires": 133805,
+  "pertes_totales_eur": -1744178.2237999998,
+  "somme_repartie_eur": -1744178.2237999998,
+  "repartition": [
+    {
+      "poste_basculant": "Outbound transport",
+      "n_commandes": 69691,
+      "somme_pertes_eur": -374319.5897
+    },
+    {
+      "poste_basculant": "Structurally loss-making",
+      "n_commandes": 55856,
+      "somme_pertes_eur": -1302809.6777
+    },
+    {
+      "poste_basculant": "Cost of goods",
+      "n_commandes": 5720,
+      "somme_pertes_eur": -34247.4501
+    },
+    {
+      "poste_basculant": "Duties and taxes",
+      "n_commandes": 2464,
+      "somme_pertes_eur": -32752.6897
+    },
+    {
+      "poste_basculant": "Shipping supplies",
+      "n_commandes": 35,
+      "somme_pertes_eur": -24.443099999999976
+    },
+    {
+      "poste_basculant": "Generic costs",
+      "n_commandes": 31,
+      "somme_pertes_eur": -24.004900000000003
+    },
+    {
+      "poste_basculant": "Marketplace commissions",
+      "n_commandes": 8,
+      "somme_pertes_eur": -0.3686000000000008
+    },
+    {
+      "poste_basculant": "Inbound transport",
+      "n_commandes": 0,
+      "somme_pertes_eur": 0.0
+    },
+    {
+      "poste_basculant": "Returns and refunds",
+      "n_commandes": 0,
+      "somme_pertes_eur": 0.0
+    }
+  ],
+  "comparaison_ref": [
+    {
+      "poste": "Outbound transport",
+      "n_ref": 69691,
+      "n_replay": 69691,
+      "delta_n": 0,
+      "pertes_ref": -374319.5897,
+      "pertes_replay": -374319.5897,
+      "delta_pertes": 0.0,
+      "ok": true
+    },
+    {
+      "poste": "Structurally loss-making",
+      "n_ref": 55856,
+      "n_replay": 55856,
+      "delta_n": 0,
+      "pertes_ref": -1302809.6777,
+      "pertes_replay": -1302809.6777,
+      "delta_pertes": 0.0,
+      "ok": true
+    },
+    {
+      "poste": "Cost of goods",
+      "n_ref": 5720,
+      "n_replay": 5720,
+      "delta_n": 0,
+      "pertes_ref": -34247.4501,
+      "pertes_replay": -34247.4501,
+      "delta_pertes": 0.0,
+      "ok": true
+    },
+    {
+      "poste": "Duties and taxes",
+      "n_ref": 2464,
+      "n_replay": 2464,
+      "delta_n": 0,
+      "pertes_ref": -32752.6897,
+      "pertes_replay": -32752.6897,
+      "delta_pertes": 0.0,
+      "ok": true
+    },
+    {
+      "poste": "Shipping supplies",
+      "n_ref": 35,
+      "n_replay": 35,
+      "delta_n": 0,
+      "pertes_ref": -24.443099999999976,
+      "pertes_replay": -24.443099999999976,
+      "delta_pertes": 0.0,
+      "ok": true
+    },
+    {
+      "poste": "Generic costs",
+      "n_ref": 31,
+      "n_replay": 31,
+      "delta_n": 0,
+      "pertes_ref": -24.004900000000003,
+      "pertes_replay": -24.004900000000003,
+      "delta_pertes": 0.0,
+      "ok": true
+    },
+    {
+      "poste": "Marketplace commissions",
+      "n_ref": 8,
+      "n_replay": 8,
+      "delta_n": 0,
+      "pertes_ref": -0.3686000000000008,
+      "pertes_replay": -0.3686000000000008,
+      "delta_pertes": 0.0,
+      "ok": true
+    },
+    {
+      "poste": "Inbound transport",
+      "n_ref": 0,
+      "n_replay": 0,
+      "delta_n": 0,
+      "pertes_ref": 0.0,
+      "pertes_replay": 0.0,
+      "delta_pertes": 0.0,
+      "ok": true
+    },
+    {
+      "poste": "Returns and refunds",
+      "n_ref": 0,
+      "n_replay": 0,
+      "delta_n": 0,
+      "pertes_ref": 0.0,
+      "pertes_replay": 0.0,
+      "delta_pertes": 0.0,
+      "ok": true
+    }
+  ],
+  "controles": {
+    "c1_somme_marge": true,
+    "c2_n_deficitaires": true,
+    "c3_repartition": true,
+    "c4_somme_repartie": true,
+    "all_ok": true
+  },
+  "timings_s": {
+    "1_cout_retenu_colis": 5.335528700001305,
+    "2_group_par_commande": 0.21434609999414533,
+    "3_marge_brute_commande": 2.2874059999885503,
+    "4a_medianes_canal": 0.3700317000038922,
+    "4b_simulation_deficitaires": 0.14053190001868643,
+    "4_poste_basculant_total": 0.7876495999807958,
+    "5_tranche_panier": 0.7312870000023395,
+    "total": 9.35633699997561
+  },
+  "note_temps": "Indicateur d'execution Python locale uniquement ; ne mesure pas le refresh Power BI Desktop."
+}

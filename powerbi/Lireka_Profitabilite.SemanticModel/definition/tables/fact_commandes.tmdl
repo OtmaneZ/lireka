@@ -209,6 +209,40 @@ table fact_commandes
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Page 11 Loss analysis : marge brute au grain commande (formule [Marge Brute] a 10 postes).
+	/// Outbound = cout_transport_retenu (facture rapprochee si dispo, sinon backend), pre-agrege depuis fact_transport.
+	/// CANCELLED : CA et frais de port a 0 en ligne (les postes de cout restent inchanges).
+	column marge_brute_commande
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: c011a001-4e11-4a11-8a11-000000000001
+		summarizeBy: sum
+		sourceColumn: marge_brute_commande
+
+	/// Page 11 Loss analysis : poste de cout qui, ramene a la mediane canal non deficitaire, suffit a basculer en marge positive.
+	/// Vide si marge >= 0. Libelles EN (affiche client).
+	column poste_basculant
+		dataType: string
+		lineageTag: c011a001-4e11-4a11-8a11-000000000002
+		summarizeBy: none
+		sourceColumn: poste_basculant
+
+	/// Page 11 Loss analysis : tranche de panier (order_amount_eur / ca_ht), bornes 0/15/20/30/40/70/90/200.
+	column tranche_panier
+		dataType: string
+		lineageTag: c011a001-4e11-4a11-8a11-000000000003
+		summarizeBy: none
+		sourceColumn: tranche_panier
+		sortByColumn: tranche_panier_ordre
+
+	/// Ordre d'affichage de tranche_panier (1..8). Colonne de tri uniquement.
+	column tranche_panier_ordre
+		dataType: int64
+		formatString: 0
+		lineageTag: c011a001-4e11-4a11-8a11-000000000004
+		summarizeBy: none
+		sourceColumn: tranche_panier_ordre
+
 	partition fact_commandes = m
 		mode: import
 		source =
@@ -282,13 +316,179 @@ table fact_commandes
 						Replacer.ReplaceValue,
 						{"retours_remboursements", "couts_generiques"}
 					),
-					#"Colonnes conservees" = Table.SelectColumns(#"Avec bloc5", {
+					// Page 11 : pre-agreger les postes grain colis (evite duplication des lignes commande).
+					#"Couts colis par commande" = Table.Group(
+						Table.SelectColumns(fact_transport, {"order_id", "cout_transport_retenu", "duties_taxes_eur", "shipping_supply_cost_eur"}),
+						{"order_id"},
+						{
+							{"cout_transport_retenu_cmd", each List.Sum(List.Transform([cout_transport_retenu], each if _ = null then 0 else _)), type number},
+							{"duties_taxes_cmd", each List.Sum(List.Transform([duties_taxes_eur], each if _ = null then 0 else _)), type number},
+							{"fournitures_cmd", each List.Sum(List.Transform([shipping_supply_cost_eur], each if _ = null then 0 else _)), type number}
+						}
+					),
+					#"Jointure couts colis" = Table.NestedJoin(
+						#"Avec bloc5",
+						{"id_commande"},
+						#"Couts colis par commande",
+						{"order_id"},
+						"colis_agg",
+						JoinKind.LeftOuter
+					),
+					#"Couts colis developpes" = Table.ExpandTableColumn(
+						#"Jointure couts colis",
+						"colis_agg",
+						{"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd"},
+						{"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd"}
+					),
+					#"Couts colis a zero" = Table.ReplaceValue(
+						#"Couts colis developpes",
+						null,
+						0,
+						Replacer.ReplaceValue,
+						{"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd"}
+					),
+					// Canal poste basculant (meme regle que le prototype Python page 11).
+					#"Canal bascule" = Table.AddColumn(
+						#"Couts colis a zero",
+						"canal_bascule",
+						each
+							let s = if [source] = null then "" else Text.Trim([source]) in
+							if Text.StartsWith(s, "AMAZON") then "AMAZON"
+							else if s = "WEBSITE" or s = "PRO_WEBSITE" or s = "CULTURA" or s = "RAKUTEN" or s = "FNAC" then s
+							else "AUTRES",
+						type text
+					),
+					#"CA HT net" = Table.AddColumn(
+						#"Canal bascule",
+						"ca_ht_net",
+						each if [state] = "CANCELLED" then 0 else if [ca_ht] = null then 0 else [ca_ht],
+						type number
+					),
+					#"Frais port net" = Table.AddColumn(
+						#"CA HT net",
+						"frais_port_net",
+						each if [state] = "CANCELLED" then 0 else if [frais_port_encaisse] = null then 0 else [frais_port_encaisse],
+						type number
+					),
+					#"Marge brute commande" = Table.AddColumn(
+						#"Frais port net",
+						"marge_brute_commande",
+						each
+							[ca_ht_net] + [frais_port_net]
+							- (if [cout_achat] = null then 0 else [cout_achat])
+							- (if [cout_transport_amont] = null then 0 else [cout_transport_amont])
+							- [cout_transport_retenu_cmd]
+							- [duties_taxes_cmd]
+							- (if [commissions_marketplace] = null then 0 else [commissions_marketplace])
+							- [fournitures_cmd]
+							- (if [retours_remboursements] = null then 0 else [retours_remboursements])
+							- (if [couts_generiques] = null then 0 else [couts_generiques]),
+						type number
+					),
+					// Passe 1 : mediane du ratio poste/CA par canal, sur non-deficitaires a CA > 0.
+					#"Ref mediane" = Table.SelectRows(#"Marge brute commande", each [marge_brute_commande] >= 0 and [ca_ht_net] > 0),
+					#"Medianes canal" = Table.Group(
+						#"Ref mediane",
+						{"canal_bascule"},
+						{
+							{"med_r_achat", each List.Median(List.Transform(List.Zip({[cout_achat], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number},
+							{"med_r_amont", each List.Median(List.Transform(List.Zip({[cout_transport_amont], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number},
+							{"med_r_outbound", each List.Median(List.Transform(List.Zip({[cout_transport_retenu_cmd], [ca_ht_net]}), each _{0} / _{1})), type number},
+							{"med_r_duties", each List.Median(List.Transform(List.Zip({[duties_taxes_cmd], [ca_ht_net]}), each _{0} / _{1})), type number},
+							{"med_r_commissions", each List.Median(List.Transform(List.Zip({[commissions_marketplace], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number},
+							{"med_r_fournitures", each List.Median(List.Transform(List.Zip({[fournitures_cmd], [ca_ht_net]}), each _{0} / _{1})), type number},
+							{"med_r_retours", each List.Median(List.Transform(List.Zip({[retours_remboursements], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number},
+							{"med_r_generiques", each List.Median(List.Transform(List.Zip({[couts_generiques], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number}
+						}
+					),
+					#"Medianes buffer" = Table.Buffer(#"Medianes canal"),
+					#"Jointure medianes" = Table.NestedJoin(
+						#"Marge brute commande",
+						{"canal_bascule"},
+						#"Medianes buffer",
+						{"canal_bascule"},
+						"med",
+						JoinKind.LeftOuter
+					),
+					#"Medianes developpees" = Table.ExpandTableColumn(
+						#"Jointure medianes",
+						"med",
+						{"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures", "med_r_retours", "med_r_generiques"},
+						{"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures", "med_r_retours", "med_r_generiques"}
+					),
+					// Passe 2 : pour chaque deficitaire, poste seul qui bascule (max amelioration) ; sinon structurel.
+					#"Poste basculant" = Table.AddColumn(
+						#"Medianes developpees",
+						"poste_basculant",
+						each
+							if [marge_brute_commande] >= 0 then null
+							else
+								let
+									ca = [ca_ht_net],
+									m0 = [marge_brute_commande],
+									nz = (x as any) as number => if x = null then 0 else x,
+									postes = {
+										{"Cost of goods", nz([cout_achat]), nz([med_r_achat])},
+										{"Inbound transport", nz([cout_transport_amont]), nz([med_r_amont])},
+										{"Outbound transport", nz([cout_transport_retenu_cmd]), nz([med_r_outbound])},
+										{"Duties and taxes", nz([duties_taxes_cmd]), nz([med_r_duties])},
+										{"Marketplace commissions", nz([commissions_marketplace]), nz([med_r_commissions])},
+										{"Shipping supplies", nz([fournitures_cmd]), nz([med_r_fournitures])},
+										{"Returns and refunds", nz([retours_remboursements]), nz([med_r_retours])},
+										{"Generic costs", nz([couts_generiques]), nz([med_r_generiques])}
+									},
+									best = List.Accumulate(
+										postes,
+										{null, -1.0E100},
+										(state, p) =>
+											let
+												amelio = p{1} - p{2} * ca,
+												newM = m0 + amelio
+											in
+												if newM > 0 and amelio > state{1} then {p{0}, amelio} else state
+									)
+								in
+									if best{0} = null then "Structurally loss-making" else best{0},
+						type nullable text
+					),
+					#"Tranche panier" = Table.AddColumn(
+						#"Poste basculant",
+						"tranche_panier",
+						each
+							let p = if [ca_ht] = null then 0 else [ca_ht] in
+							if p < 15 then "Under 15 EUR"
+							else if p < 20 then "15 to 20 EUR"
+							else if p < 30 then "20 to 30 EUR"
+							else if p < 40 then "30 to 40 EUR"
+							else if p < 70 then "40 to 70 EUR"
+							else if p < 90 then "70 to 90 EUR"
+							else if p < 200 then "90 to 200 EUR"
+							else "200 EUR and above",
+						type text
+					),
+					#"Tranche panier ordre" = Table.AddColumn(
+						#"Tranche panier",
+						"tranche_panier_ordre",
+						each
+							let t = [tranche_panier] in
+							if t = "Under 15 EUR" then 1
+							else if t = "15 to 20 EUR" then 2
+							else if t = "20 to 30 EUR" then 3
+							else if t = "30 to 40 EUR" then 4
+							else if t = "40 to 70 EUR" then 5
+							else if t = "70 to 90 EUR" then 6
+							else if t = "90 to 200 EUR" then 7
+							else 8,
+						Int64.Type
+					),
+					#"Colonnes conservees" = Table.SelectColumns(#"Tranche panier ordre", {
 						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
 						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						"cout_transport_amont", "commissions_marketplace",
 						"retours_remboursements", "couts_generiques",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
-						"date_commande"
+						"date_commande",
+						"marge_brute_commande", "poste_basculant", "tranche_panier", "tranche_panier_ordre"
 					})
 				in
 					#"Colonnes conservees"
