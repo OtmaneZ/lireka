@@ -1,0 +1,329 @@
+{
+  "meta": {
+    "customer_order_mtime": "2026-07-17 11:49:19",
+    "package_mtime": "2026-07-17 11:48:36",
+    "n_commandes": 1008455,
+    "n_id_null": 0,
+    "n_id_duplicates": 0,
+    "package_meta": {
+      "n_package_rows": 965055,
+      "n_package_id_duplicates": 0,
+      "n_package_null_order_id": 0,
+      "n_order_id_apres_groupby": 923726,
+      "n_order_id_dup_apres_groupby": 0,
+      "cle_apres_groupby_unique": true,
+      "sum_shipping_cost_eur": 8654095.241,
+      "sum_duties_taxes_eur": 491000.2659,
+      "sum_shipping_supply_cost_eur": 429506.14
+    },
+    "merge": {
+      "validate": "one_to_one (id ↔ order_id agrégé)",
+      "n_commandes_sans_colis": 84729,
+      "n_order_id_package_absents_de_commandes": 0,
+      "ecart_sum_outbound_merge_vs_pkg_brut_eur": 0.0
+    },
+    "note_outbound": "Prototype CSV : outbound = SUM(package.shipping_cost_eur) par order_id. Le modèle PBI utilise cout_transport_retenu (facture rapprochée si disponible). Bouclage interne CSV garanti ; écart possible vs [Marge Brute] Desktop."
+  },
+  "tache1_grains": [
+    {
+      "poste": "CA HT Net Annulation",
+      "mesure": "CA HT Net Annulation = CALCULATE([CA Total HT], fact_commandes[state] <> \"CANCELLED\")",
+      "colonne_modele": "fact_commandes[ca_ht]  (filtre state à la mesure)",
+      "colonne_csv": "order_amount_eur",
+      "table": "fact_commandes",
+      "grain": "commande",
+      "pre_agregation": "non",
+      "code_m": "stg_customer_order : Csv.Document(...\\customer_order.csv) + TransformColumnTypes({order_amount_eur, type number}); fact_commandes : RenameColumns({\"order_amount_eur\",\"ca_ht\"})"
+    },
+    {
+      "poste": "Frais Port Encaissés (hors CANCELLED)",
+      "mesure": "CALCULATE([Frais Port Encaissés], fact_commandes[state] <> \"CANCELLED\")",
+      "colonne_modele": "fact_commandes[frais_port_encaisse]",
+      "colonne_csv": "shipping_fee_eur",
+      "table": "fact_commandes",
+      "grain": "commande",
+      "pre_agregation": "non",
+      "code_m": "stg_customer_order : TransformColumnTypes({shipping_fee_eur, type number}); fact_commandes : RenameColumns({\"shipping_fee_eur\",\"frais_port_encaisse\"}). Le filtre state <> CANCELLED est dans la mesure, pas dans la colonne."
+    },
+    {
+      "poste": "Coût Achat Total",
+      "mesure": "Coût Achat Total = SUM(fact_commandes[cout_achat])",
+      "colonne_modele": "fact_commandes[cout_achat]",
+      "colonne_csv": "product_cost_eur",
+      "table": "fact_commandes",
+      "grain": "commande",
+      "pre_agregation": "non",
+      "code_m": "stg_customer_order : TransformColumnTypes({product_cost_eur, type number}); fact_commandes : RenameColumns({\"product_cost_eur\",\"cout_achat\"})"
+    },
+    {
+      "poste": "Coût Transport Amont",
+      "mesure": "Coût Transport Amont = SUM(fact_commandes[cout_transport_amont])",
+      "colonne_modele": "fact_commandes[cout_transport_amont]",
+      "colonne_csv": "inbound_transportation_cost_eur",
+      "table": "fact_commandes",
+      "grain": "commande",
+      "pre_agregation": "non",
+      "code_m": "fact_commandes : TransformColumnTypes({inbound_transportation_cost_eur, type number}); RenameColumns({\"inbound_transportation_cost_eur\",\"cout_transport_amont\"})"
+    },
+    {
+      "poste": "Coût Transport Outbound (Retenu)",
+      "mesure": "Coût Transport Outbound (Retenu) = SUM(fact_transport[cout_transport_retenu])",
+      "colonne_modele": "fact_transport[cout_transport_retenu]",
+      "colonne_csv": "package.shipping_cost_eur (+ facture si matchée en PBI)",
+      "table": "fact_transport",
+      "grain": "colis",
+      "pre_agregation": "oui",
+      "code_m": "stg_package : Csv.Document(...\\package.csv), shipping_cost_eur typé; fact_transport : RenameColumns({\"shipping_cost_eur\",\"cout_transport\"}); NestedJoin factures -> cout_transport_facture; AddColumn cout_transport_retenu = if cout_transport_facture <> null then facture else cout_transport"
+    },
+    {
+      "poste": "Douanes Taxes",
+      "mesure": "Douanes Taxes = SUM(fact_transport[duties_taxes_eur])",
+      "colonne_modele": "fact_transport[duties_taxes_eur]",
+      "colonne_csv": "package.duties_taxes_eur",
+      "table": "fact_transport",
+      "grain": "colis",
+      "pre_agregation": "oui",
+      "code_m": "stg_package : TransformColumnTypes({duties_taxes_eur, type number}); fact_transport : SelectColumns(..., \"duties_taxes_eur\", ...)"
+    },
+    {
+      "poste": "Commissions Marketplace",
+      "mesure": "Commissions Marketplace = SUM(fact_commandes[commissions_marketplace])",
+      "colonne_modele": "fact_commandes[commissions_marketplace]",
+      "colonne_csv": "marketplace_fees_eur",
+      "table": "fact_commandes",
+      "grain": "commande",
+      "pre_agregation": "non",
+      "code_m": "fact_commandes : TransformColumnTypes({marketplace_fees_eur, type number}); RenameColumns({\"marketplace_fees_eur\",\"commissions_marketplace\"})"
+    },
+    {
+      "poste": "Fournitures Expédition",
+      "mesure": "Fournitures Expédition = SUM(fact_transport[shipping_supply_cost_eur])",
+      "colonne_modele": "fact_transport[shipping_supply_cost_eur]",
+      "colonne_csv": "package.shipping_supply_cost_eur",
+      "table": "fact_transport",
+      "grain": "colis",
+      "pre_agregation": "oui",
+      "code_m": "stg_package : TransformColumnTypes({shipping_supply_cost_eur, type number}); fact_transport : SelectColumns(..., \"shipping_supply_cost_eur\", ...)"
+    },
+    {
+      "poste": "Retours Remboursements",
+      "mesure": "Retours Remboursements = SUM(fact_commandes[retours_remboursements])",
+      "colonne_modele": "fact_commandes[retours_remboursements]",
+      "colonne_csv": "customer_order_item.returns_and_refunds_cost_eur (egal a customer_order.returns_and_refunds_eur au grain commande)",
+      "table": "fact_commandes (via stg_couts_bloc5_commande / item)",
+      "grain": "article -> pre-agrege commande dans le modele",
+      "pre_agregation": "oui (deja faite dans stg_couts_bloc5_commande)",
+      "code_m": "stg_couts_bloc5_commande : Table.Group(stg_Commande_Items, {\"order_id\"}, {{\"retours_remboursements\", each List.Sum(...[returns_and_refunds_cost_eur])}}); fact_commandes : NestedJoin id_commande=order_id, ReplaceValue null->0"
+    },
+    {
+      "poste": "Coûts Génériques",
+      "mesure": "Coûts Génériques = SUM(fact_commandes[couts_generiques])",
+      "colonne_modele": "fact_commandes[couts_generiques]",
+      "colonne_csv": "customer_order_item.generic_costs_eur (egal a customer_order.total_generic_costs_eur au grain commande)",
+      "table": "fact_commandes (via stg_couts_bloc5_commande / item)",
+      "grain": "article -> pre-agrege commande dans le modele",
+      "pre_agregation": "oui (deja faite dans stg_couts_bloc5_commande)",
+      "code_m": "stg_couts_bloc5_commande : Table.Group(..., {{\"couts_generiques\", each List.Sum(...[generic_costs_eur])}}); fact_commandes : NestedJoin + ReplaceValue null->0"
+    }
+  ],
+  "tache2_faisabilite": {
+    "colonne_calculee_faisable": true,
+    "reponse_binaire": "OUI",
+    "detail_merge": {
+      "table_source": "package.csv → agrégat puis merge vers fact_commandes",
+      "cle": "fact_commandes[id_commande] = package.order_id (après GroupBy)",
+      "agregation": "Table.Group / groupby SUM : shipping_cost_eur, duties_taxes_eur, shipping_supply_cost_eur",
+      "unicite_cote_droit_apres_groupby": true,
+      "unicite_cote_gauche_id_commande": true,
+      "risque_duplication_lignes": "Aucun si GroupBy order_id avant NestedJoin LeftOuter. Sans GroupBy, jointure N colis → 1 commande multiplierait les lignes fact_commandes (interdit).",
+      "bloc5": "Déjà pré-agrégé dans stg_couts_bloc5_commande (item → order_id) et joint à fact_commandes. Pas de merge supplémentaire nécessaire si on réutilise retours_remboursements / couts_generiques.",
+      "filtre_cancelled_frais_port_et_ca": "Une colonne calculee ne porte pas CALCULATE(...). Reproduire au niveau ligne : ca_ht_net = if [state] <> \"CANCELLED\" then [ca_ht] else 0 ; frais_port_net = if [state] <> \"CANCELLED\" then [frais_port_encaisse] else 0 ; puis marge = ca_ht_net + frais_port_net - couts...",
+      "outbound_retenu_en_pq": "Pour coller au DAX : pré-agréger fact_transport[cout_transport_retenu] (déjà calculé en M avec factures) par order_id, puis merge. Ne pas se contenter de total_shipping_cost_to_delivery_country_eur de customer_order (estimation order-grain, autre poste)."
+    }
+  },
+  "bouclage": {
+    "marge_globale_eur": 8594310.203100001,
+    "somme_marges_par_commande_eur": 8594310.2031,
+    "ecart_eur": -1.862645149230957e-09,
+    "bouclage_ok": true,
+    "postes_globaux_eur": {
+      "ca_ht_net": 37445812.53,
+      "frais_port_net": 3191836.3500000006,
+      "cout_achat": 18203338.96,
+      "cout_amont": 9397.7,
+      "outbound": 8654095.241,
+      "douanes": 491000.2659,
+      "commissions": 3310917.35,
+      "fournitures": 429506.14,
+      "retours": 179975.84000000003,
+      "generiques": 765107.18
+    },
+    "ecarts_poste_eur": {
+      "ca_ht_net": 0.0,
+      "frais_port_net": 0.0,
+      "cout_achat": 0.0,
+      "cout_amont": 0.0,
+      "outbound": 0.0,
+      "douanes": 0.0,
+      "commissions": 0.0,
+      "fournitures": 0.0,
+      "retours": 0.0,
+      "generiques": 0.0
+    },
+    "poste_responsable_si_ecart": null
+  },
+  "tl1": {
+    "n_commandes_marge_negative": 133754,
+    "part_du_total_commandes": 0.13263259143938005,
+    "somme_pertes_eur": -1743592.2148,
+    "part_de_la_marge_brute_globale": -0.20287750541876873,
+    "marge_brute_globale_eur": 8594310.203100001
+  },
+  "tl2": [
+    {
+      "poste_dominant": "Coût Achat",
+      "n_commandes": 77811,
+      "part_cmd_deficitaires": 0.581747087937557,
+      "somme_pertes_eur": -1259567.6823,
+      "somme_cout_dominant_eur": 1576155.44
+    },
+    {
+      "poste_dominant": "Outbound",
+      "n_commandes": 55601,
+      "part_cmd_deficitaires": 0.4156959791856692,
+      "somme_pertes_eur": -482142.4471,
+      "somme_cout_dominant_eur": 1407939.8289
+    },
+    {
+      "poste_dominant": "Commissions Marketplace",
+      "n_commandes": 284,
+      "part_cmd_deficitaires": 0.002123300985391091,
+      "somme_pertes_eur": -1837.8654000000001,
+      "somme_cout_dominant_eur": 951.94
+    },
+    {
+      "poste_dominant": "Coûts Génériques",
+      "n_commandes": 58,
+      "part_cmd_deficitaires": 0.00043363189138268763,
+      "somme_pertes_eur": -44.22,
+      "somme_cout_dominant_eur": 43.88
+    },
+    {
+      "poste_dominant": "Transport Amont",
+      "n_commandes": 0,
+      "part_cmd_deficitaires": 0.0,
+      "somme_pertes_eur": 0.0,
+      "somme_cout_dominant_eur": 0.0
+    },
+    {
+      "poste_dominant": "Douanes Taxes",
+      "n_commandes": 0,
+      "part_cmd_deficitaires": 0.0,
+      "somme_pertes_eur": 0.0,
+      "somme_cout_dominant_eur": 0.0
+    },
+    {
+      "poste_dominant": "Fournitures Expédition",
+      "n_commandes": 0,
+      "part_cmd_deficitaires": 0.0,
+      "somme_pertes_eur": 0.0,
+      "somme_cout_dominant_eur": 0.0
+    },
+    {
+      "poste_dominant": "Retours Remboursements",
+      "n_commandes": 0,
+      "part_cmd_deficitaires": 0.0,
+      "somme_pertes_eur": 0.0,
+      "somme_cout_dominant_eur": 0.0
+    }
+  ],
+  "tl3": {
+    "quantiles_panier_order_amount_eur_gt0": {
+      "p10": 15.0,
+      "p25": 20.8,
+      "p50": 27.89,
+      "p75": 40.99,
+      "p90": 67.98,
+      "p95": 94.04,
+      "p99": 192.21
+    },
+    "bornes_utilisees_eur": [
+      0.0,
+      15.0,
+      20.0,
+      30.0,
+      40.0,
+      70.0,
+      90.0,
+      200.0
+    ],
+    "tranches": [
+      {
+        "tranche": "[0 ; 15 EUR[",
+        "n_commandes": 128956,
+        "ca_ht_net_eur": 1052863.21,
+        "marge_brute_eur": 261302.95060000004,
+        "taux_marge": 0.24818319048302584
+      },
+      {
+        "tranche": "[15 ; 20 EUR[",
+        "n_commandes": 120230,
+        "ca_ht_net_eur": 2007244.83,
+        "marge_brute_eur": 657197.8156,
+        "taux_marge": 0.3274128824633714
+      },
+      {
+        "tranche": "[20 ; 30 EUR[",
+        "n_commandes": 332916,
+        "ca_ht_net_eur": 7785985.0,
+        "marge_brute_eur": 2183964.2156,
+        "taux_marge": 0.28049941216172397
+      },
+      {
+        "tranche": "[30 ; 40 EUR[",
+        "n_commandes": 170503,
+        "ca_ht_net_eur": 5533610.52,
+        "marge_brute_eur": 1261178.3810999999,
+        "taux_marge": 0.22791238677564174
+      },
+      {
+        "tranche": "[40 ; 70 EUR[",
+        "n_commandes": 163445,
+        "ca_ht_net_eur": 8026758.65,
+        "marge_brute_eur": 1361856.3114999998,
+        "taux_marge": 0.1696645396831509
+      },
+      {
+        "tranche": "[70 ; 90 EUR[",
+        "n_commandes": 38514,
+        "ca_ht_net_eur": 2934529.08,
+        "marge_brute_eur": 445487.9972,
+        "taux_marge": 0.1518090245675807
+      },
+      {
+        "tranche": "[90 ; 200 EUR[",
+        "n_commandes": 44964,
+        "ca_ht_net_eur": 5413409.81,
+        "marge_brute_eur": 968478.4125,
+        "taux_marge": 0.1789035832297352
+      },
+      {
+        "tranche": ">= 200 EUR",
+        "n_commandes": 8927,
+        "ca_ht_net_eur": 4691411.43,
+        "marge_brute_eur": 1454844.1190000002,
+        "taux_marge": 0.3101079793805252
+      }
+    ]
+  },
+  "tache4_volumetrie": {
+    "n_commandes": 1008455,
+    "n_valeurs_distinctes_marge_float64": 494947,
+    "n_valeurs_distinctes_marge_arrondi_centime": 18671,
+    "taille_non_compressee_bytes": 8067640,
+    "taille_non_compressee_mio": 7.694,
+    "taille_vertipaq_estimee_bytes": 2040221.1,
+    "taille_vertipaq_estimee_mio": 1.946,
+    "formule_estimation": "dict≈n_distinct_centime*8 + data≈n_rows*ceil(log2(n_distinct))/8"
+  }
+}

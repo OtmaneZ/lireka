@@ -1,0 +1,110 @@
+========================================================================
+TACHE 1 ÔÇö Ecart outbound backend vs retenu
+========================================================================
+Regle M (fact_transport.tmdl) :
+
+#"Cout retenu ajoute" = Table.AddColumn(
+    #"Jointure facture",
+    "cout_transport_retenu",
+    each if [cout_transport_facture] <> null then [cout_transport_facture] else [cout_transport],
+    type nullable number
+)
+
+Choix exact : si cout_transport_facture <> null alors facture (SUM des lignes facture resolues sur le colis), sinon shipping_cost_eur backend.
+Resolution facture->colis : stg_factures_transport_resolu, fenetre 7j si >=2 candidats.
+
+Fichiers factures (expressions.tmdl) :
+  [OK] C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse\Dashboards_transporteurs\COLISSIMO Dashboard PowerBI\2025_COLISSIMO_r├®cap.csv
+  [OK] C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse\Dashboards_transporteurs\COLISSIMO Dashboard PowerBI\2026_COLISSIMO_r├®cap_au_30_juin_2026.csv
+  [OK] C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse\Dashboards_transporteurs\CHRONOPOST Dashboard PowerBI\2025_CHRONOPOST_r├®cap.csv
+  [OK] C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse\Dashboards_transporteurs\CHRONOPOST Dashboard PowerBI\2026_CHRONOPOST_V2.csv
+
+Chargement package + commandes (dates)...
+Chargement factures...
+  lignes facture valides : 116 121
+Resolution facture -> colis (F-11)...
+  factures resolues (id_package non null) : 115 781
+  factures non resolues                   : 340
+Construction cout_transport_retenu...
+
+SUM package.shipping_cost_eur     : 8 654 095,24 EUR
+SUM cout_transport_retenu         : 8 628 442,68 EUR
+Ecart (retenu - backend)          : -25 652,56 EUR (-0,2964 pct)
+Colis facture_rapprochee          : 115 760 / 965 055
+Colis backend_seul                : 829 714
+Colis aucun                       : 19 581
+Ecart concentre sur colis rapproches : -25 652,56 EUR
+
+Chargement customer_order + calcul marge...
+
+--- Impact sur les deficitaires (meme perimetre) ---
+Nb deficitaires (outbound backend) : 133 754
+Nb deficitaires (outbound retenu)  : 133 805
+Delta nb                           : +51
+Pertes (backend)                   : -1 743 592,21 EUR
+Pertes (retenu)                    : -1 744 178,22 EUR
+Delta pertes                       : -586,01 EUR
+
+========================================================================
+TACHE 2 ÔÇö Poste basculant (outbound = cout_transport_retenu replique)
+========================================================================
+Nb deficitaires analyses : 133 805
+Pertes totales           : -1 744 178,22 EUR
+Somme repartie           : -1 744 178,22 EUR
+Controle somme OK        : True
+Tous classes             : True
+
+poste basculant                       n_cmd     part n       pertes EUR  part pertes
+Outbound                              69691 52,0840 pct  -374 319,59 EUR  21,4611 pct
+structurellement deficitaire          55856 41,7443 pct -1 302 809,68 EUR  74,6948 pct
+Co├╗t Achat                             5720 4,2749 pct   -34 247,45 EUR   1,9635 pct
+Douanes Taxes                          2464 1,8415 pct   -32 752,69 EUR   1,8778 pct
+Fournitures Exp├®dition                   35 0,0262 pct       -24,44 EUR   0,0014 pct
+Co├╗ts G├®n├®riques                         31 0,0232 pct       -24,00 EUR   0,0014 pct
+Commissions Marketplace                   8 0,0060 pct        -0,37 EUR   0,0000 pct
+
+--- Croisement canal x poste basculant ---
+
+[AMAZON]
+  structurellement deficitaire   n=  34828  pertes=-701 181,75 EUR
+  Outbound                       n=   6923  pertes=-23 394,04 EUR
+  Co├╗t Achat                     n=   1094  pertes=-8 197,61 EUR
+  Commissions Marketplace        n=      8  pertes=-0,37 EUR
+  Douanes Taxes                  n=      2  pertes=-51,36 EUR
+  Fournitures Exp├®dition         n=      1  pertes=-2,32 EUR
+
+[AUTRES]
+  Outbound                       n=   1290  pertes=-2 187,71 EUR
+  structurellement deficitaire   n=    552  pertes=-9 380,76 EUR
+  Co├╗t Achat                     n=     30  pertes=-408,82 EUR
+  Co├╗ts G├®n├®riques               n=      1  pertes=-1,02 EUR
+
+[CULTURA]
+  structurellement deficitaire   n=   1554  pertes=-20 316,24 EUR
+  Co├╗t Achat                     n=     95  pertes=-775,90 EUR
+  Outbound                       n=     25  pertes=-50,23 EUR
+
+[FNAC]
+  structurellement deficitaire   n=     23  pertes=-301,52 EUR
+  Co├╗t Achat                     n=     14  pertes=-106,90 EUR
+
+[PRO_WEBSITE]
+  Outbound                       n=    183  pertes=-10 355,91 EUR
+  structurellement deficitaire   n=     95  pertes=-88 044,46 EUR
+  Co├╗t Achat                     n=     18  pertes=-895,76 EUR
+  Douanes Taxes                  n=      7  pertes=-281,85 EUR
+
+[RAKUTEN]
+  structurellement deficitaire   n=   1509  pertes=-28 980,56 EUR
+  Co├╗t Achat                     n=    108  pertes=-1 243,60 EUR
+  Outbound                       n=     13  pertes=-35,59 EUR
+
+[WEBSITE]
+  Outbound                       n=  61257  pertes=-338 296,10 EUR
+  structurellement deficitaire   n=  17295  pertes=-454 604,40 EUR
+  Co├╗t Achat                     n=   4361  pertes=-22 618,87 EUR
+  Douanes Taxes                  n=   2455  pertes=-32 419,49 EUR
+  Fournitures Exp├®dition         n=     34  pertes=-22,12 EUR
+  Co├╗ts G├®n├®riques               n=     30  pertes=-22,98 EUR
+
+JSON : C:\Users\Otmane\Documents\lireka\scripts\validation\page11_outbound_basculant_out\results.json

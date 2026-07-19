@@ -1,0 +1,142 @@
+customer_order.csv mtime = 2026-07-17 11:49:19
+package.csv         mtime = 2026-07-17 11:48:36
+(analyse executee le 2026-07-19 - entrepot courant)
+
+Lecture customer_order.csv...
+Lecture package.csv...
+========================================================================
+T├éCHE 1 ÔÇö Grain de chaque poste
+========================================================================
+poste                                    table              grain        pr├®-agr├®g.
+------------------------------------------------------------------------
+CA HT Net Annulation                     fact_commandes     commande     non       
+  colonne mod├¿le : fact_commandes[ca_ht]  (filtre state ├á la mesure)
+  colonne CSV    : order_amount_eur
+  M              : stg_customer_order : Csv.Document(...\customer_order.csv) + TransformColumnTypes({order_amount_eur, type numbe...
+Frais Port Encaiss├®s (hors CANCELLED)    fact_commandes     commande     non       
+  colonne mod├¿le : fact_commandes[frais_port_encaisse]
+  colonne CSV    : shipping_fee_eur
+  M              : stg_customer_order : TransformColumnTypes({shipping_fee_eur, type number}); fact_commandes : RenameColumns({"s...
+Co├╗t Achat Total                         fact_commandes     commande     non       
+  colonne mod├¿le : fact_commandes[cout_achat]
+  colonne CSV    : product_cost_eur
+  M              : stg_customer_order : TransformColumnTypes({product_cost_eur, type number}); fact_commandes : RenameColumns({"p...
+Co├╗t Transport Amont                     fact_commandes     commande     non       
+  colonne mod├¿le : fact_commandes[cout_transport_amont]
+  colonne CSV    : inbound_transportation_cost_eur
+  M              : fact_commandes : TransformColumnTypes({inbound_transportation_cost_eur, type number}); RenameColumns({"inbound...
+Co├╗t Transport Outbound (Retenu)         fact_transport     colis        oui       
+  colonne mod├¿le : fact_transport[cout_transport_retenu]
+  colonne CSV    : package.shipping_cost_eur (+ facture si match├®e en PBI)
+  M              : stg_package : Csv.Document(...\package.csv), shipping_cost_eur typ├®; fact_transport : RenameColumns({"shipping...
+Douanes Taxes                            fact_transport     colis        oui       
+  colonne mod├¿le : fact_transport[duties_taxes_eur]
+  colonne CSV    : package.duties_taxes_eur
+  M              : stg_package : TransformColumnTypes({duties_taxes_eur, type number}); fact_transport : SelectColumns(..., "duti...
+Commissions Marketplace                  fact_commandes     commande     non       
+  colonne mod├¿le : fact_commandes[commissions_marketplace]
+  colonne CSV    : marketplace_fees_eur
+  M              : fact_commandes : TransformColumnTypes({marketplace_fees_eur, type number}); RenameColumns({"marketplace_fees_e...
+Fournitures Exp├®dition                   fact_transport     colis        oui       
+  colonne mod├¿le : fact_transport[shipping_supply_cost_eur]
+  colonne CSV    : package.shipping_supply_cost_eur
+  M              : stg_package : TransformColumnTypes({shipping_supply_cost_eur, type number}); fact_transport : SelectColumns(.....
+Retours Remboursements                   fact_commandes     article -> pre-agrege commande dans le modele oui (deja faite dans stg_couts_bloc5_commande)
+  colonne mod├¿le : fact_commandes[retours_remboursements]
+  colonne CSV    : customer_order_item.returns_and_refunds_cost_eur (egal a customer_order.returns_and_refunds_eur au grain commande)
+  M              : stg_couts_bloc5_commande : Table.Group(stg_Commande_Items, {"order_id"}, {{"retours_remboursements", each List...
+Co├╗ts G├®n├®riques                         fact_commandes     article -> pre-agrege commande dans le modele oui (deja faite dans stg_couts_bloc5_commande)
+  colonne mod├¿le : fact_commandes[couts_generiques]
+  colonne CSV    : customer_order_item.generic_costs_eur (egal a customer_order.total_generic_costs_eur au grain commande)
+  M              : stg_couts_bloc5_commande : Table.Group(..., {{"couts_generiques", each List.Sum(...[generic_costs_eur])}}); fa...
+
+========================================================================
+T├éCHE 2 ÔÇö Faisabilit├® colonne calculee
+========================================================================
+R├®ponse binaire : OUI ÔÇö on peut ajouter marge_brute_commande en Power Query.
+Merge : package.csv ÔåÆ agr├®gat puis merge vers fact_commandes
+Cl├®   : fact_commandes[id_commande] = package.order_id (apr├¿s GroupBy)
+Agg   : Table.Group / groupby SUM : shipping_cost_eur, duties_taxes_eur, shipping_supply_cost_eur
+Unicit├® droite apr├¿s GroupBy : True
+Unicit├® gauche id_commande   : True
+Risque duplication : Aucun si GroupBy order_id avant NestedJoin LeftOuter. Sans GroupBy, jointure N colis ÔåÆ 1 commande multiplierait les lignes fact_commandes (interdit).
+Filtre CANCELLED   : Une colonne calculee ne porte pas CALCULATE(...). Reproduire au niveau ligne : ca_ht_net = if [state] <> "CANCELLED" then [ca_ht] else 0 ; frais_port_net = if [state] <> "CANCELLED" then [frais_port_encaisse] else 0 ; puis marge = ca_ht_net + frais_port_net - couts...
+Outbound retenu    : Pour coller au DAX : pr├®-agr├®ger fact_transport[cout_transport_retenu] (d├®j├á calcul├® en M avec factures) par order_id, puis merge. Ne pas se contenter de total_shipping_cost_to_delivery_country_eur de customer_order (estimation order-grain, autre poste).
+Commandes sans colis (left_only) : 84729
+order_id package absents de CO   : 0
+├ëcart SUM outbound merge vs pkg  : 0,00 EUR
+
+========================================================================
+BOUCLAGE
+========================================================================
+Marge brute globale (10 postes)     : 8 594 310,20 EUR
+Somme marges par commande           : 8 594 310,20 EUR
+├ëcart                               : -0,00 EUR
+Bouclage OK (|├®cart| Ôëñ 0.01 Ôé¼) : True
+
+Postes globaux :
+  ca_ht_net              37 445 812,53 EUR
+  frais_port_net         3 191 836,35 EUR
+  cout_achat             18 203 338,96 EUR
+  cout_amont             9 397,70 EUR
+  outbound               8 654 095,24 EUR
+  douanes                491 000,27 EUR
+  commissions            3 310 917,35 EUR
+  fournitures            429 506,14 EUR
+  retours                179 975,84 EUR
+  generiques             765 107,18 EUR
+
+========================================================================
+TL-1 ÔÇö Volume et poids des commandes d├®ficitaires
+========================================================================
+Nb commandes marge < 0     : 133 754
+Part du total commandes    : 13,26 pct
+Somme des pertes           : -1 743 592,21 EUR
+Part de la marge globale   : -20,29 pct
+
+========================================================================
+TL-2 ÔÇö Poste de co├╗t dominant (commandes d├®ficitaires)
+========================================================================
+poste                             n_cmd       part         pertes Ôé¼      co├╗t dom. Ôé¼
+Co├╗t Achat                       77 811  58 17 pct -1 259 567 68 EUR 1 576 155 44 EUR
+Outbound                         55 601  41 57 pct  -482 142 45 EUR 1 407 939 83 EUR
+Commissions Marketplace             284   0 21 pct    -1 837 87 EUR       951 94 EUR
+Co├╗ts G├®n├®riques                     58   0 04 pct       -44 22 EUR        43 88 EUR
+Transport Amont                       0   0 00 pct         0 00 EUR         0 00 EUR
+Douanes Taxes                         0   0 00 pct         0 00 EUR         0 00 EUR
+Fournitures Exp├®dition                0   0 00 pct         0 00 EUR         0 00 EUR
+Retours Remboursements                0   0 00 pct         0 00 EUR         0 00 EUR
+
+========================================================================
+TL-3 ÔÇö Marge par tranche de panier (order_amount_eur)
+========================================================================
+Quantiles panier > 0 :
+  p10: 15,00 EUR
+  p25: 20,80 EUR
+  p50: 27,89 EUR
+  p75: 40,99 EUR
+  p90: 67,98 EUR
+  p95: 94,04 EUR
+  p99: 192,21 EUR
+Bornes retenues (Ôé¼) : [0.0, 15.0, 20.0, 30.0, 40.0, 70.0, 90.0, 200.0]
+tranche                     n_cmd        CA HT net      Marge brute       Taux
+[0 ; 15 EUR[              128 956 1 052 863 21 EUR   261 302 95 EUR  24 82 pct
+[15 ; 20 EUR[             120 230 2 007 244 83 EUR   657 197 82 EUR  32 74 pct
+[20 ; 30 EUR[             332 916 7 785 985 00 EUR 2 183 964 22 EUR  28 05 pct
+[30 ; 40 EUR[             170 503 5 533 610 52 EUR 1 261 178 38 EUR  22 79 pct
+[40 ; 70 EUR[             163 445 8 026 758 65 EUR 1 361 856 31 EUR  16 97 pct
+[70 ; 90 EUR[              38 514 2 934 529 08 EUR   445 488 00 EUR  15 18 pct
+[90 ; 200 EUR[             44 964 5 413 409 81 EUR   968 478 41 EUR  17 89 pct
+>= 200 EUR                  8 927 4 691 411 43 EUR 1 454 844 12 EUR  31 01 pct
+
+========================================================================
+T├éCHE 4 ÔÇö Volum├®trie / cardinalit├®
+========================================================================
+Nb commandes                         : 1 008 455
+Valeurs distinctes marge (float64)   : 494 947
+Valeurs distinctes marge (centime)   : 18 671
+Taille non compress├®e (8 o ├ù n)      : 7.694 Mio
+Taille VertiPaq estim├®e              : 1.946 Mio
+Formule                              : dictÔëên_distinct_centime*8 + dataÔëên_rows*ceil(log2(n_distinct))/8
+
+JSON ├®crit : C:\Users\Otmane\Documents\lireka\scripts\validation\page11_marge_commande_out\results.json

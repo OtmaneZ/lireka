@@ -1,0 +1,617 @@
+{
+  "tache1": {
+    "fichiers_presents": true,
+    "arretee": false,
+    "regle_m": "#\"Cout retenu ajoute\" = Table.AddColumn(\n    #\"Jointure facture\",\n    \"cout_transport_retenu\",\n    each if [cout_transport_facture] <> null then [cout_transport_facture] else [cout_transport],\n    type nullable number\n)",
+    "fichiers": [
+      "C:\\Users\\Otmane\\Documents\\lireka\\Power_BI_Datawarehouse\\Dashboards_transporteurs\\COLISSIMO Dashboard PowerBI\\2025_COLISSIMO_récap.csv",
+      "C:\\Users\\Otmane\\Documents\\lireka\\Power_BI_Datawarehouse\\Dashboards_transporteurs\\COLISSIMO Dashboard PowerBI\\2026_COLISSIMO_récap_au_30_juin_2026.csv",
+      "C:\\Users\\Otmane\\Documents\\lireka\\Power_BI_Datawarehouse\\Dashboards_transporteurs\\CHRONOPOST Dashboard PowerBI\\2025_CHRONOPOST_récap.csv",
+      "C:\\Users\\Otmane\\Documents\\lireka\\Power_BI_Datawarehouse\\Dashboards_transporteurs\\CHRONOPOST Dashboard PowerBI\\2026_CHRONOPOST_V2.csv"
+    ],
+    "n_lignes_facture_valides": 116121,
+    "n_factures_resolues": 115781,
+    "n_factures_non_resolues": 340,
+    "sum_shipping_cost_eur": 8654095.241,
+    "sum_cout_transport_retenu": 8628442.6786,
+    "ecart_absolu_eur": -25652.56240000017,
+    "ecart_pct_vs_backend": -0.002964210779477851,
+    "n_colis": 965055,
+    "n_colis_facture_rapprochee": 115760,
+    "n_colis_backend_seul": 829714,
+    "n_colis_aucun": 19581,
+    "ecart_sur_colis_rapproches_eur": -25652.562399999995,
+    "n_deficitaires_outbound_backend": 133754,
+    "n_deficitaires_outbound_retenu": 133805,
+    "delta_n_deficitaires": 51,
+    "pertes_backend_eur": -1743592.2148,
+    "pertes_retenu_eur": -1744178.2237999998,
+    "delta_pertes_eur": -586.0089999998454,
+    "marge_globale_backend_eur": 8594310.2031,
+    "marge_globale_retenu_eur": 8619962.7655
+  },
+  "tache2": {
+    "outbound_utilise": "cout_transport_retenu replique",
+    "n_deficitaires": 133805,
+    "pertes_totales_eur": -1744178.2237999998,
+    "somme_repartie_eur": -1744178.2237999998,
+    "controle_somme_ok": true,
+    "tous_classes": true,
+    "n_non_classes": 0,
+    "repartition": [
+      {
+        "poste_basculant": "Outbound",
+        "n_commandes": 69691,
+        "part_n": 0.5208400283995367,
+        "somme_pertes_eur": -374319.5897,
+        "part_pertes": 0.21461086062895499
+      },
+      {
+        "poste_basculant": "structurellement deficitaire",
+        "n_commandes": 55856,
+        "part_n": 0.41744329434625016,
+        "somme_pertes_eur": -1302809.6777,
+        "part_pertes": 0.7469475652904319
+      },
+      {
+        "poste_basculant": "Coût Achat",
+        "n_commandes": 5720,
+        "part_n": 0.04274877620417772,
+        "somme_pertes_eur": -34247.4501,
+        "part_pertes": 0.019635292788707046
+      },
+      {
+        "poste_basculant": "Douanes Taxes",
+        "n_commandes": 2464,
+        "part_n": 0.018414857441799635,
+        "somme_pertes_eur": -32752.6897,
+        "part_pertes": 0.018778292982377966
+      },
+      {
+        "poste_basculant": "Fournitures Expédition",
+        "n_commandes": 35,
+        "part_n": 0.0002615746795710175,
+        "somme_pertes_eur": -24.443099999999976,
+        "part_pertes": 1.4014106853568194e-05
+      },
+      {
+        "poste_basculant": "Coûts Génériques",
+        "n_commandes": 31,
+        "part_n": 0.00023168043047718694,
+        "somme_pertes_eur": -24.004900000000003,
+        "part_pertes": 1.376287106010365e-05
+      },
+      {
+        "poste_basculant": "Commissions Marketplace",
+        "n_commandes": 8,
+        "part_n": 5.9788498187661145e-05,
+        "somme_pertes_eur": -0.3686000000000008,
+        "part_pertes": 2.1133161449346658e-07
+      },
+      {
+        "poste_basculant": "Transport Amont",
+        "n_commandes": 0,
+        "part_n": 0.0,
+        "somme_pertes_eur": 0.0,
+        "part_pertes": -0.0
+      },
+      {
+        "poste_basculant": "Retours Remboursements",
+        "n_commandes": 0,
+        "part_n": 0.0,
+        "somme_pertes_eur": 0.0,
+        "part_pertes": -0.0
+      }
+    ],
+    "croisement_canal": [
+      {
+        "canal": "AMAZON",
+        "poste_basculant": "structurellement deficitaire",
+        "n_commandes": 34828,
+        "somme_pertes_eur": -701181.7456
+      },
+      {
+        "canal": "AMAZON",
+        "poste_basculant": "Outbound",
+        "n_commandes": 6923,
+        "somme_pertes_eur": -23394.0432
+      },
+      {
+        "canal": "AMAZON",
+        "poste_basculant": "Coût Achat",
+        "n_commandes": 1094,
+        "somme_pertes_eur": -8197.605300000001
+      },
+      {
+        "canal": "AMAZON",
+        "poste_basculant": "Commissions Marketplace",
+        "n_commandes": 8,
+        "somme_pertes_eur": -0.3686000000000008
+      },
+      {
+        "canal": "AMAZON",
+        "poste_basculant": "Douanes Taxes",
+        "n_commandes": 2,
+        "somme_pertes_eur": -51.356300000000005
+      },
+      {
+        "canal": "AMAZON",
+        "poste_basculant": "Fournitures Expédition",
+        "n_commandes": 1,
+        "somme_pertes_eur": -2.3242
+      },
+      {
+        "canal": "AUTRES",
+        "poste_basculant": "Outbound",
+        "n_commandes": 1290,
+        "somme_pertes_eur": -2187.7066999999997
+      },
+      {
+        "canal": "AUTRES",
+        "poste_basculant": "structurellement deficitaire",
+        "n_commandes": 552,
+        "somme_pertes_eur": -9380.7594
+      },
+      {
+        "canal": "AUTRES",
+        "poste_basculant": "Coût Achat",
+        "n_commandes": 30,
+        "somme_pertes_eur": -408.8222
+      },
+      {
+        "canal": "AUTRES",
+        "poste_basculant": "Coûts Génériques",
+        "n_commandes": 1,
+        "somme_pertes_eur": -1.0200000000000005
+      },
+      {
+        "canal": "CULTURA",
+        "poste_basculant": "structurellement deficitaire",
+        "n_commandes": 1554,
+        "somme_pertes_eur": -20316.24
+      },
+      {
+        "canal": "CULTURA",
+        "poste_basculant": "Coût Achat",
+        "n_commandes": 95,
+        "somme_pertes_eur": -775.8971
+      },
+      {
+        "canal": "CULTURA",
+        "poste_basculant": "Outbound",
+        "n_commandes": 25,
+        "somme_pertes_eur": -50.227699999999984
+      },
+      {
+        "canal": "FNAC",
+        "poste_basculant": "structurellement deficitaire",
+        "n_commandes": 23,
+        "somme_pertes_eur": -301.52
+      },
+      {
+        "canal": "FNAC",
+        "poste_basculant": "Coût Achat",
+        "n_commandes": 14,
+        "somme_pertes_eur": -106.89999999999999
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste_basculant": "Outbound",
+        "n_commandes": 183,
+        "somme_pertes_eur": -10355.913
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste_basculant": "structurellement deficitaire",
+        "n_commandes": 95,
+        "somme_pertes_eur": -88044.4562
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste_basculant": "Coût Achat",
+        "n_commandes": 18,
+        "somme_pertes_eur": -895.7562999999999
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste_basculant": "Douanes Taxes",
+        "n_commandes": 7,
+        "somme_pertes_eur": -281.84760000000006
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste_basculant": "structurellement deficitaire",
+        "n_commandes": 1509,
+        "somme_pertes_eur": -28980.5585
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste_basculant": "Coût Achat",
+        "n_commandes": 108,
+        "somme_pertes_eur": -1243.5968
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste_basculant": "Outbound",
+        "n_commandes": 13,
+        "somme_pertes_eur": -35.59490000000002
+      },
+      {
+        "canal": "WEBSITE",
+        "poste_basculant": "Outbound",
+        "n_commandes": 61257,
+        "somme_pertes_eur": -338296.1042
+      },
+      {
+        "canal": "WEBSITE",
+        "poste_basculant": "structurellement deficitaire",
+        "n_commandes": 17295,
+        "somme_pertes_eur": -454604.398
+      },
+      {
+        "canal": "WEBSITE",
+        "poste_basculant": "Coût Achat",
+        "n_commandes": 4361,
+        "somme_pertes_eur": -22618.8724
+      },
+      {
+        "canal": "WEBSITE",
+        "poste_basculant": "Douanes Taxes",
+        "n_commandes": 2455,
+        "somme_pertes_eur": -32419.4858
+      },
+      {
+        "canal": "WEBSITE",
+        "poste_basculant": "Fournitures Expédition",
+        "n_commandes": 34,
+        "somme_pertes_eur": -22.11889999999998
+      },
+      {
+        "canal": "WEBSITE",
+        "poste_basculant": "Coûts Génériques",
+        "n_commandes": 30,
+        "somme_pertes_eur": -22.984899999999996
+      }
+    ],
+    "medianes_reference": [
+      {
+        "canal": "AMAZON",
+        "poste": "Coût Achat",
+        "mediane_ratio_poste_sur_ca": 0.42702702702702705,
+        "n_ref_non_def_ca_gt0": 528129
+      },
+      {
+        "canal": "AMAZON",
+        "poste": "Transport Amont",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 528129
+      },
+      {
+        "canal": "AMAZON",
+        "poste": "Outbound",
+        "mediane_ratio_poste_sur_ca": 0.18374218374218373,
+        "n_ref_non_def_ca_gt0": 528129
+      },
+      {
+        "canal": "AMAZON",
+        "poste": "Douanes Taxes",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 528129
+      },
+      {
+        "canal": "AMAZON",
+        "poste": "Commissions Marketplace",
+        "mediane_ratio_poste_sur_ca": 0.17851500789889413,
+        "n_ref_non_def_ca_gt0": 528129
+      },
+      {
+        "canal": "AMAZON",
+        "poste": "Fournitures Expédition",
+        "mediane_ratio_poste_sur_ca": 0.012539184952978058,
+        "n_ref_non_def_ca_gt0": 528129
+      },
+      {
+        "canal": "AMAZON",
+        "poste": "Retours Remboursements",
+        "mediane_ratio_poste_sur_ca": 0.01022676745220098,
+        "n_ref_non_def_ca_gt0": 528129
+      },
+      {
+        "canal": "AMAZON",
+        "poste": "Coûts Génériques",
+        "mediane_ratio_poste_sur_ca": 0.013448275862068966,
+        "n_ref_non_def_ca_gt0": 528129
+      },
+      {
+        "canal": "AUTRES",
+        "poste": "Coût Achat",
+        "mediane_ratio_poste_sur_ca": 0.5878320479862896,
+        "n_ref_non_def_ca_gt0": 17289
+      },
+      {
+        "canal": "AUTRES",
+        "poste": "Transport Amont",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 17289
+      },
+      {
+        "canal": "AUTRES",
+        "poste": "Outbound",
+        "mediane_ratio_poste_sur_ca": 0.11244711645513249,
+        "n_ref_non_def_ca_gt0": 17289
+      },
+      {
+        "canal": "AUTRES",
+        "poste": "Douanes Taxes",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 17289
+      },
+      {
+        "canal": "AUTRES",
+        "poste": "Commissions Marketplace",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 17289
+      },
+      {
+        "canal": "AUTRES",
+        "poste": "Fournitures Expédition",
+        "mediane_ratio_poste_sur_ca": 0.007615700058582309,
+        "n_ref_non_def_ca_gt0": 17289
+      },
+      {
+        "canal": "AUTRES",
+        "poste": "Retours Remboursements",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 17289
+      },
+      {
+        "canal": "AUTRES",
+        "poste": "Coûts Génériques",
+        "mediane_ratio_poste_sur_ca": 0.01866251944012442,
+        "n_ref_non_def_ca_gt0": 17289
+      },
+      {
+        "canal": "CULTURA",
+        "poste": "Coût Achat",
+        "mediane_ratio_poste_sur_ca": 0.4113287453679195,
+        "n_ref_non_def_ca_gt0": 46536
+      },
+      {
+        "canal": "CULTURA",
+        "poste": "Transport Amont",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 46536
+      },
+      {
+        "canal": "CULTURA",
+        "poste": "Outbound",
+        "mediane_ratio_poste_sur_ca": 0.23337515683814306,
+        "n_ref_non_def_ca_gt0": 46536
+      },
+      {
+        "canal": "CULTURA",
+        "poste": "Douanes Taxes",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 46536
+      },
+      {
+        "canal": "CULTURA",
+        "poste": "Commissions Marketplace",
+        "mediane_ratio_poste_sur_ca": 0.14994984954864593,
+        "n_ref_non_def_ca_gt0": 46536
+      },
+      {
+        "canal": "CULTURA",
+        "poste": "Fournitures Expédition",
+        "mediane_ratio_poste_sur_ca": 0.01951951951951952,
+        "n_ref_non_def_ca_gt0": 46536
+      },
+      {
+        "canal": "CULTURA",
+        "poste": "Retours Remboursements",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 46536
+      },
+      {
+        "canal": "CULTURA",
+        "poste": "Coûts Génériques",
+        "mediane_ratio_poste_sur_ca": 0.012229016120066705,
+        "n_ref_non_def_ca_gt0": 46536
+      },
+      {
+        "canal": "FNAC",
+        "poste": "Coût Achat",
+        "mediane_ratio_poste_sur_ca": 0.47564469914040114,
+        "n_ref_non_def_ca_gt0": 731
+      },
+      {
+        "canal": "FNAC",
+        "poste": "Transport Amont",
+        "mediane_ratio_poste_sur_ca": 0.0050230221850146506,
+        "n_ref_non_def_ca_gt0": 731
+      },
+      {
+        "canal": "FNAC",
+        "poste": "Outbound",
+        "mediane_ratio_poste_sur_ca": 0.2163331530557058,
+        "n_ref_non_def_ca_gt0": 731
+      },
+      {
+        "canal": "FNAC",
+        "poste": "Douanes Taxes",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 731
+      },
+      {
+        "canal": "FNAC",
+        "poste": "Commissions Marketplace",
+        "mediane_ratio_poste_sur_ca": 0.13004644515898536,
+        "n_ref_non_def_ca_gt0": 731
+      },
+      {
+        "canal": "FNAC",
+        "poste": "Fournitures Expédition",
+        "mediane_ratio_poste_sur_ca": 0.016750418760469014,
+        "n_ref_non_def_ca_gt0": 731
+      },
+      {
+        "canal": "FNAC",
+        "poste": "Retours Remboursements",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 731
+      },
+      {
+        "canal": "FNAC",
+        "poste": "Coûts Génériques",
+        "mediane_ratio_poste_sur_ca": 0.029537875178656504,
+        "n_ref_non_def_ca_gt0": 731
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste": "Coût Achat",
+        "mediane_ratio_poste_sur_ca": 0.6158836904713223,
+        "n_ref_non_def_ca_gt0": 1160
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste": "Transport Amont",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 1160
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste": "Outbound",
+        "mediane_ratio_poste_sur_ca": 0.1276399742200862,
+        "n_ref_non_def_ca_gt0": 1160
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste": "Douanes Taxes",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 1160
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste": "Commissions Marketplace",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 1160
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste": "Fournitures Expédition",
+        "mediane_ratio_poste_sur_ca": 0.0027144841688623708,
+        "n_ref_non_def_ca_gt0": 1160
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste": "Retours Remboursements",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 1160
+      },
+      {
+        "canal": "PRO_WEBSITE",
+        "poste": "Coûts Génériques",
+        "mediane_ratio_poste_sur_ca": 0.018142682942691588,
+        "n_ref_non_def_ca_gt0": 1160
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste": "Coût Achat",
+        "mediane_ratio_poste_sur_ca": 0.49,
+        "n_ref_non_def_ca_gt0": 24924
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste": "Transport Amont",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 24924
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste": "Outbound",
+        "mediane_ratio_poste_sur_ca": 0.18307426597582038,
+        "n_ref_non_def_ca_gt0": 24924
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste": "Douanes Taxes",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 24924
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste": "Commissions Marketplace",
+        "mediane_ratio_poste_sur_ca": 0.1393822393822394,
+        "n_ref_non_def_ca_gt0": 24924
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste": "Fournitures Expédition",
+        "mediane_ratio_poste_sur_ca": 0.014347826086956523,
+        "n_ref_non_def_ca_gt0": 24924
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste": "Retours Remboursements",
+        "mediane_ratio_poste_sur_ca": 0.01171548117154812,
+        "n_ref_non_def_ca_gt0": 24924
+      },
+      {
+        "canal": "RAKUTEN",
+        "poste": "Coûts Génériques",
+        "mediane_ratio_poste_sur_ca": 0.014583333333333332,
+        "n_ref_non_def_ca_gt0": 24924
+      },
+      {
+        "canal": "WEBSITE",
+        "poste": "Coût Achat",
+        "mediane_ratio_poste_sur_ca": 0.48020833333333335,
+        "n_ref_non_def_ca_gt0": 221065
+      },
+      {
+        "canal": "WEBSITE",
+        "poste": "Transport Amont",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 221065
+      },
+      {
+        "canal": "WEBSITE",
+        "poste": "Outbound",
+        "mediane_ratio_poste_sur_ca": 0.26817857142857143,
+        "n_ref_non_def_ca_gt0": 221065
+      },
+      {
+        "canal": "WEBSITE",
+        "poste": "Douanes Taxes",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 221065
+      },
+      {
+        "canal": "WEBSITE",
+        "poste": "Commissions Marketplace",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 221065
+      },
+      {
+        "canal": "WEBSITE",
+        "poste": "Fournitures Expédition",
+        "mediane_ratio_poste_sur_ca": 0.01075565361279647,
+        "n_ref_non_def_ca_gt0": 221065
+      },
+      {
+        "canal": "WEBSITE",
+        "poste": "Retours Remboursements",
+        "mediane_ratio_poste_sur_ca": 0.0,
+        "n_ref_non_def_ca_gt0": 221065
+      },
+      {
+        "canal": "WEBSITE",
+        "poste": "Coûts Génériques",
+        "mediane_ratio_poste_sur_ca": 0.015418502202643172,
+        "n_ref_non_def_ca_gt0": 221065
+      }
+    ],
+    "definition_ca": "ca_ht_net = order_amount_eur si state<>CANCELLED sinon 0",
+    "definition_simulation": "poste_simule = mediane(poste/CA | non-deficitaires meme canal, CA>0) * CA ; new_marge = marge + (poste_actuel - poste_simule) ; basculant = poste seul qui donne new_marge>0 avec max amelioration ; sinon structurellement deficitaire"
+  }
+}
