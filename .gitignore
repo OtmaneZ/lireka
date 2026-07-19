@@ -43,4 +43,4 @@ tools/**/*_output.txt
 tools/**/rapport_*.txt
 scripts/**/*_output.json
 scripts/**/*_output.txt
-scripts/**/rapport_*.txt
+scripts/**/rapport_*.txtscripts/validation/impact_export_marge_out/
