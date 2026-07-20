@@ -219,13 +219,176 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: marge_brute_commande
 
+	/// Canal pour medianes / poste basculant (meme regle M qu'avant extraction DAX).
+	column canal_bascule
+		dataType: string
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000010
+		summarizeBy: none
+		sourceColumn: canal_bascule
+
+	/// CA HT net annulation (0 si CANCELLED) — entree des ratios mediane et du poste basculant.
+	column ca_ht_net
+		dataType: double
+		isHidden
+		formatString: #,##0.00 €
+		lineageTag: c011a001-4e11-4a11-8a11-000000000011
+		summarizeBy: sum
+		sourceColumn: ca_ht_net
+
+	/// Outbound retenu agrege par commande (depuis fact_transport) — grain poste basculant.
+	column cout_transport_retenu_cmd
+		dataType: double
+		isHidden
+		formatString: #,##0.00 €
+		lineageTag: c011a001-4e11-4a11-8a11-000000000012
+		summarizeBy: sum
+		sourceColumn: cout_transport_retenu_cmd
+
+	/// Douanes agregees par commande (depuis fact_transport).
+	column duties_taxes_cmd
+		dataType: double
+		isHidden
+		formatString: #,##0.00 €
+		lineageTag: c011a001-4e11-4a11-8a11-000000000013
+		summarizeBy: sum
+		sourceColumn: duties_taxes_cmd
+
+	/// Fournitures agregees par commande (depuis fact_transport).
+	column fournitures_cmd
+		dataType: double
+		isHidden
+		formatString: #,##0.00 €
+		lineageTag: c011a001-4e11-4a11-8a11-000000000014
+		summarizeBy: sum
+		sourceColumn: fournitures_cmd
+
+	/// Mediane canal du ratio cout_achat / ca_ht_net (Power Query).
+	column med_r_achat
+		dataType: double
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000020
+		summarizeBy: none
+		sourceColumn: med_r_achat
+
+	/// Mediane canal du ratio cout_transport_amont / ca_ht_net (Power Query).
+	column med_r_amont
+		dataType: double
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000021
+		summarizeBy: none
+		sourceColumn: med_r_amont
+
+	/// Mediane canal du ratio cout_transport_retenu_cmd / ca_ht_net (Power Query).
+	column med_r_outbound
+		dataType: double
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000022
+		summarizeBy: none
+		sourceColumn: med_r_outbound
+
+	/// Mediane canal du ratio duties_taxes_cmd / ca_ht_net (Power Query).
+	column med_r_duties
+		dataType: double
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000023
+		summarizeBy: none
+		sourceColumn: med_r_duties
+
+	/// Mediane canal du ratio commissions_marketplace / ca_ht_net (Power Query).
+	column med_r_commissions
+		dataType: double
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000024
+		summarizeBy: none
+		sourceColumn: med_r_commissions
+
+	/// Mediane canal du ratio fournitures_cmd / ca_ht_net (Power Query).
+	column med_r_fournitures
+		dataType: double
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000025
+		summarizeBy: none
+		sourceColumn: med_r_fournitures
+
+	/// Mediane canal du ratio retours_remboursements / ca_ht_net (Power Query).
+	column med_r_retours
+		dataType: double
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000026
+		summarizeBy: none
+		sourceColumn: med_r_retours
+
+	/// Mediane canal du ratio couts_generiques / ca_ht_net (Power Query).
+	column med_r_generiques
+		dataType: double
+		isHidden
+		lineageTag: c011a001-4e11-4a11-8a11-000000000027
+		summarizeBy: none
+		sourceColumn: med_r_generiques
+
 	/// Page 11 Loss analysis : poste de cout qui, ramene a la mediane canal non deficitaire, suffit a basculer en marge positive.
-	/// Vide si marge >= 0. Libelles EN (affiche client).
-	column poste_basculant
+	/// Vide si marge >= 0. Libelles EN (affiche client). Tie-break = premier de la liste (comparaison stricte, ordre M historique).
+	column poste_basculant =
+			IF(
+				fact_commandes[marge_brute_commande] >= 0,
+				BLANK(),
+				VAR ca = fact_commandes[ca_ht_net]
+				VAR m0 = fact_commandes[marge_brute_commande]
+				VAR v_achat = IF(ISBLANK(fact_commandes[cout_achat]), 0, fact_commandes[cout_achat])
+				VAR v_amont = IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont])
+				VAR v_outbound = IF(ISBLANK(fact_commandes[cout_transport_retenu_cmd]), 0, fact_commandes[cout_transport_retenu_cmd])
+				VAR v_duties = IF(ISBLANK(fact_commandes[duties_taxes_cmd]), 0, fact_commandes[duties_taxes_cmd])
+				VAR v_commissions = IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace])
+				VAR v_fournitures = IF(ISBLANK(fact_commandes[fournitures_cmd]), 0, fact_commandes[fournitures_cmd])
+				VAR v_retours = IF(ISBLANK(fact_commandes[retours_remboursements]), 0, fact_commandes[retours_remboursements])
+				VAR v_generiques = IF(ISBLANK(fact_commandes[couts_generiques]), 0, fact_commandes[couts_generiques])
+				VAR med_achat = IF(ISBLANK(fact_commandes[med_r_achat]), 0, fact_commandes[med_r_achat])
+				VAR med_amont = IF(ISBLANK(fact_commandes[med_r_amont]), 0, fact_commandes[med_r_amont])
+				VAR med_outbound = IF(ISBLANK(fact_commandes[med_r_outbound]), 0, fact_commandes[med_r_outbound])
+				VAR med_duties = IF(ISBLANK(fact_commandes[med_r_duties]), 0, fact_commandes[med_r_duties])
+				VAR med_commissions = IF(ISBLANK(fact_commandes[med_r_commissions]), 0, fact_commandes[med_r_commissions])
+				VAR med_fournitures = IF(ISBLANK(fact_commandes[med_r_fournitures]), 0, fact_commandes[med_r_fournitures])
+				VAR med_retours = IF(ISBLANK(fact_commandes[med_r_retours]), 0, fact_commandes[med_r_retours])
+				VAR med_generiques = IF(ISBLANK(fact_commandes[med_r_generiques]), 0, fact_commandes[med_r_generiques])
+				VAR a1 = v_achat - med_achat * ca
+				VAR n1 = m0 + a1
+				VAR a2 = v_amont - med_amont * ca
+				VAR n2 = m0 + a2
+				VAR a3 = v_outbound - med_outbound * ca
+				VAR n3 = m0 + a3
+				VAR a4 = v_duties - med_duties * ca
+				VAR n4 = m0 + a4
+				VAR a5 = v_commissions - med_commissions * ca
+				VAR n5 = m0 + a5
+				VAR a6 = v_fournitures - med_fournitures * ca
+				VAR n6 = m0 + a6
+				VAR a7 = v_retours - med_retours * ca
+				VAR n7 = m0 + a7
+				VAR a8 = v_generiques - med_generiques * ca
+				VAR n8 = m0 + a8
+				VAR s0_a = -1.0E+100
+				VAR s1_a = IF(n1 > 0 && a1 > s0_a, a1, s0_a)
+				VAR s1_l = IF(n1 > 0 && a1 > s0_a, "Cost of goods", BLANK())
+				VAR s2_a = IF(n2 > 0 && a2 > s1_a, a2, s1_a)
+				VAR s2_l = IF(n2 > 0 && a2 > s1_a, "Inbound transport", s1_l)
+				VAR s3_a = IF(n3 > 0 && a3 > s2_a, a3, s2_a)
+				VAR s3_l = IF(n3 > 0 && a3 > s2_a, "Outbound transport", s2_l)
+				VAR s4_a = IF(n4 > 0 && a4 > s3_a, a4, s3_a)
+				VAR s4_l = IF(n4 > 0 && a4 > s3_a, "Duties and taxes", s3_l)
+				VAR s5_a = IF(n5 > 0 && a5 > s4_a, a5, s4_a)
+				VAR s5_l = IF(n5 > 0 && a5 > s4_a, "Marketplace commissions", s4_l)
+				VAR s6_a = IF(n6 > 0 && a6 > s5_a, a6, s5_a)
+				VAR s6_l = IF(n6 > 0 && a6 > s5_a, "Shipping supplies", s5_l)
+				VAR s7_a = IF(n7 > 0 && a7 > s6_a, a7, s6_a)
+				VAR s7_l = IF(n7 > 0 && a7 > s6_a, "Returns and refunds", s6_l)
+				VAR s8_a = IF(n8 > 0 && a8 > s7_a, a8, s7_a)
+				VAR s8_l = IF(n8 > 0 && a8 > s7_a, "Generic costs", s7_l)
+				RETURN IF(ISBLANK(s8_l), "Structurally loss-making", s8_l)
+			)
 		dataType: string
 		lineageTag: c011a001-4e11-4a11-8a11-000000000002
 		summarizeBy: none
-		sourceColumn: poste_basculant
 
 	/// Page 11 Loss analysis : tranche de panier (order_amount_eur / ca_ht), bornes 0/15/20/30/40/70/90/200.
 	column tranche_panier
@@ -416,43 +579,9 @@ table fact_commandes
 						{"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures", "med_r_retours", "med_r_generiques"},
 						{"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures", "med_r_retours", "med_r_generiques"}
 					),
-					// Passe 2 : pour chaque deficitaire, poste seul qui bascule (max amelioration) ; sinon structurel.
-					#"Poste basculant" = Table.AddColumn(
-						#"Medianes developpees",
-						"poste_basculant",
-						each
-							if [marge_brute_commande] >= 0 then null
-							else
-								let
-									ca = [ca_ht_net],
-									m0 = [marge_brute_commande],
-									nz = (x as any) as number => if x = null then 0 else x,
-									postes = {
-										{"Cost of goods", nz([cout_achat]), nz([med_r_achat])},
-										{"Inbound transport", nz([cout_transport_amont]), nz([med_r_amont])},
-										{"Outbound transport", nz([cout_transport_retenu_cmd]), nz([med_r_outbound])},
-										{"Duties and taxes", nz([duties_taxes_cmd]), nz([med_r_duties])},
-										{"Marketplace commissions", nz([commissions_marketplace]), nz([med_r_commissions])},
-										{"Shipping supplies", nz([fournitures_cmd]), nz([med_r_fournitures])},
-										{"Returns and refunds", nz([retours_remboursements]), nz([med_r_retours])},
-										{"Generic costs", nz([couts_generiques]), nz([med_r_generiques])}
-									},
-									best = List.Accumulate(
-										postes,
-										{null, -1.0E100},
-										(state, p) =>
-											let
-												amelio = p{1} - p{2} * ca,
-												newM = m0 + amelio
-											in
-												if newM > 0 and amelio > state{1} then {p{0}, amelio} else state
-									)
-								in
-									if best{0} = null then "Structurally loss-making" else best{0},
-						type nullable text
-					),
+					// poste_basculant : colonne calculee DAX (cascade), lit les med_r_* produits ici.
 					#"Tranche panier" = Table.AddColumn(
-						#"Poste basculant",
+						#"Medianes developpees",
 						"tranche_panier",
 						each
 							let p = if [ca_ht] = null then 0 else [ca_ht] in
@@ -488,7 +617,12 @@ table fact_commandes
 						"retours_remboursements", "couts_generiques",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande",
-						"marge_brute_commande", "poste_basculant", "tranche_panier", "tranche_panier_ordre"
+						"marge_brute_commande",
+						"canal_bascule", "ca_ht_net",
+						"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd",
+						"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties",
+						"med_r_commissions", "med_r_fournitures", "med_r_retours", "med_r_generiques",
+						"tranche_panier", "tranche_panier_ordre"
 					})
 				in
 					#"Colonnes conservees"
