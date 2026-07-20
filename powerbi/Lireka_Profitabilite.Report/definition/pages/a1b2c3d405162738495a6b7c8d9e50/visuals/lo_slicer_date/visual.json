@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "lo_slicer_date",
   "position": {
-    "x": 6,
-    "y": 198,
-    "z": 300,
-    "height": 100,
-    "width": 208,
-    "tabOrder": 300
+    "x": 6.3716814159292037,
+    "y": 197.52212389380531,
+    "z": 3000,
+    "height": 133.80530973451329,
+    "width": 207.0796460176991,
+    "tabOrder": 3000
   },
   "visual": {
     "visualType": "slicer",
@@ -80,13 +80,6 @@
               "expr": {
                 "Literal": {
                   "Value": "true"
-                }
-              }
-            },
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "9D"
                 }
               }
             }

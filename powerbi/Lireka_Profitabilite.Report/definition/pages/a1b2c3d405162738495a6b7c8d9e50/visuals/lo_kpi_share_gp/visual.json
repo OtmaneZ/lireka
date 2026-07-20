@@ -1,37 +1,17 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "lo_kpi_share_gp",
   "position": {
     "x": 1020,
     "y": 20,
-    "z": 1000,
+    "z": 7000,
     "height": 100,
     "width": 250,
-    "tabOrder": 1000
+    "tabOrder": 7000
   },
   "visual": {
     "visualType": "shape",
     "objects": {
-      "general": [
-        {
-          "properties": {
-            "shapeType": {
-              "expr": {
-                "Literal": {
-                  "Value": "'rectangle'"
-                }
-              }
-            },
-            "roundEdge": {
-              "expr": {
-                "Literal": {
-                  "Value": "6D"
-                }
-              }
-            }
-          }
-        }
-      ],
       "fill": [
         {
           "properties": {

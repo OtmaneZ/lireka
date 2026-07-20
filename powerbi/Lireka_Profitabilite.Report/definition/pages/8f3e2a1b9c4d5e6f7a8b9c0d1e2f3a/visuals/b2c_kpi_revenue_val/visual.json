@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "b2c_kpi_revenue_val",
   "position": {
     "x": 506,
     "y": 60,
-    "z": 1101,
+    "z": 15000,
     "height": 44,
     "width": 234,
-    "tabOrder": 1101
+    "tabOrder": 15000
   },
   "visual": {
     "visualType": "card",

@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "lo_chart_tranche",
   "position": {
     "x": 760,
     "y": 124,
-    "z": 2100,
+    "z": 22000,
     "height": 198,
     "width": 512,
-    "tabOrder": 2100
+    "tabOrder": 22000
   },
   "visual": {
     "visualType": "lineStackedColumnComboChart",

@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "pb_kpi_duties_unit_hdr",
   "position": {
     "x": 1021,
     "y": 21,
-    "z": 1001,
+    "z": 9000,
     "height": 36,
     "width": 248,
-    "tabOrder": 1001
+    "tabOrder": 9000
   },
   "visual": {
     "visualType": "shape",

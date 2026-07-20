@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "la_kpi_gp_val",
   "position": {
     "x": 767,
     "y": 60,
-    "z": 1102,
+    "z": 18000,
     "height": 44,
     "width": 234,
-    "tabOrder": 1102
+    "tabOrder": 18000
   },
   "visual": {
     "visualType": "card",

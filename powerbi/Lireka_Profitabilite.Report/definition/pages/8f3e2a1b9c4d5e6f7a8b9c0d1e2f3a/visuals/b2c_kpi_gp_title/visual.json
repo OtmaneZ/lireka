@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "b2c_kpi_gp_title",
   "position": {
     "x": 760,
     "y": 21,
-    "z": 9002,
+    "z": 27000,
     "height": 36,
     "width": 248,
-    "tabOrder": 9002
+    "tabOrder": 27000
   },
   "visual": {
     "visualType": "textbox",

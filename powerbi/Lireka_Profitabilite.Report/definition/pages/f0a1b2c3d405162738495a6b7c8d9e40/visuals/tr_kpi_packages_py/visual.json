@@ -4,19 +4,15 @@
   "position": {
     "x": 245,
     "y": 96,
-    "z": 1101,
+    "z": 15000,
     "height": 22,
     "width": 234,
-    "tabOrder": 1101
+    "tabOrder": 15000
   },
   "visual": {
     "visualType": "card",
     "query": {
-      "queryState": {
-        "Values": {
-          "projections": []
-        }
-      }
+      "queryState": {}
     },
     "objects": {
       "labels": [

@@ -1171,81 +1171,6 @@ table _Mesures
 		displayFolder: 04 Marge
 		lineageTag: cc000001-1111-2222-3333-444455550001
 
-	/// Field cadrage n°11 : Pure Product Margin (PPM) = PPP / Revenue.
-	/// Numerateur [Profit Produit Pur] = [Revenu (reconstruit)] - [Coût Achat Total].
-	///   [Revenu (reconstruit)] : hors CANCELLED. [Coût Achat Total] : toutes commandes (brut).
-	/// Denominateur [Revenu] : hors CANCELLED (CA HT Net Annulation + frais port).
-	/// Coherence volet revenu : depuis neutralisation fallback FX (19/07),
-	/// [Revenu] = [Revenu (reconstruit)] (ecart 0 sur entrepot). Choix [Revenu]
-	/// car definition client litterale (produit + frais de port).
-	/// Perimetre ratio : coherent sur le revenu ; le PPP conserve le cout d'achat brut
-	/// (definition PPP = Revenue - Product cost, couts conserves sur annulation).
-	measure 'Taux Marge Commerciale' =
-			DIVIDE([Profit Produit Pur], [Revenu], 0)
-		formatString: 0.0%
-		displayFolder: 04 Marge
-		lineageTag: 199a932c-638d-4db1-8956-494775613037
-
-	/// Field cadrage n°14 : Shipping cost per unit = Shipping cost / ordered units.
-	/// Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED
-	/// (cout mesure sur colis expedies).
-	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
-	/// Perimetre DIVERGENT (definition client, pas une erreur C-01) : cout sur expedie /
-	/// unites commandees (annulees incluses). Applique tel quel.
-	measure 'Transport sortant par unité' =
-			DIVIDE([Coût Transport Outbound (Retenu)], [Unités commandées], 0)
-		formatString: #,##0.00 €
-		displayFolder: 03 Coûts
-		lineageTag: 25701a53-d548-4931-ab09-292b5a2a369d
-
-	/// Field cadrage n°15 : Shipping % of revenue = Shipping cost / revenue.
-	/// Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED.
-	/// Denominateur [Revenu] : hors CANCELLED.
-	/// Perimetre DIVERGENT : cout brut colis / revenu net annulation, meme traitement
-	/// des couts que [Marge Brute] / [Taux Marge Brute] (couts conserves sur annulation).
-	/// Variante nette des deux cotes (non retenue) :
-	/// DIVIDE(CALCULATE([Coût Transport Outbound (Retenu)], fact_commandes[state] <> "CANCELLED"), [Revenu], 0).
-	/// Choix : formules client via mesures existantes, aligne sur [Taux Marge Brute].
-	measure 'Taux Transport sortant' =
-			DIVIDE([Coût Transport Outbound (Retenu)], [Revenu], 0)
-		formatString: 0.0%
-		displayFolder: 03 Coûts
-		lineageTag: 0b1e9085-03dd-4b85-9fc9-54a934850e8c
-
-	/// Field cadrage n°17 : D/T per unit = D/T / ordered units.
-	/// Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.
-	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
-	/// Perimetre DIVERGENT (definition client) : D/T sur colis expedies / unites commandees.
-	measure 'Douanes Taxes par unité' =
-			DIVIDE([Douanes Taxes], [Unités commandées], 0)
-		formatString: #,##0.00 €
-		displayFolder: 03 Coûts
-		lineageTag: 01567c62-3855-4436-9e27-a3a089c715e2
-
-	/// Field cadrage n°18 : D/T percentage of revenue = D/T / revenue.
-	/// Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.
-	/// Denominateur [Revenu] : hors CANCELLED.
-	/// Perimetre DIVERGENT : meme logique que [Taux Transport sortant] / [Taux Marge Brute].
-	/// Variante nette des deux cotes (non retenue) :
-	/// DIVIDE(CALCULATE([Douanes Taxes], fact_commandes[state] <> "CANCELLED"), [Revenu], 0).
-	/// Choix : formules client via mesures existantes, aligne sur [Taux Marge Brute].
-	measure 'Taux Douanes Taxes' =
-			DIVIDE([Douanes Taxes], [Revenu], 0)
-		formatString: 0.0%
-		displayFolder: 03 Coûts
-		lineageTag: 915b1437-3dcd-4ac3-84e4-01cd6bc5cce7
-
-	/// Field cadrage n°25 : Gross Profit per unit = Marge brute / ordered units.
-	/// Numerateur [Marge Brute] : revenu hors CANCELLED, couts toutes commandes (Marc).
-	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
-	/// Perimetre DIVERGENT (definition client) : marge (revenu net, couts bruts) /
-	/// unites commandees (annulees incluses).
-	measure 'Marge Brute par unité' =
-			DIVIDE([Marge Brute], [Unités commandées], 0)
-		formatString: #,##0.00 €
-		displayFolder: 04 Marge
-		lineageTag: 2e22f371-881d-4cbd-82eb-70cbdf3f4787
-
 	measure 'B2C Display - Sales' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
 			VAR CountryRank = [B2C Rank]
@@ -2315,6 +2240,75 @@ table _Mesures
 		formatString: #,##0.00 €
 		displayFolder: 10 Bridge
 		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0004
+
+	/// Field cadrage n°11 : Pure Product Margin (PPM) = PPP / Revenue.
+	/// Numerateur [Profit Produit Pur] = [Revenu (reconstruit)] - [Coût Achat Total].
+	/// [Revenu (reconstruit)] : hors CANCELLED. [Coût Achat Total] : toutes commandes (brut).
+	/// Denominateur [Revenu] : hors CANCELLED (CA HT Net Annulation + frais port).
+	/// Coherence volet revenu : depuis neutralisation fallback FX (19/07),
+	/// [Revenu] = [Revenu (reconstruit)] (ecart 0 sur entrepot). Choix [Revenu]
+	/// car definition client litterale (produit + frais de port).
+	/// Perimetre ratio : coherent sur le revenu ; le PPP conserve le cout d'achat brut
+	/// (definition PPP = Revenue - Product cost, couts conserves sur annulation).
+	measure 'Taux Marge Commerciale' = DIVIDE([Profit Produit Pur], [Revenu], 0)
+		formatString: 0.0%
+		displayFolder: 04 Marge
+		lineageTag: 199a932c-638d-4db1-8956-494775613037
+
+	/// Field cadrage n°14 : Shipping cost per unit = Shipping cost / ordered units.
+	/// Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED
+	/// (cout mesure sur colis expedies).
+	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
+	/// Perimetre DIVERGENT (definition client, pas une erreur C-01) : cout sur expedie /
+	/// unites commandees (annulees incluses). Applique tel quel.
+	measure 'Transport sortant par unité' = DIVIDE([Coût Transport Outbound (Retenu)], [Unités commandées], 0)
+		formatString: #,##0.00 €
+		displayFolder: 03 Coûts
+		lineageTag: 25701a53-d548-4931-ab09-292b5a2a369d
+
+	/// Field cadrage n°15 : Shipping % of revenue = Shipping cost / revenue.
+	/// Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED.
+	/// Denominateur [Revenu] : hors CANCELLED.
+	/// Perimetre DIVERGENT : cout brut colis / revenu net annulation, meme traitement
+	/// des couts que [Marge Brute] / [Taux Marge Brute] (couts conserves sur annulation).
+	/// Variante nette des deux cotes (non retenue) :
+	/// DIVIDE(CALCULATE([Coût Transport Outbound (Retenu)], fact_commandes[state] <> "CANCELLED"), [Revenu], 0).
+	/// Choix : formules client via mesures existantes, aligne sur [Taux Marge Brute].
+	measure 'Taux Transport sortant' = DIVIDE([Coût Transport Outbound (Retenu)], [Revenu], 0)
+		formatString: 0.0%
+		displayFolder: 03 Coûts
+		lineageTag: 0b1e9085-03dd-4b85-9fc9-54a934850e8c
+
+	/// Field cadrage n°17 : D/T per unit = D/T / ordered units.
+	/// Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.
+	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
+	/// Perimetre DIVERGENT (definition client) : D/T sur colis expedies / unites commandees.
+	measure 'Douanes Taxes par unité' = DIVIDE([Douanes Taxes], [Unités commandées], 0)
+		formatString: #,##0.00 €
+		displayFolder: 03 Coûts
+		lineageTag: 01567c62-3855-4436-9e27-a3a089c715e2
+
+	/// Field cadrage n°18 : D/T percentage of revenue = D/T / revenue.
+	/// Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.
+	/// Denominateur [Revenu] : hors CANCELLED.
+	/// Perimetre DIVERGENT : meme logique que [Taux Transport sortant] / [Taux Marge Brute].
+	/// Variante nette des deux cotes (non retenue) :
+	/// DIVIDE(CALCULATE([Douanes Taxes], fact_commandes[state] <> "CANCELLED"), [Revenu], 0).
+	/// Choix : formules client via mesures existantes, aligne sur [Taux Marge Brute].
+	measure 'Taux Douanes Taxes' = DIVIDE([Douanes Taxes], [Revenu], 0)
+		formatString: 0.0%
+		displayFolder: 03 Coûts
+		lineageTag: 915b1437-3dcd-4ac3-84e4-01cd6bc5cce7
+
+	/// Field cadrage n°25 : Gross Profit per unit = Marge brute / ordered units.
+	/// Numerateur [Marge Brute] : revenu hors CANCELLED, couts toutes commandes (Marc).
+	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
+	/// Perimetre DIVERGENT (definition client) : marge (revenu net, couts bruts) /
+	/// unites commandees (annulees incluses).
+	measure 'Marge Brute par unité' = DIVIDE([Marge Brute], [Unités commandées], 0)
+		formatString: #,##0.00 €
+		displayFolder: 04 Marge
+		lineageTag: 2e22f371-881d-4cbd-82eb-70cbdf3f4787
 
 	/// Page 11 Loss analysis : nombre de commandes a marge_brute_commande < 0.
 	measure 'Nb Commandes Deficitaires' =

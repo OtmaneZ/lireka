@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "gv_matrix_yoy_revenue",
   "position": {
     "x": 237,
     "y": 306,
-    "z": 2200,
+    "z": 25000,
     "height": 56,
     "width": 512,
-    "tabOrder": 2200
+    "tabOrder": 25000
   },
   "visual": {
     "visualType": "pivotTable",
@@ -28,6 +28,7 @@
               },
               "queryRef": "dim_type_commande.canal",
               "nativeQueryRef": "canal",
+              "active": true,
               "displayName": "Channel"
             }
           ]

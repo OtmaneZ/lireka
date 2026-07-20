@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "pb_footer",
   "position": {
     "x": 237,
     "y": 702,
-    "z": 4000,
+    "z": 22000,
     "height": 16,
     "width": 1035,
-    "tabOrder": 4000
+    "tabOrder": 22000
   },
   "visual": {
     "visualType": "textbox",

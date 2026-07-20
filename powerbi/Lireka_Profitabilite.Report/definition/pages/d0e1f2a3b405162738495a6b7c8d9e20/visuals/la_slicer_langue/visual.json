@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "la_slicer_langue",
   "position": {
-    "x": 6,
-    "y": 388,
-    "z": 320,
-    "height": 66,
-    "width": 208,
-    "tabOrder": 320
+    "x": 3.1858407079646018,
+    "y": 425.30973451327435,
+    "z": 5000,
+    "height": 78.053097345132741,
+    "width": 207.0796460176991,
+    "tabOrder": 5000
   },
   "visual": {
     "visualType": "slicer",

@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "tr_slicer_date",
   "position": {
-    "x": 6,
-    "y": 198,
-    "z": 300,
-    "height": 100,
-    "width": 208,
-    "tabOrder": 300
+    "x": 3.1858407079646018,
+    "y": 230.97345132743362,
+    "z": 3000,
+    "height": 129.02654867256638,
+    "width": 207.0796460176991,
+    "tabOrder": 3000
   },
   "visual": {
     "visualType": "slicer",
