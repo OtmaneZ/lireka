@@ -1,4 +1,4 @@
-/// Field parameter — granularité axe temps (General View). Jour / Semaine / Mois.
+/// Field parameter - time axis granularity (General View). Week / Month.
 table _ParamAxePeriode
 	lineageTag: d4d5d6d7-e8e9-0123-defa-456789012345
 
@@ -6,6 +6,7 @@ table _ParamAxePeriode
 		lineageTag: 7bc9f18e-a1b0-4597-a4f9-1ac6b5e3700b
 		isNameInferred
 		sourceColumn: [Value1]
+		sortByColumn: Value3
 
 	column Value2
 		lineageTag: a679acff-29d6-4f1d-8993-b778a14590a8
@@ -21,9 +22,8 @@ table _ParamAxePeriode
 		mode: import
 		source =
 				{
-					("Jour", NAMEOF(dim_date[date]), 0),
-					("Semaine", NAMEOF(dim_date[semaine_annee_libelle]), 1),
-					("Mois", NAMEOF(dim_date[nom_mois_annee]), 2)
+					("Week", NAMEOF(dim_date[semaine_annee_libelle]), 0),
+					("Month", NAMEOF(dim_date[mois_annee_court_en]), 1)
 				}
 
 	annotation FieldParameterMetadata = { "version": 0, "kind": 2 }
