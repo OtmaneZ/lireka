@@ -209,17 +209,7 @@ table fact_commandes
 
 		annotation UnderlyingDateTimeDataType = Date
 
-	/// Page 11 Loss analysis : marge brute au grain commande (formule [Marge Brute] a 10 postes).
-	/// Outbound = cout_transport_retenu (facture rapprochee si dispo, sinon backend), pre-agrege depuis fact_transport.
-	/// CANCELLED : CA et frais de port a 0 en ligne (les postes de cout restent inchanges).
-	column marge_brute_commande
-		dataType: double
-		formatString: #,##0.00 €
-		lineageTag: c011a001-4e11-4a11-8a11-000000000001
-		summarizeBy: sum
-		sourceColumn: marge_brute_commande
-
-	/// Canal pour medianes / poste basculant (meme regle M qu'avant extraction DAX).
+	/// Canal pour medianes / poste basculant (Power Query).
 	column canal_bascule
 		dataType: string
 		isHidden
@@ -236,96 +226,260 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: ca_ht_net
 
-	/// Outbound retenu agrege par commande (depuis fact_transport) — grain poste basculant.
-	column cout_transport_retenu_cmd
+	/// Outbound retenu agrege par commande via rel_transport_commandes (null = 0).
+	column cout_transport_retenu_cmd =
+			IF(
+				ISBLANK(CALCULATE(SUM(fact_transport[cout_transport_retenu]))),
+				0,
+				CALCULATE(SUM(fact_transport[cout_transport_retenu]))
+			)
 		dataType: double
 		isHidden
 		formatString: #,##0.00 €
 		lineageTag: c011a001-4e11-4a11-8a11-000000000012
 		summarizeBy: sum
-		sourceColumn: cout_transport_retenu_cmd
 
-	/// Douanes agregees par commande (depuis fact_transport).
-	column duties_taxes_cmd
+	/// Douanes agregees par commande via rel_transport_commandes (null = 0).
+	column duties_taxes_cmd =
+			IF(
+				ISBLANK(CALCULATE(SUM(fact_transport[duties_taxes_eur]))),
+				0,
+				CALCULATE(SUM(fact_transport[duties_taxes_eur]))
+			)
 		dataType: double
 		isHidden
 		formatString: #,##0.00 €
 		lineageTag: c011a001-4e11-4a11-8a11-000000000013
 		summarizeBy: sum
-		sourceColumn: duties_taxes_cmd
 
-	/// Fournitures agregees par commande (depuis fact_transport).
-	column fournitures_cmd
+	/// Fournitures agregees par commande via rel_transport_commandes (null = 0).
+	column fournitures_cmd =
+			IF(
+				ISBLANK(CALCULATE(SUM(fact_transport[shipping_supply_cost_eur]))),
+				0,
+				CALCULATE(SUM(fact_transport[shipping_supply_cost_eur]))
+			)
 		dataType: double
 		isHidden
 		formatString: #,##0.00 €
 		lineageTag: c011a001-4e11-4a11-8a11-000000000014
 		summarizeBy: sum
-		sourceColumn: fournitures_cmd
 
-	/// Mediane canal du ratio cout_achat / ca_ht_net (Power Query).
-	column med_r_achat
+	/// Page 11 Loss analysis : marge brute au grain commande (formule [Marge Brute] a 10 postes).
+	/// Outbound = cout_transport_retenu (facture rapprochee si dispo, sinon backend), agrege DAX.
+	/// CANCELLED : CA et frais de port a 0 en ligne (les postes de cout restent inchanges).
+	/// frais_port_net inline = meme logique que l'etape M #"Frais port net".
+	column marge_brute_commande =
+			fact_commandes[ca_ht_net]
+				+ IF(fact_commandes[state] = "CANCELLED", 0, IF(ISBLANK(fact_commandes[frais_port_encaisse]), 0, fact_commandes[frais_port_encaisse]))
+				- IF(ISBLANK(fact_commandes[cout_achat]), 0, fact_commandes[cout_achat])
+				- IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont])
+				- fact_commandes[cout_transport_retenu_cmd]
+				- fact_commandes[duties_taxes_cmd]
+				- IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace])
+				- fact_commandes[fournitures_cmd]
+				- IF(ISBLANK(fact_commandes[retours_remboursements]), 0, fact_commandes[retours_remboursements])
+				- IF(ISBLANK(fact_commandes[couts_generiques]), 0, fact_commandes[couts_generiques])
+		dataType: double
+		formatString: #,##0.00 €
+		lineageTag: c011a001-4e11-4a11-8a11-000000000001
+		summarizeBy: sum
+
+	/// Mediane canal du ratio cout_achat / ca_ht_net (non-deficitaires, ca_ht_net > 0).
+	column med_r_achat =
+			CALCULATE(
+				MEDIANX(
+					fact_commandes,
+					DIVIDE(IF(ISBLANK(fact_commandes[cout_achat]), 0, fact_commandes[cout_achat]), fact_commandes[ca_ht_net])
+				),
+				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+				fact_commandes[marge_brute_commande] >= 0,
+				fact_commandes[ca_ht_net] > 0
+			)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000020
 		summarizeBy: none
-		sourceColumn: med_r_achat
 
-	/// Mediane canal du ratio cout_transport_amont / ca_ht_net (Power Query).
-	column med_r_amont
+	/// Mediane canal du ratio cout_transport_amont / ca_ht_net.
+	column med_r_amont =
+			CALCULATE(
+				MEDIANX(
+					fact_commandes,
+					DIVIDE(IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont]), fact_commandes[ca_ht_net])
+				),
+				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+				fact_commandes[marge_brute_commande] >= 0,
+				fact_commandes[ca_ht_net] > 0
+			)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000021
 		summarizeBy: none
-		sourceColumn: med_r_amont
 
-	/// Mediane canal du ratio cout_transport_retenu_cmd / ca_ht_net (Power Query).
-	column med_r_outbound
+	/// Mediane canal du ratio cout_transport_retenu_cmd / ca_ht_net.
+	column med_r_outbound =
+			CALCULATE(
+				MEDIANX(
+					fact_commandes,
+					DIVIDE(IF(ISBLANK(fact_commandes[cout_transport_retenu_cmd]), 0, fact_commandes[cout_transport_retenu_cmd]), fact_commandes[ca_ht_net])
+				),
+				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+				fact_commandes[marge_brute_commande] >= 0,
+				fact_commandes[ca_ht_net] > 0
+			)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000022
 		summarizeBy: none
-		sourceColumn: med_r_outbound
 
-	/// Mediane canal du ratio duties_taxes_cmd / ca_ht_net (Power Query).
-	column med_r_duties
+	/// Mediane canal du ratio duties_taxes_cmd / ca_ht_net.
+	column med_r_duties =
+			CALCULATE(
+				MEDIANX(
+					fact_commandes,
+					DIVIDE(IF(ISBLANK(fact_commandes[duties_taxes_cmd]), 0, fact_commandes[duties_taxes_cmd]), fact_commandes[ca_ht_net])
+				),
+				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+				fact_commandes[marge_brute_commande] >= 0,
+				fact_commandes[ca_ht_net] > 0
+			)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000023
 		summarizeBy: none
-		sourceColumn: med_r_duties
 
-	/// Mediane canal du ratio commissions_marketplace / ca_ht_net (Power Query).
-	column med_r_commissions
+	/// Mediane canal du ratio commissions_marketplace / ca_ht_net.
+	column med_r_commissions =
+			CALCULATE(
+				MEDIANX(
+					fact_commandes,
+					DIVIDE(IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace]), fact_commandes[ca_ht_net])
+				),
+				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+				fact_commandes[marge_brute_commande] >= 0,
+				fact_commandes[ca_ht_net] > 0
+			)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000024
 		summarizeBy: none
-		sourceColumn: med_r_commissions
 
-	/// Mediane canal du ratio fournitures_cmd / ca_ht_net (Power Query).
-	column med_r_fournitures
+	/// Mediane canal du ratio fournitures_cmd / ca_ht_net.
+	column med_r_fournitures =
+			CALCULATE(
+				MEDIANX(
+					fact_commandes,
+					DIVIDE(IF(ISBLANK(fact_commandes[fournitures_cmd]), 0, fact_commandes[fournitures_cmd]), fact_commandes[ca_ht_net])
+				),
+				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+				fact_commandes[marge_brute_commande] >= 0,
+				fact_commandes[ca_ht_net] > 0
+			)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000025
 		summarizeBy: none
-		sourceColumn: med_r_fournitures
 
-	/// Mediane canal du ratio retours_remboursements / ca_ht_net (Power Query).
-	column med_r_retours
+	/// Mediane canal du ratio retours_remboursements / ca_ht_net.
+	column med_r_retours =
+			CALCULATE(
+				MEDIANX(
+					fact_commandes,
+					DIVIDE(IF(ISBLANK(fact_commandes[retours_remboursements]), 0, fact_commandes[retours_remboursements]), fact_commandes[ca_ht_net])
+				),
+				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+				fact_commandes[marge_brute_commande] >= 0,
+				fact_commandes[ca_ht_net] > 0
+			)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000026
 		summarizeBy: none
-		sourceColumn: med_r_retours
 
-	/// Mediane canal du ratio couts_generiques / ca_ht_net (Power Query).
-	column med_r_generiques
+	/// Mediane canal du ratio couts_generiques / ca_ht_net.
+	column med_r_generiques =
+			CALCULATE(
+				MEDIANX(
+					fact_commandes,
+					DIVIDE(IF(ISBLANK(fact_commandes[couts_generiques]), 0, fact_commandes[couts_generiques]), fact_commandes[ca_ht_net])
+				),
+				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+				fact_commandes[marge_brute_commande] >= 0,
+				fact_commandes[ca_ht_net] > 0
+			)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000027
 		summarizeBy: none
-		sourceColumn: med_r_generiques
+
+	/// Page 11 Loss analysis : tranche de panier (order_amount_eur / ca_ht), bornes 0/15/20/30/40/70/90/200.
+	column tranche_panier =
+			VAR p = IF(ISBLANK(fact_commandes[ca_ht]), 0, fact_commandes[ca_ht])
+			RETURN
+				IF(
+					p < 15,
+					"Under 15 EUR",
+					IF(
+						p < 20,
+						"15 to 20 EUR",
+						IF(
+							p < 30,
+							"20 to 30 EUR",
+							IF(
+								p < 40,
+								"30 to 40 EUR",
+								IF(
+									p < 70,
+									"40 to 70 EUR",
+									IF(
+										p < 90,
+										"70 to 90 EUR",
+										IF(p < 200, "90 to 200 EUR", "200 EUR and above")
+									)
+								)
+							)
+						)
+					)
+				)
+		dataType: string
+		lineageTag: c011a001-4e11-4a11-8a11-000000000003
+		summarizeBy: none
+		sortByColumn: tranche_panier_ordre
+
+	/// Ordre d'affichage de tranche_panier (1..8). Colonne de tri uniquement.
+	column tranche_panier_ordre =
+			VAR t = fact_commandes[tranche_panier]
+			RETURN
+				IF(
+					t = "Under 15 EUR",
+					1,
+					IF(
+						t = "15 to 20 EUR",
+						2,
+						IF(
+							t = "20 to 30 EUR",
+							3,
+							IF(
+								t = "30 to 40 EUR",
+								4,
+								IF(
+									t = "40 to 70 EUR",
+									5,
+									IF(
+										t = "70 to 90 EUR",
+										6,
+										IF(t = "90 to 200 EUR", 7, 8)
+									)
+								)
+							)
+						)
+					)
+				)
+		dataType: int64
+		formatString: 0
+		lineageTag: c011a001-4e11-4a11-8a11-000000000004
+		summarizeBy: none
 
 	/// Page 11 Loss analysis : poste de cout qui, ramene a la mediane canal non deficitaire, suffit a basculer en marge positive.
 	/// Vide si marge >= 0. Libelles EN (affiche client). Tie-break = premier de la liste (comparaison stricte, ordre M historique).
@@ -389,22 +543,6 @@ table fact_commandes
 		dataType: string
 		lineageTag: c011a001-4e11-4a11-8a11-000000000002
 		summarizeBy: none
-
-	/// Page 11 Loss analysis : tranche de panier (order_amount_eur / ca_ht), bornes 0/15/20/30/40/70/90/200.
-	column tranche_panier
-		dataType: string
-		lineageTag: c011a001-4e11-4a11-8a11-000000000003
-		summarizeBy: none
-		sourceColumn: tranche_panier
-		sortByColumn: tranche_panier_ordre
-
-	/// Ordre d'affichage de tranche_panier (1..8). Colonne de tri uniquement.
-	column tranche_panier_ordre
-		dataType: int64
-		formatString: 0
-		lineageTag: c011a001-4e11-4a11-8a11-000000000004
-		summarizeBy: none
-		sourceColumn: tranche_panier_ordre
 
 	partition fact_commandes = m
 		mode: import
@@ -479,40 +617,10 @@ table fact_commandes
 						Replacer.ReplaceValue,
 						{"retours_remboursements", "couts_generiques"}
 					),
-					// Page 11 : pre-agreger les postes grain colis (evite duplication des lignes commande).
-					#"Couts colis par commande" = Table.Group(
-						Table.SelectColumns(fact_transport, {"order_id", "cout_transport_retenu", "duties_taxes_eur", "shipping_supply_cost_eur"}),
-						{"order_id"},
-						{
-							{"cout_transport_retenu_cmd", each List.Sum(List.Transform([cout_transport_retenu], each if _ = null then 0 else _)), type number},
-							{"duties_taxes_cmd", each List.Sum(List.Transform([duties_taxes_eur], each if _ = null then 0 else _)), type number},
-							{"fournitures_cmd", each List.Sum(List.Transform([shipping_supply_cost_eur], each if _ = null then 0 else _)), type number}
-						}
-					),
-					#"Jointure couts colis" = Table.NestedJoin(
-						#"Avec bloc5",
-						{"id_commande"},
-						#"Couts colis par commande",
-						{"order_id"},
-						"colis_agg",
-						JoinKind.LeftOuter
-					),
-					#"Couts colis developpes" = Table.ExpandTableColumn(
-						#"Jointure couts colis",
-						"colis_agg",
-						{"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd"},
-						{"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd"}
-					),
-					#"Couts colis a zero" = Table.ReplaceValue(
-						#"Couts colis developpes",
-						null,
-						0,
-						Replacer.ReplaceValue,
-						{"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd"}
-					),
 					// Canal poste basculant (meme regle que le prototype Python page 11).
+					// Agregats colis / marge / medianes / tranche : colonnes calculees DAX.
 					#"Canal bascule" = Table.AddColumn(
-						#"Couts colis a zero",
+						#"Avec bloc5",
 						"canal_bascule",
 						each
 							let s = if [source] = null then "" else Text.Trim([source]) in
@@ -533,96 +641,14 @@ table fact_commandes
 						each if [state] = "CANCELLED" then 0 else if [frais_port_encaisse] = null then 0 else [frais_port_encaisse],
 						type number
 					),
-					#"Marge brute commande" = Table.AddColumn(
-						#"Frais port net",
-						"marge_brute_commande",
-						each
-							[ca_ht_net] + [frais_port_net]
-							- (if [cout_achat] = null then 0 else [cout_achat])
-							- (if [cout_transport_amont] = null then 0 else [cout_transport_amont])
-							- [cout_transport_retenu_cmd]
-							- [duties_taxes_cmd]
-							- (if [commissions_marketplace] = null then 0 else [commissions_marketplace])
-							- [fournitures_cmd]
-							- (if [retours_remboursements] = null then 0 else [retours_remboursements])
-							- (if [couts_generiques] = null then 0 else [couts_generiques]),
-						type number
-					),
-					// Passe 1 : mediane du ratio poste/CA par canal, sur non-deficitaires a CA > 0.
-					#"Ref mediane" = Table.SelectRows(#"Marge brute commande", each [marge_brute_commande] >= 0 and [ca_ht_net] > 0),
-					#"Medianes canal" = Table.Group(
-						#"Ref mediane",
-						{"canal_bascule"},
-						{
-							{"med_r_achat", each List.Median(List.Transform(List.Zip({[cout_achat], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number},
-							{"med_r_amont", each List.Median(List.Transform(List.Zip({[cout_transport_amont], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number},
-							{"med_r_outbound", each List.Median(List.Transform(List.Zip({[cout_transport_retenu_cmd], [ca_ht_net]}), each _{0} / _{1})), type number},
-							{"med_r_duties", each List.Median(List.Transform(List.Zip({[duties_taxes_cmd], [ca_ht_net]}), each _{0} / _{1})), type number},
-							{"med_r_commissions", each List.Median(List.Transform(List.Zip({[commissions_marketplace], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number},
-							{"med_r_fournitures", each List.Median(List.Transform(List.Zip({[fournitures_cmd], [ca_ht_net]}), each _{0} / _{1})), type number},
-							{"med_r_retours", each List.Median(List.Transform(List.Zip({[retours_remboursements], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number},
-							{"med_r_generiques", each List.Median(List.Transform(List.Zip({[couts_generiques], [ca_ht_net]}), each (if _{0} = null then 0 else _{0}) / _{1})), type number}
-						}
-					),
-					#"Medianes buffer" = Table.Buffer(#"Medianes canal"),
-					#"Jointure medianes" = Table.NestedJoin(
-						#"Marge brute commande",
-						{"canal_bascule"},
-						#"Medianes buffer",
-						{"canal_bascule"},
-						"med",
-						JoinKind.LeftOuter
-					),
-					#"Medianes developpees" = Table.ExpandTableColumn(
-						#"Jointure medianes",
-						"med",
-						{"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures", "med_r_retours", "med_r_generiques"},
-						{"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures", "med_r_retours", "med_r_generiques"}
-					),
-					// poste_basculant : colonne calculee DAX (cascade), lit les med_r_* produits ici.
-					#"Tranche panier" = Table.AddColumn(
-						#"Medianes developpees",
-						"tranche_panier",
-						each
-							let p = if [ca_ht] = null then 0 else [ca_ht] in
-							if p < 15 then "Under 15 EUR"
-							else if p < 20 then "15 to 20 EUR"
-							else if p < 30 then "20 to 30 EUR"
-							else if p < 40 then "30 to 40 EUR"
-							else if p < 70 then "40 to 70 EUR"
-							else if p < 90 then "70 to 90 EUR"
-							else if p < 200 then "90 to 200 EUR"
-							else "200 EUR and above",
-						type text
-					),
-					#"Tranche panier ordre" = Table.AddColumn(
-						#"Tranche panier",
-						"tranche_panier_ordre",
-						each
-							let t = [tranche_panier] in
-							if t = "Under 15 EUR" then 1
-							else if t = "15 to 20 EUR" then 2
-							else if t = "20 to 30 EUR" then 3
-							else if t = "30 to 40 EUR" then 4
-							else if t = "40 to 70 EUR" then 5
-							else if t = "70 to 90 EUR" then 6
-							else if t = "90 to 200 EUR" then 7
-							else 8,
-						Int64.Type
-					),
-					#"Colonnes conservees" = Table.SelectColumns(#"Tranche panier ordre", {
+					#"Colonnes conservees" = Table.SelectColumns(#"Frais port net", {
 						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
 						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						"cout_transport_amont", "commissions_marketplace",
 						"retours_remboursements", "couts_generiques",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande",
-						"marge_brute_commande",
-						"canal_bascule", "ca_ht_net",
-						"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd",
-						"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties",
-						"med_r_commissions", "med_r_fournitures", "med_r_retours", "med_r_generiques",
-						"tranche_panier", "tranche_panier_ordre"
+						"canal_bascule", "ca_ht_net"
 					})
 				in
 					#"Colonnes conservees"
