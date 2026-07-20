@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "la_matrix_yoy_gp",
   "position": {
     "x": 760,
     "y": 306,
-    "z": 2210,
+    "z": 26000,
     "height": 56,
     "width": 512,
-    "tabOrder": 2210
+    "tabOrder": 26000
   },
   "visual": {
     "visualType": "pivotTable",
@@ -28,6 +28,7 @@
               },
               "queryRef": "dim_type_commande.canal",
               "nativeQueryRef": "canal",
+              "active": true,
               "displayName": "Channel"
             }
           ]

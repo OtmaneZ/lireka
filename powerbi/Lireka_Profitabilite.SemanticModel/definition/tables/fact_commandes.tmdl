@@ -448,28 +448,29 @@ table fact_commandes
 		sortByColumn: tranche_panier_ordre
 
 	/// Ordre d'affichage de tranche_panier (1..8). Colonne de tri uniquement.
+	/// Calcule sur ca_ht (pas via tranche_panier) pour eviter le cycle sortByColumn.
 	column tranche_panier_ordre =
-			VAR t = fact_commandes[tranche_panier]
+			VAR p = IF(ISBLANK(fact_commandes[ca_ht]), 0, fact_commandes[ca_ht])
 			RETURN
 				IF(
-					t = "Under 15 EUR",
+					p < 15,
 					1,
 					IF(
-						t = "15 to 20 EUR",
+						p < 20,
 						2,
 						IF(
-							t = "20 to 30 EUR",
+							p < 30,
 							3,
 							IF(
-								t = "30 to 40 EUR",
+								p < 40,
 								4,
 								IF(
-									t = "40 to 70 EUR",
+									p < 70,
 									5,
 									IF(
-										t = "70 to 90 EUR",
+										p < 90,
 										6,
-										IF(t = "90 to 200 EUR", 7, 8)
+										IF(p < 200, 7, 8)
 									)
 								)
 							)

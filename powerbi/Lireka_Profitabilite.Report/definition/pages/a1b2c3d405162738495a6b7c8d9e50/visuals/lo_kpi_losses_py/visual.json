@@ -1,22 +1,18 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "lo_kpi_losses_py",
   "position": {
     "x": 767,
     "y": 96,
-    "z": 1103,
+    "z": 18000,
     "height": 22,
     "width": 234,
-    "tabOrder": 1103
+    "tabOrder": 18000
   },
   "visual": {
     "visualType": "card",
     "query": {
-      "queryState": {
-        "Values": {
-          "projections": []
-        }
-      }
+      "queryState": {}
     },
     "objects": {
       "labels": [

@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "b2c2_chart_bridge_gp",
   "position": {
     "x": 760,
     "y": 134,
-    "z": 3100,
+    "z": 23000,
     "height": 550,
     "width": 512,
-    "tabOrder": 3100
+    "tabOrder": 23000
   },
   "visual": {
     "visualType": "waterfallChart",

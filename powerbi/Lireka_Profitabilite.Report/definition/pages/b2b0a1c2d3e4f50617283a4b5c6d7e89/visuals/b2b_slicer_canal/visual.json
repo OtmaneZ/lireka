@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "b2b_slicer_canal",
   "position": {
-    "x": 6,
-    "y": 310,
-    "z": 310,
-    "height": 66,
-    "width": 208,
-    "tabOrder": 310
+    "x": 3.1858407079646018,
+    "y": 360,
+    "z": 4000,
+    "height": 65.309734513274336,
+    "width": 207.0796460176991,
+    "tabOrder": 4000
   },
   "visual": {
     "visualType": "slicer",

@@ -1,22 +1,18 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "pb_kpi_gp_unit_py",
   "position": {
     "x": 506,
     "y": 96,
-    "z": 1102,
+    "z": 16000,
     "height": 22,
     "width": 234,
-    "tabOrder": 1102
+    "tabOrder": 16000
   },
   "visual": {
     "visualType": "card",
     "query": {
-      "queryState": {
-        "Values": {
-          "projections": []
-        }
-      }
+      "queryState": {}
     },
     "objects": {
       "labels": [

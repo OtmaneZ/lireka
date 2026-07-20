@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "tr_kpi_packages_val",
   "position": {
     "x": 245,
     "y": 60,
-    "z": 1100,
+    "z": 13000,
     "height": 44,
     "width": 234,
-    "tabOrder": 1100
+    "tabOrder": 13000
   },
   "visual": {
     "visualType": "card",

@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "loss_slicer_langue",
   "position": {
-    "x": 6,
-    "y": 388,
+    "x": 6.3716814159292037,
+    "y": 450.79646017699116,
     "z": 320,
-    "height": 66,
-    "width": 208,
+    "height": 65.309734513274336,
+    "width": 207.0796460176991,
     "tabOrder": 320
   },
   "visual": {

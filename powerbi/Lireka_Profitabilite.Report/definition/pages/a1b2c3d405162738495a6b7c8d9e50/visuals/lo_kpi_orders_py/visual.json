@@ -1,22 +1,18 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "lo_kpi_orders_py",
   "position": {
     "x": 245,
     "y": 96,
-    "z": 1101,
+    "z": 14000,
     "height": 22,
     "width": 234,
-    "tabOrder": 1101
+    "tabOrder": 14000
   },
   "visual": {
     "visualType": "card",
     "query": {
-      "queryState": {
-        "Values": {
-          "projections": []
-        }
-      }
+      "queryState": {}
     },
     "objects": {
       "labels": [

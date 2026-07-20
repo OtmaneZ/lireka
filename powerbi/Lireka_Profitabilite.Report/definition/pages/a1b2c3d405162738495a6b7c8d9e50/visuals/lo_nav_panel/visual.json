@@ -1,30 +1,17 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "lo_nav_panel",
   "position": {
     "x": 0,
     "y": 0,
-    "z": 100,
+    "z": 0,
     "height": 720,
     "width": 220,
-    "tabOrder": 100
+    "tabOrder": 0
   },
   "visual": {
     "visualType": "shape",
     "objects": {
-      "general": [
-        {
-          "properties": {
-            "shapeType": {
-              "expr": {
-                "Literal": {
-                  "Value": "'rectangle'"
-                }
-              }
-            }
-          }
-        }
-      ],
       "fill": [
         {
           "properties": {

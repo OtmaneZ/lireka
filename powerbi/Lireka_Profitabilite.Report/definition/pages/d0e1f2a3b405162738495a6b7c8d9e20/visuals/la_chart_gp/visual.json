@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "la_chart_gp",
   "position": {
     "x": 760,
     "y": 124,
-    "z": 2100,
+    "z": 24000,
     "height": 176,
     "width": 512,
-    "tabOrder": 2100
+    "tabOrder": 24000
   },
   "visual": {
     "visualType": "lineStackedColumnComboChart",
