@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "dim_date"
+                      "Entity": "_ParamAxePeriode"
                     }
                   },
-                  "Property": "mois_annee_court_en"
+                  "Property": "Value1"
                 }
               },
-              "queryRef": "dim_date.mois_annee_court_en",
-              "nativeQueryRef": "mois_annee_court_en",
+              "queryRef": "_ParamAxePeriode.Value1",
+              "nativeQueryRef": "Value1",
               "active": true
             }
           ]
@@ -88,23 +88,6 @@
             }
           ]
         }
-      },
-      "sortDefinition": {
-        "sort": [
-          {
-            "field": {
-              "Column": {
-                "Expression": {
-                  "SourceRef": {
-                    "Entity": "dim_date"
-                  }
-                },
-                "Property": "annee_mois"
-              }
-            },
-            "direction": "Ascending"
-          }
-        ]
       }
     },
     "objects": {
