@@ -7,13 +7,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
-BACKEND = ROOT / "Données_Backend"
-TRANSP = ROOT / "Dashboards_transporteurs"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import backend_root, datawarehouse_root, transport_dashboards_root
+
+ROOT = datawarehouse_root()
+BACKEND = backend_root()
+TRANSP = transport_dashboards_root()
 COL_DIR = TRANSP / "COLISSIMO Dashboard PowerBI"
 CHR_DIR = TRANSP / "CHRONOPOST Dashboard PowerBI"
 

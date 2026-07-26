@@ -19,11 +19,15 @@ import csv
 import os
 import sys
 from collections import defaultdict
+from pathlib import Path
 
 csv.field_size_limit(sys.maxsize)
 
-BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CSV_ORDER = os.path.join(BASE, "Power_BI_Datawarehouse", "Données_Backend", "customer_order.csv")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import REPO_ROOT, backend_root
+
+BASE = str(REPO_ROOT)
+CSV_ORDER = str(backend_root() / "customer_order.csv")
 OUT_DIR = os.path.join(BASE, "scripts", "validation", "impact_export_marge_out")
 os.makedirs(OUT_DIR, exist_ok=True)
 

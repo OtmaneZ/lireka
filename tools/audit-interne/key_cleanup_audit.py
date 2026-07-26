@@ -9,19 +9,20 @@ Aucune règle de résolution / imputation décidée ici : faits chiffrés unique
 """
 from __future__ import annotations
 
-import os
-
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 
 import pandas as pd
 
-# Fix F-19 : racine de l'entrepôt paramétrable via la variable d'environnement LIREKA_DWH.
-ROOT = Path(os.environ.get("LIREKA_DWH", Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"))
-BACKEND = ROOT / "Données_Backend"
-TRANSP = ROOT / "Dashboards_transporteurs"
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+from lireka_paths import backend_root, datawarehouse_root, transport_dashboards_root
+
+ROOT = datawarehouse_root()
+BACKEND = backend_root()
+TRANSP = transport_dashboards_root()
 PKG = BACKEND / "package.csv"
 CO = BACKEND / "customer_order.csv"
 

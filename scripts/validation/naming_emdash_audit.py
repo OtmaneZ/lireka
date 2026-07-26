@@ -9,10 +9,15 @@ dans le Report (.json) et en références croisées entre mesures.
 import os
 import re
 import glob
+import sys
 import unicodedata
 from collections import defaultdict, Counter
+from pathlib import Path
 
-BASE = "/root/lireka"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import REPO_ROOT
+
+BASE = str(REPO_ROOT)
 MES = os.path.join(BASE, "powerbi", "Lireka_Profitabilite.SemanticModel",
                    "definition", "tables", "_Mesures.tmdl")
 REPORT_DIR = os.path.join(BASE, "powerbi", "Lireka_Profitabilite.Report")

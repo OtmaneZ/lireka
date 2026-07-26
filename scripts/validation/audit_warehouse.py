@@ -4,15 +4,18 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sys
 from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
-BACKEND = ROOT / "Données_Backend"
-PYTHON = Path(r"C:\Users\Otmane\AppData\Local\Programs\Python\Python312\python.exe")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import backend_root, datawarehouse_root
+
+ROOT = datawarehouse_root()
+BACKEND = backend_root()
 
 
 def fmt_dt(ts: float) -> str:

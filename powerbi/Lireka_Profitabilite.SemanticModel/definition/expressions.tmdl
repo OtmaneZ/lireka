@@ -16,7 +16,7 @@ expression SourceMode = "Local" meta [IsParameterQuery=true, Type="Text", IsPara
 
 /// Racine locale de l'entrepôt (copie miroir de SharePoint Power_BI_Datawarehouse).
 /// Toutes les lectures CSV utilisent File.Contents(LocalRootPath & "\...").
-expression LocalRootPath = "C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+expression LocalRootPath = "c:\dev\projets\lireka\Power_BI_Datawarehouse" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: b2c3d4e5-f6a7-8901-bcde-f12345678901
 
 	annotation PBI_ResultType = Text

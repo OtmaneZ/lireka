@@ -2,12 +2,16 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-ROOT = Path(r"C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse\Données_Backend")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import backend_root
+
+ROOT = backend_root()
 OUT = Path(__file__).with_name("pre_dashboard_checks_output.json")
 
 MARKETPLACE_PREFIXES = (

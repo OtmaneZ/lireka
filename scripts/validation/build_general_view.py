@@ -10,9 +10,13 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import REPO_ROOT, transport_dashboards_root
+
+ROOT = REPO_ROOT
 REPORT = ROOT / "powerbi" / "Lireka_Profitabilite.Report"
 PAGE_ID = "7112a69a17fbef2de240"
 PAGE = REPORT / "definition" / "pages" / PAGE_ID
@@ -20,9 +24,7 @@ VIS = PAGE / "visuals"
 SCHEMA = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json"
 
 LOGO_SRC = (
-    ROOT
-    / "Power_BI_Datawarehouse"
-    / "Dashboards_transporteurs"
+    transport_dashboards_root()
     / "UPS Dashboard PowerBI"
     / "03_Documentation"
     / "Logo de la startup Lireka.png"

@@ -25,3 +25,19 @@ lireka/
 ├── tools/audit-interne/  scripts de contrôle technique (usage interne)
 └── scripts/validation/   scripts de contrôle (usage interne)
 ```
+
+## Setup local (data analyst)
+
+1. **Données** — copier `Power_BI_Datawarehouse/` depuis SharePoint/Drive à la racine du repo (non versionné).
+2. **Power BI** — ouvrir `powerbi/Lireka_Profitabilite.pbip` ; vérifier le paramètre `LocalRootPath` (*Transformer les données* → *Gérer les paramètres*).
+3. **Chronopost 2026** — le modèle attend `Dashboards_transporteurs/CHRONOPOST Dashboard PowerBI/2026_CHRONOPOST_V2.csv`.
+4. **Python** (scripts de contrôle) :
+
+```powershell
+cd c:\dev\projets\lireka
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Override optionnel de l'entrepôt : `$env:LIREKA_DWH = "chemin\vers\Power_BI_Datawarehouse"`.

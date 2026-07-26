@@ -11,13 +11,17 @@ AUCUNE modification des fichiers de données. Lecture seule.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
-BACKEND = ROOT / "Données_Backend"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import backend_root, datawarehouse_root
+
+ROOT = datawarehouse_root()
+BACKEND = backend_root()
 CO = BACKEND / "customer_order.csv"
 ITEM = BACKEND / "customer_order_item.csv"
 PKG = BACKEND / "package.csv"

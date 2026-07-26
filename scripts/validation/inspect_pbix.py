@@ -3,10 +3,14 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import datawarehouse_root
+
+ROOT = datawarehouse_root()
 
 
 def extract_strings(blob: bytes, min_len: int = 4) -> list[str]:

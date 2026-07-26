@@ -4,18 +4,19 @@ Réplique en pandas la logique M/TMDL (CSV bruts non modifiés).
 """
 from __future__ import annotations
 
-import os
-
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 
-# Fix F-19 : racine de l'entrepôt paramétrable via la variable d'environnement LIREKA_DWH.
-ROOT = Path(os.environ.get("LIREKA_DWH", Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"))
-BACKEND = ROOT / "Données_Backend"
-COL_DIR = ROOT / "Dashboards_transporteurs" / "COLISSIMO Dashboard PowerBI"
-CHR_DIR = ROOT / "Dashboards_transporteurs" / "CHRONOPOST Dashboard PowerBI"
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+from lireka_paths import backend_root, datawarehouse_root, transport_dashboards_root
+
+ROOT = datawarehouse_root()
+BACKEND = backend_root()
+COL_DIR = transport_dashboards_root() / "COLISSIMO Dashboard PowerBI"
+CHR_DIR = transport_dashboards_root() / "CHRONOPOST Dashboard PowerBI"
 
 
 def norm(s: pd.Series) -> pd.Series:

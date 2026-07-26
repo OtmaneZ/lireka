@@ -12,14 +12,18 @@ de la marge marketplace est déjà démontré au grain commande. gross_profit_eu
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"
-CO = ROOT / "Données_Backend" / "customer_order.csv"
-ITEM = ROOT / "Données_Backend" / "customer_order_item.csv"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import backend_root, datawarehouse_root
+
+ROOT = datawarehouse_root()
+CO = backend_root() / "customer_order.csv"
+ITEM = backend_root() / "customer_order_item.csv"
 
 
 def num(s):

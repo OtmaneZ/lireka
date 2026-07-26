@@ -1,15 +1,16 @@
 """Inspecte les .pbix du datawarehouse : tables, mesures, sources M."""
 from __future__ import annotations
 
-import os
-
 import json
 import re
+import sys
 import zipfile
 from pathlib import Path
 
-# Fix F-19 : racine de l'entrepôt paramétrable via la variable d'environnement LIREKA_DWH.
-ROOT = Path(os.environ.get("LIREKA_DWH", Path(__file__).resolve().parents[2] / "Power_BI_Datawarehouse"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+from lireka_paths import datawarehouse_root
+
+ROOT = datawarehouse_root()
 
 
 def extract_strings(blob: bytes, min_len: int = 4) -> list[str]:

@@ -20,11 +20,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import backend_root, datawarehouse_root, transport_dashboards_root
+
 ROOT = Path(__file__).resolve().parents[2]
-DWH = ROOT / "Power_BI_Datawarehouse"
-BACKEND = DWH / "Données_Backend"
-COL_DIR = DWH / "Dashboards_transporteurs" / "COLISSIMO Dashboard PowerBI"
-CHR_DIR = DWH / "Dashboards_transporteurs" / "CHRONOPOST Dashboard PowerBI"
+DWH = datawarehouse_root()
+BACKEND = backend_root()
+COL_DIR = transport_dashboards_root() / "COLISSIMO Dashboard PowerBI"
+CHR_DIR = transport_dashboards_root() / "CHRONOPOST Dashboard PowerBI"
 OUT_DIR = Path(__file__).resolve().parent / "page11_outbound_basculant_out"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 

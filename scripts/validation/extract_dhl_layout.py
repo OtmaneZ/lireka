@@ -1,12 +1,17 @@
 """Extract DHL Vue 360 layout from pbix for reference."""
 import json
+import sys
 import zipfile
 from pathlib import Path
 
-pbix = Path(
-    r"C:\Users\Otmane\Documents\lireka\Power_BI_Datawarehouse"
-    r"\Dashboards_transporteurs\DHL Dashboard PowerBI\02_Power BI"
-    r"\DHL_dashboard_PowerBi_Version_Finale (2).pbix"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import transport_dashboards_root
+
+pbix = (
+    transport_dashboards_root()
+    / "DHL Dashboard PowerBI"
+    / "02_Power BI"
+    / "DHL_dashboard_PowerBi_Version_Finale (2).pbix"
 )
 with zipfile.ZipFile(pbix) as z:
     layout = z.read("Report/Layout").decode("utf-16-le")

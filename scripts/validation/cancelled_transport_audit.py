@@ -7,7 +7,10 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import REPO_ROOT, backend_root
+
+ROOT = REPO_ROOT
 sys.path.insert(0, str(ROOT / "scripts" / "validation"))
 
 from transport_source_checks import (  # noqa: E402
@@ -17,7 +20,7 @@ from transport_source_checks import (  # noqa: E402
     resolve_invoices,
 )
 
-BACKEND = ROOT / "Power_BI_Datawarehouse" / "Données_Backend"
+BACKEND = backend_root()
 OUT = Path(__file__).parent / "cancelled_transport_audit_output.json"
 
 

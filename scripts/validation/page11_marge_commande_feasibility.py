@@ -37,8 +37,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2]
-BACKEND = ROOT / "Power_BI_Datawarehouse" / "Données_Backend"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lireka_paths import backend_root
+
+BACKEND = backend_root()
 CO_PATH = BACKEND / "customer_order.csv"
 PKG_PATH = BACKEND / "package.csv"
 OUT_DIR = Path(__file__).resolve().parent / "page11_marge_commande_out"
