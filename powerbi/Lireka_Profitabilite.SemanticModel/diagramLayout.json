@@ -4,7 +4,7 @@
     {
       "ordinal": 0,
       "scrollPosition": {
-        "x": 535,
+        "x": 370,
         "y": 0
       },
       "nodes": [
@@ -113,6 +113,58 @@
           "nodeIndex": "fact_transport",
           "size": {
             "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1639.5725198485168,
+            "y": 291.04693439130529
+          },
+          "nodeIndex": "_BridgePaysYoY",
+          "nodeLineageTag": "e1e2e3e4-f5a6-7890-bcde-f01234567890",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1923.5725198485168,
+            "y": 291.04693439130529
+          },
+          "nodeIndex": "_ParamAxePeriode",
+          "nodeLineageTag": "d4d5d6d7-e8e9-0123-defa-456789012345",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2207.572519848517,
+            "y": 303.04693439130529
+          },
+          "nodeIndex": "_ParamLangueUI",
+          "nodeLineageTag": "a1a2a3a4-b5b6-7890-abcd-ef0123456789",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2491.572519848517,
+            "y": 279.04693439130529
+          },
+          "nodeIndex": "BridgePnL",
+          "nodeLineageTag": "b7c8d9e0-f1a2-4b3c-9d0e-1f2a3b4c5d6e",
+          "size": {
+            "height": 176,
             "width": 234
           },
           "zIndex": 0
