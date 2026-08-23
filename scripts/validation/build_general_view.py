@@ -430,17 +430,13 @@ def date_default_selection() -> dict:
 
 
 def page_filters() -> dict:
-    """Filtres de page — date 12 mois + périmètre 3 canaux.
+    """Filtres de page — périmètre 3 canaux (pas de filtre date page).
 
-    Le filtre date DOIT être au niveau page : un filterConfig sur le slicer
-    seul ne propage pas aux charts/table à l'ouverture du rapport.
+    La période par défaut (12 mois glissants) est portée par le slicer Date
+    (filterConfig dateDefault12m sur gv_slicer_date), pas par un filtre page
+    qui bloquerait l'élargissement de la plage via le slicer.
     """
-    return {
-        "filters": [
-            date_relative_filter("datePage12m"),
-            channel_page_filter()["filters"][0],
-        ]
-    }
+    return channel_page_filter()
 
 
 def slicer_date_range(name, x, y, w, h, z) -> dict:

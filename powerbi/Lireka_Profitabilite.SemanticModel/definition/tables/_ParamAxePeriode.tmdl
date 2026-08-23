@@ -8,12 +8,23 @@ table _ParamAxePeriode
 		sourceColumn: [Value1]
 		sortByColumn: Value3
 
+		relatedColumnDetails
+			groupByColumn: Value2
+
 	column Value2
+		isHidden
 		lineageTag: a679acff-29d6-4f1d-8993-b778a14590a8
 		isNameInferred
 		sourceColumn: [Value2]
 
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
 	column Value3
+		isHidden
 		lineageTag: ccd5bc6f-1d45-4c56-80ca-22afc97ce57d
 		isNameInferred
 		sourceColumn: [Value3]
@@ -22,9 +33,7 @@ table _ParamAxePeriode
 		mode: import
 		source =
 				{
-					("Week", NAMEOF(dim_date[semaine_annee_libelle]), 0),
-					("Month", NAMEOF(dim_date[mois_annee_court_en]), 1)
+					("Month", NAMEOF(dim_date[mois_annee_court_en]), 0),
+					("Week", NAMEOF(dim_date[semaine_annee_libelle]), 1)
 				}
-
-	annotation FieldParameterMetadata = { "version": 0, "kind": 2 }
 

@@ -787,7 +787,6 @@ def page_json() -> dict:
                 }
             ]
         },
-        "filterConfig": {"filters": [date_relative_filter("datePage12m")]},
     }
 
 

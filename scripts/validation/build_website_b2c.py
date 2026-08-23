@@ -100,12 +100,8 @@ def b2c_page_filter() -> dict:
 
 
 def page_filters() -> dict:
-    return {
-        "filters": [
-            date_relative_filter("datePage12m"),
-            b2c_page_filter(),
-        ]
-    }
+    """Filtre canal B2C uniquement — date par défaut via slicer (pas filtre page)."""
+    return {"filters": [b2c_page_filter()]}
 
 
 def country_pl_table(name, x, y, w, h, z) -> dict:
