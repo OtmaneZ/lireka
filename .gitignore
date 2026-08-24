@@ -29,6 +29,9 @@ logs/
 # Credentials
 credentials.json
 secrets/
+_local_secrets/
+zip-michal*/
+zipMichal*/
 *.pem
 *.key
 
