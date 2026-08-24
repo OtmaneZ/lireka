@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "la_chart_revenue",
   "position": {
     "x": 237,
@@ -23,12 +23,13 @@
                       "Entity": "dim_date"
                     }
                   },
-                  "Property": "mois_annee_court_en"
+                  "Property": "semaine_annee_court"
                 }
               },
-              "queryRef": "dim_date.mois_annee_court_en",
-              "nativeQueryRef": "mois_annee_court_en",
-              "active": true
+              "queryRef": "dim_date.semaine_annee_court",
+              "nativeQueryRef": "Week",
+              "active": true,
+              "displayName": "Week"
             }
           ],
           "fieldParameters": [
@@ -64,6 +65,24 @@
               "queryRef": "dim_type_commande.canal",
               "nativeQueryRef": "canal",
               "displayName": "Channel"
+            }
+          ]
+        },
+        "Totals": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
+                  "Property": "GV Chart Label — Revenue"
+                }
+              },
+              "queryRef": "_Mesures.GV Chart Label — Revenue",
+              "nativeQueryRef": "GV Chart Label — Revenue"
             }
           ]
         },
@@ -104,23 +123,6 @@
             }
           ]
         }
-      },
-      "sortDefinition": {
-        "sort": [
-          {
-            "field": {
-              "Column": {
-                "Expression": {
-                  "SourceRef": {
-                    "Entity": "dim_date"
-                  }
-                },
-                "Property": "annee_mois"
-              }
-            },
-            "direction": "Ascending"
-          }
-        ]
       }
     },
     "objects": {
@@ -144,7 +146,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
@@ -185,14 +187,14 @@
             "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "1000000D"
+                  "Value": "1000D"
                 }
               }
             },
             "labelPrecision": {
               "expr": {
                 "Literal": {
-                  "Value": "1L"
+                  "Value": "0L"
                 }
               }
             }
@@ -266,21 +268,20 @@
             "show": {
               "expr": {
                 "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "totals": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
                   "Value": "true"
-                }
-              }
-            },
-            "labelDisplayUnits": {
-              "expr": {
-                "Literal": {
-                  "Value": "1000000D"
-                }
-              }
-            },
-            "labelPrecision": {
-              "expr": {
-                "Literal": {
-                  "Value": "1L"
                 }
               }
             },
@@ -291,10 +292,10 @@
                 }
               }
             },
-            "enableBackground": {
+            "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "1D"
                 }
               }
             }

@@ -186,7 +186,7 @@ table fact_lignes
 							else if s = "PRO_WEBSITE" then "Website B2B"
 							else if Text.StartsWith(s, "AMAZON") or s = "CULTURA" or s = "RAKUTEN" or s = "FNAC" then "Marketplaces"
 							else if s = "ARTHAUD" then "Librairie Arthaud"
-							else "Autre",
+							else "Other",
 						type text
 					),
 					#"Langue livre ajoutee" = Table.AddColumn(#"Canal ajoute", "langue_livre", each
@@ -194,13 +194,13 @@ table fact_lignes
 							raw = if [isbn] = null then "" else Text.Replace(Text.From([isbn]), "-", ""),
 							s = Text.Trim(raw)
 						in
-							if Text.Length(s) < 4 then "Autre"
-							else if Text.StartsWith(s, "9782") or Text.StartsWith(s, "97910") then "Français"
-							else if Text.StartsWith(s, "9780") or Text.StartsWith(s, "9781") then "Anglais"
-							else if Text.StartsWith(s, "9783") then "Allemand"
-							else if Text.StartsWith(s, "97884") then "Espagnol"
-							else if Text.StartsWith(s, "97888") then "Italien"
-							else "Autre",
+							if Text.Length(s) < 4 then "Other"
+							else if Text.StartsWith(s, "9782") or Text.StartsWith(s, "97910") then "French"
+							else if Text.StartsWith(s, "9780") or Text.StartsWith(s, "9781") then "English"
+							else if Text.StartsWith(s, "9783") then "German"
+							else if Text.StartsWith(s, "97884") then "Spanish"
+							else if Text.StartsWith(s, "97888") then "Italian"
+							else "Other",
 						type text
 					),
 					#"Canal langue ajoute" = Table.AddColumn(#"Langue livre ajoutee", "canal_langue", each [canal_ligne] & " · " & [langue_livre], type text),

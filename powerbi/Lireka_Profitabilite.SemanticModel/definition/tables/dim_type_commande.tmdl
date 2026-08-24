@@ -1,7 +1,7 @@
 /// Dimension — type de commande (axe d'analyse du dashboard).
 /// Dérivée des valeurs distinctes de customer_order.source (canal de vente).
 /// Colonne canal : regroupement Finance (Website B2C / Website B2B / Marketplaces /
-/// Librairie Arthaud / Autre). Mapping validé provisoirement — PRO_WEBSITE = Website B2B
+/// Librairie Arthaud / Other). Mapping validé provisoirement — PRO_WEBSITE = Website B2B
 /// à confirmer avec Marc.
 table dim_type_commande
 	lineageTag: 429de86e-9e69-49ed-bcff-fcd4d672de50
@@ -63,7 +63,7 @@ table dim_type_commande
 						else if s = "PRO_WEBSITE" then "Website B2B"
 						else if Text.StartsWith(s, "AMAZON") or s = "CULTURA" or s = "RAKUTEN" or s = "FNAC" then "Marketplaces"
 						else if s = "ARTHAUD" then "Librairie Arthaud"
-						else "Autre", type text),
+						else "Other", type text),
 					// Libellé lisible (underscores -> espaces, casse normalisée)
 					#"Libelle ajoute" = Table.AddColumn(#"Canal ajoute", "libelle", each Text.Proper(Text.Replace([type_commande], "_", " ")), type text),
 					// Ordre mockup General View : B2C · B2B · Marketplaces

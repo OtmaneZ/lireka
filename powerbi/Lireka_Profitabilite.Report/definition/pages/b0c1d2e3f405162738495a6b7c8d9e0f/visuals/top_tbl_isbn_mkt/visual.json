@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "top_tbl_isbn_mkt",
   "position": {
     "x": 760,
@@ -32,6 +32,36 @@
             },
             {
               "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_isbn"
+                    }
+                  },
+                  "Property": "title"
+                }
+              },
+              "queryRef": "dim_isbn.title",
+              "nativeQueryRef": "title",
+              "displayName": "Title"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_isbn"
+                    }
+                  },
+                  "Property": "author"
+                }
+              },
+              "queryRef": "dim_isbn.author",
+              "nativeQueryRef": "author",
+              "displayName": "Author"
+            },
+            {
+              "field": {
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
@@ -59,41 +89,9 @@
               "queryRef": "_Mesures.Top Revenu ISBN",
               "nativeQueryRef": "Top Revenu ISBN",
               "displayName": "Revenue"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Mesures"
-                    }
-                  },
-                  "Property": "Top Rank ISBN — Revenue"
-                }
-              },
-              "queryRef": "_Mesures.Top Rank ISBN — Revenue",
-              "nativeQueryRef": "Top Rank ISBN — Revenue",
-              "displayName": "​"
             }
           ]
         }
-      },
-      "sortDefinition": {
-        "sort": [
-          {
-            "field": {
-              "Measure": {
-                "Expression": {
-                  "SourceRef": {
-                    "Entity": "_Mesures"
-                  }
-                },
-                "Property": "Top Rank ISBN — Revenue"
-              }
-            },
-            "direction": "Ascending"
-          }
-        ]
       }
     },
     "objects": {
@@ -144,6 +142,22 @@
       "general": [
         {
           "properties": {}
+        }
+      ],
+      "columnFormatting": [
+        {
+          "properties": {
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1000D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.Top Revenu ISBN"
+          }
         }
       ]
     },

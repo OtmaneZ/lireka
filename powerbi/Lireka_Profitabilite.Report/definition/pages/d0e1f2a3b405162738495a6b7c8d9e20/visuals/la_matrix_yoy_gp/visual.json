@@ -1,11 +1,11 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "la_matrix_yoy_gp",
   "position": {
-    "x": 760,
-    "y": 306,
+    "x": 760.17467248908292,
+    "y": 306.30567685589517,
     "z": 26000,
-    "height": 56,
+    "height": 107.31877729257641,
     "width": 512,
     "tabOrder": 26000
   },
@@ -13,26 +13,6 @@
     "visualType": "pivotTable",
     "query": {
       "queryState": {
-        "Columns": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_type_commande"
-                    }
-                  },
-                  "Property": "canal"
-                }
-              },
-              "queryRef": "dim_type_commande.canal",
-              "nativeQueryRef": "canal",
-              "active": true,
-              "displayName": "Channel"
-            }
-          ]
-        },
         "Values": {
           "projections": [
             {
@@ -43,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Marge Brute YoY %"
+                  "Property": "Marge Brute (reconstruit) YoY %"
                 }
               },
-              "queryRef": "_Mesures.Marge Brute YoY %",
-              "nativeQueryRef": "Marge Brute YoY %",
+              "queryRef": "_Mesures.Marge Brute (reconstruit) YoY %",
+              "nativeQueryRef": "Marge Brute (reconstruit) YoY %",
               "displayName": "Gross Profit YoY%"
             }
           ]
@@ -136,7 +116,7 @@
             }
           },
           "selector": {
-            "metadata": "_Mesures.Marge Brute YoY %"
+            "metadata": "_Mesures.Marge Brute (reconstruit) YoY %"
           }
         }
       ],

@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "INTERIM I2 : Title / Author missing from backend (ISBN, units, Revenue only)",
+                    "value": "INTERIM I2 : Title / Author columns wired (dim_isbn) — awaiting catalogue export (load only, no report changes)",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontSize": "7.5pt",

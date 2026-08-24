@@ -36,3 +36,7 @@ relationship rel_factures_colis
 	fromColumn: fact_factures_transport.id_package
 	toColumn: fact_transport.id_package
 
+relationship rel_lignes_isbn
+	fromColumn: fact_lignes.isbn
+	toColumn: dim_isbn.isbn
+

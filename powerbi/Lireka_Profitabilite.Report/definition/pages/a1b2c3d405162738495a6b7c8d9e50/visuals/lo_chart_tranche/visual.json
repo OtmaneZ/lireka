@@ -43,11 +43,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Marge Brute"
+                  "Property": "Marge Brute (reconstruit)"
                 }
               },
-              "queryRef": "_Mesures.Marge Brute",
-              "nativeQueryRef": "Marge Brute",
+              "queryRef": "_Mesures.Marge Brute (reconstruit)",
+              "nativeQueryRef": "Marge Brute (reconstruit)",
               "displayName": "Gross profit"
             }
           ]
@@ -62,11 +62,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Taux Marge Brute"
+                  "Property": "Taux Marge Brute (reconstruit)"
                 }
               },
-              "queryRef": "_Mesures.Taux Marge Brute",
-              "nativeQueryRef": "Taux Marge Brute",
+              "queryRef": "_Mesures.Taux Marge Brute (reconstruit)",
+              "nativeQueryRef": "Taux Marge Brute (reconstruit)",
               "displayName": "Gross margin %"
             }
           ]

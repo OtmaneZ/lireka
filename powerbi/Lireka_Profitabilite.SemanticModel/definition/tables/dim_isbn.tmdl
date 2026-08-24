@@ -1,0 +1,61 @@
+/// Dimension — catalogue ISBN (grain : un ISBN).
+/// Source primaire : export catalogue Marc (`catalogue_isbn.csv`, colonnes isbn · title · author).
+/// Clé = isbn ; lignes distinctes issues de customer_order_item_group (même grain que fact_lignes[isbn]).
+/// Placeholder : title / author null tant que l'export catalogue n'est pas alimenté.
+table dim_isbn
+	lineageTag: d1m2i3s4-b5n6-7890-abcd-ef1234567890
+
+	column isbn
+		dataType: string
+		lineageTag: d1m2i3s4-b5n6-7890-abcd-ef1234567891
+		summarizeBy: none
+		sourceColumn: isbn
+
+	column title
+		dataType: string
+		lineageTag: d1m2i3s4-b5n6-7890-abcd-ef1234567892
+		summarizeBy: none
+		sourceColumn: title
+
+	column author
+		dataType: string
+		lineageTag: d1m2i3s4-b5n6-7890-abcd-ef1234567893
+		summarizeBy: none
+		sourceColumn: author
+
+	partition dim_isbn = m
+		mode: import
+		source =
+				let
+					#"Groupes brut" = Csv.Document(
+						File.Contents(LocalRootPath & "\Données_Backend\customer_order_item_group.csv"),
+						[Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+					),
+					#"Groupes source" = Table.PromoteHeaders(#"Groupes brut", [PromoteAllScalars = true]),
+					#"Isbns types" = Table.TransformColumnTypes(
+						Table.SelectColumns(#"Groupes source", {"isbn"}),
+						{{"isbn", type text}},
+						"en-US"
+					),
+					#"Isbns distincts" = Table.Distinct(#"Isbns types"),
+					#"Isbns valides" = Table.SelectRows(
+						#"Isbns distincts",
+						each [isbn] <> null and Text.Trim([isbn]) <> ""
+					),
+					#"Jointure catalogue" = Table.NestedJoin(
+						#"Isbns valides",
+						{"isbn"},
+						stg_catalogue_isbn,
+						{"isbn"},
+						"cat",
+						JoinKind.LeftOuter
+					),
+					#"Catalogue developpe" = Table.ExpandTableColumn(
+						#"Jointure catalogue",
+						"cat",
+						{"title", "author"},
+						{"title", "author"}
+					)
+				in
+					#"Catalogue developpe"
+

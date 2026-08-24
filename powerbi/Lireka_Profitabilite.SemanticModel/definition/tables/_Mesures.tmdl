@@ -338,6 +338,7 @@ table _Mesures
 				- [Retours Remboursements]
 				- [Coûts Génériques]
 		formatString: #,##0.00 €
+		isHidden
 		displayFolder: 04 Marge
 		lineageTag: 1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b
 
@@ -351,6 +352,7 @@ table _Mesures
 				0
 			)
 		formatString: 0.0%
+		isHidden
 		displayFolder: 04 Marge
 		lineageTag: 2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b6c
 
@@ -622,27 +624,32 @@ table _Mesures
 	/// --- KPI cards : Marge Brute (Gross Profit) ---
 	measure 'Marge Brute PY' = CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: #,##0.00 €
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 7e2bb4b1-508f-4fec-b635-ced01e74cc21
 
 	measure 'Marge Brute YoY Δ' = [Marge Brute] - [Marge Brute PY]
 		formatString: #,##0.00 €
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 2bccadc5-5cad-4801-83a0-b72471a37ece
 
 	measure 'Marge Brute YoY %' = DIVIDE([Marge Brute] - [Marge Brute PY], [Marge Brute PY])
 		formatString: 0.0%
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 0c2bedcf-84e7-4297-8deb-7507f03ee820
 
 	/// --- KPI cards : Taux Marge Brute (Gross Margin %) — YoY en bps, pas en % ---
 	measure 'Taux Marge Brute PY' = CALCULATE([Taux Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
 		formatString: 0.0%
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 671212f3-1065-4868-adce-a3a95fe37ea4
 
 	measure 'Taux Marge Brute YoY bps' = ([Taux Marge Brute] - [Taux Marge Brute PY]) * 10000
 		formatString: #,##0
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 90ed7a8b-a675-4b89-9642-5b5798c3ed86
 
@@ -836,7 +843,11 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 44445555-6666-7777-8888-999900001111
 
-	/// Marge brute avec CA reconstruit (même formule Marc que [Marge Brute]).
+	/// Marge brute publiée — 7 postes contractuels Marc, base CA reconstruit.
+	/// Revenu (CA reconstruit net annulation + frais de port hors CANCELLED)
+	/// − COGS − transport amont − transport sortant − droits et taxes
+	/// − commissions marketplace − fournitures d'expédition.
+	/// Retours / coûts génériques exclus (below-the-line, profit bridge uniquement).
 	measure 'Marge Brute (reconstruit)' =
 			[CA HT Net Annulation (reconstruit)]
 				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
@@ -846,8 +857,6 @@ table _Mesures
 				- [Douanes Taxes]
 				- [Commissions Marketplace]
 				- [Fournitures Expédition]
-				- [Retours Remboursements]
-				- [Coûts Génériques]
 		formatString: #,##0.00 €
 		displayFolder: 04 Marge
 		lineageTag: 55556666-7777-8888-9999-000011112222
@@ -882,21 +891,11 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: bbbbcc00-1111-2222-3333-444455556666
 
-	/// Gross Margin % dashboard — numérateur [Marge Brute] Marc, dénominateur [Revenu (reconstruit)].
-	measure 'Taux Marge Brute (revenu reconstruit)' = DIVIDE([Marge Brute], [Revenu (reconstruit)], 0)
+	/// Part du revenu publié qui n'existe pas en CA EUR natif (contrepartie ADR-001).
+	measure '% CA reconstruit' = DIVIDE([Revenu (reconstruit)] - [Revenu], [Revenu (reconstruit)])
 		formatString: 0.0%
-		displayFolder: 04 Marge
-		lineageTag: ccddcc00-1111-2222-3333-444455556667
-
-	measure 'Taux Marge Brute (revenu reconstruit) PY' = CALCULATE([Taux Marge Brute (revenu reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
-		formatString: 0.0%
-		displayFolder: 05 YoY
-		lineageTag: ddeedd00-1111-2222-3333-444455556668
-
-	measure 'Taux Marge Brute (revenu reconstruit) YoY bps' = ([Taux Marge Brute (revenu reconstruit)] - [Taux Marge Brute (revenu reconstruit) PY]) * 10000
-		formatString: #,##0
-		displayFolder: 05 YoY
-		lineageTag: eeffee00-1111-2222-3333-444455556669
+		displayFolder: 02 Revenus
+		lineageTag: f0ca0001-1111-2222-3333-444455556670
 
 	/// General View — alloue le revenu commande (reconstruit) au prorata des unités par langue livre.
 	measure 'Revenu (reconstruit, alloué langue)' =
@@ -956,7 +955,7 @@ table _Mesures
 			VAR pytxt =
 				SWITCH(
 					TRUE(),
-					a >= 1000000, FORMAT(py / 1000000, "0.0") & "M",
+					a >= 1000000, FORMAT(py / 1000, "#,##0") & "k",
 					a >= 1000, FORMAT(py / 1000, "0.0") & "k",
 					FORMAT(py, "#,##0")
 				)
@@ -978,7 +977,7 @@ table _Mesures
 			VAR pytxt =
 				SWITCH(
 					TRUE(),
-					a >= 1000000, "€" & FORMAT(py / 1000000, "0.0") & "M",
+					a >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
 					a >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
 					"€" & FORMAT(py, "#,##0")
 				)
@@ -993,14 +992,14 @@ table _Mesures
 
 	/// Carte General View — sous-titre "PY: €20k (▲ +52.8% YoY)" (marge brute, compact €).
 	measure 'KPI Sous-titre — Gross Profit' =
-			VAR py = [Marge Brute PY]
-			VAR yoy = [Marge Brute YoY %]
+			VAR py = [Marge Brute (reconstruit) PY]
+			VAR yoy = [Marge Brute (reconstruit) YoY %]
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 			VAR a = ABS(py)
 			VAR pytxt =
 				SWITCH(
 					TRUE(),
-					a >= 1000000, "€" & FORMAT(py / 1000000, "0.0") & "M",
+					a >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
 					a >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
 					"€" & FORMAT(py, "#,##0")
 				)
@@ -1015,8 +1014,8 @@ table _Mesures
 
 	/// Carte General View — sous-titre "PY: 16.8% (▲ +500 bps YoY)" (taux marge, delta en bps).
 	measure 'KPI Sous-titre — Gross Margin' =
-			VAR py = [Taux Marge Brute (revenu reconstruit) PY]
-			VAR bps = [Taux Marge Brute (revenu reconstruit) YoY bps]
+			VAR py = [Taux Marge Brute (reconstruit) PY]
+			VAR bps = [Taux Marge Brute (reconstruit) YoY bps]
 			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
 			RETURN
 				IF(
@@ -1038,12 +1037,21 @@ table _Mesures
 		lineageTag: aa000006-1111-2222-3333-444455550006
 
 	/// Couleur conditionnelle YoY — marge brute (hausse = vert). Cartes + tableau.
-	measure 'Couleur YoY — Gross Profit' = IF([Marge Brute YoY %] >= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Gross Profit' = IF([Marge Brute (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
 		displayFolder: 05 YoY
 		lineageTag: aa000007-1111-2222-3333-444455550007
 
-	/// Couleur conditionnelle YoY — taux marge, delta bps (hausse = vert). Cartes + tableau.
-	measure 'Couleur YoY — Gross Margin' = IF([Taux Marge Brute (revenu reconstruit) YoY bps] >= 0, "#6FA84B", "#C0504D")
+	/// Couleur conditionnelle YoY — taux marge, delta bps. Vert si >= 0 ; rouge si <= -100 bps ; neutre entre.
+	measure 'Couleur YoY — Gross Margin' =
+			VAR bps = [Taux Marge Brute (reconstruit) YoY bps]
+			RETURN
+				SWITCH(
+					TRUE(),
+					NOT ISNUMBER(bps), BLANK(),
+					bps >= 0, "#6FA84B",
+					bps <= -100, "#C0504D",
+					"#1B3A5C"
+				)
 		displayFolder: 05 YoY
 		lineageTag: aa000008-1111-2222-3333-444455550008
 
@@ -1066,17 +1074,17 @@ table _Mesures
 
 	/// General View — data label YoY sur graphe Gross Profit (combo CY/PY).
 	measure 'Chart label — Gross Profit YoY' =
-			VAR y = [Marge Brute YoY %]
+			VAR y = [Marge Brute (reconstruit) YoY %]
 			RETURN
 				IF(
-					NOT ISNUMBER(y) || ISBLANK([Marge Brute PY]),
+					NOT ISNUMBER(y) || ISBLANK([Marge Brute (reconstruit) PY]),
 					BLANK(),
 					FORMAT(y, "+0%;-0%") & " YoY"
 				)
 		displayFolder: 05 YoY
 		lineageTag: aa000011-1111-2222-3333-444455550011
 
-	/// General View — KPI card valeur compacte (texte : 521.6k / €11.2M).
+	/// General View — KPI card valeur compacte (k adaptatif : 0.0k sous 1M, # ##0k au-delà).
 	/// formatString DAX (,,M / ,"k") ne s'applique pas aux cartes en locale FR.
 	measure 'KPI Compact — Ordered units' =
 			VAR v = [Unités commandées]
@@ -1087,7 +1095,7 @@ table _Mesures
 					BLANK(),
 					SWITCH(
 						TRUE(),
-						a >= 1000000, FORMAT(v / 1000000, "0.0") & "M",
+						a >= 1000000, FORMAT(v / 1000, "#,##0") & "k",
 						a >= 1000, FORMAT(v / 1000, "0.0") & "k",
 						FORMAT(v, "#,##0")
 					)
@@ -1104,7 +1112,7 @@ table _Mesures
 					BLANK(),
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000000, "0.0") & "M",
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
 						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
 						"€" & FORMAT(v, "#,##0")
 					)
@@ -1113,7 +1121,7 @@ table _Mesures
 		lineageTag: bb000002-1111-2222-3333-444455550002
 
 	measure 'KPI Compact — Gross Profit' =
-			VAR v = [Marge Brute]
+			VAR v = [Marge Brute (reconstruit)]
 			VAR a = ABS(v)
 			RETURN
 				IF(
@@ -1121,7 +1129,7 @@ table _Mesures
 					BLANK(),
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000000, "0.0") & "M",
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
 						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
 						"€" & FORMAT(v, "#,##0")
 					)
@@ -1129,7 +1137,7 @@ table _Mesures
 		displayFolder: 01 KPI publiés
 		lineageTag: bb000003-1111-2222-3333-444455550003
 
-	measure 'KPI Compact — Gross Margin' = FORMAT([Taux Marge Brute (revenu reconstruit)], "0.0%")
+	measure 'KPI Compact — Gross Margin' = FORMAT([Taux Marge Brute (reconstruit)], "0.0%")
 		displayFolder: 01 KPI publiés
 		lineageTag: bb000004-1111-2222-3333-444455550004
 
@@ -1155,7 +1163,7 @@ table _Mesures
 					BLANK(),
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000000, "0.0") & "M",
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
 						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
 						"€" & FORMAT(v, "#,##0")
 					)
@@ -1258,11 +1266,11 @@ table _Mesures
 			VAR v =
 				IF(
 					ISBLANK(Country),
-					[Marge Brute],
+					[Marge Brute (reconstruit)],
 					IF(
 						Country = "Rest of the world",
-						[B2C Rest Gross profit],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute], BLANK())
+						[B2C Rest GP reconstruit],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute (reconstruit)], BLANK())
 					)
 				)
 			VAR sales =
@@ -1409,11 +1417,11 @@ table _Mesures
 			VAR y =
 				IF(
 					ISBLANK(Country),
-					[Marge Brute YoY %],
+					[Marge Brute (reconstruit) YoY %],
 					IF(
 						Country = "Rest of the world",
-						DIVIDE([B2C Rest Gross profit] - [B2C Rest Gross profit PY], [B2C Rest Gross profit PY]),
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute YoY %], BLANK())
+						DIVIDE([B2C Rest GP reconstruit] - [B2C Rest GP reconstruit PY], [B2C Rest GP reconstruit PY]),
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute (reconstruit) YoY %], BLANK())
 					)
 				)
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
@@ -1428,11 +1436,11 @@ table _Mesures
 			VAR y =
 				IF(
 					ISBLANK(Country),
-					[Taux Marge Brute (revenu reconstruit) YoY bps],
+					[Taux Marge Brute (reconstruit) YoY bps],
 					IF(
 						Country = "Rest of the world",
 						(RateCy - RatePy) * 10000,
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Taux Marge Brute (revenu reconstruit) YoY bps], BLANK())
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Taux Marge Brute (reconstruit) YoY bps], BLANK())
 					)
 				)
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
@@ -1443,7 +1451,15 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000070-1111-2222-3333-444455550070
 
-	measure 'B2C couleur - profit' = "#6FA84B"
+	measure 'B2C couleur - profit' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR v =
+				IF(
+					Country = "Rest of the world",
+					[B2C Rest GP reconstruit],
+					[Marge Brute (reconstruit)]
+				)
+			RETURN IF(v >= 0, "#6FA84B", "#C0504D")
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000071-1111-2222-3333-444455550071
 
@@ -1748,6 +1764,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		isHidden
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000040-1111-2222-3333-444455550040
 
@@ -1772,6 +1789,7 @@ table _Mesures
 				)
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
+		isHidden
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000041-1111-2222-3333-444455550041
 
@@ -1883,15 +1901,15 @@ table _Mesures
 				SWITCH(
 					TRUE(),
 					k = "Start",
-						CALCULATE([Marge Brute PY], REMOVEFILTERS(_BridgePaysYoY)),
+						CALCULATE([Marge Brute (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
 					k = "Rest",
 						CALCULATE(
-							[B2C Rest Gross profit] - [B2C Rest Gross profit PY],
+							[B2C Rest GP reconstruit] - [B2C Rest GP reconstruit PY],
 							REMOVEFILTERS(_BridgePaysYoY)
 						),
 					k = "Country",
 						CALCULATE(
-							[Marge Brute YoY Δ],
+							[Marge Brute (reconstruit) YoY Δ],
 							TREATAS({ label }, dim_pays[nom_pays_en]),
 							REMOVEFILTERS(_BridgePaysYoY)
 						),
@@ -2021,7 +2039,7 @@ table _Mesures
 		lineageTag: mkt00018-1111-2222-3333-444455550018
 
 	measure 'Mkt Display - Gross profit' =
-			VAR v = [Marge Brute]
+			VAR v = [Marge Brute (reconstruit)]
 			VAR sales = [Revenu (reconstruit)]
 			RETURN
 				IF(
@@ -2039,13 +2057,13 @@ table _Mesures
 		lineageTag: mkt00020-1111-2222-3333-444455550020
 
 	measure 'Mkt Display - GP YoY %' =
-			VAR y = [Marge Brute YoY %]
+			VAR y = [Marge Brute (reconstruit) YoY %]
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00021-1111-2222-3333-444455550021
 
 	measure 'Mkt Display - GM YoY bps' =
-			VAR y = [Taux Marge Brute (revenu reconstruit) YoY bps]
+			VAR y = [Taux Marge Brute (reconstruit) YoY bps]
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00022-1111-2222-3333-444455550022
@@ -2062,17 +2080,58 @@ table _Mesures
 		displayFolder: 07 Top / Loss
 		lineageTag: top0keep-1111-2222-3333-444455550001
 
-	measure 'Top Unités Commande' = IF([Top Keep Commande — Revenue] = 1, [Unités commandées], BLANK())
+	/// TOPN + tie-break id_commande (pattern Top * ISBN) — le IF(Keep) par ligne faisait
+	/// passer le total visuel (RANKX sur revenu agrégé → Keep=1 → somme globale).
+	measure 'Top Unités Commande' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						NOT ISBLANK([Revenu (reconstruit)])
+					),
+					[Revenu (reconstruit)],
+					DESC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Unités commandées], KEEPFILTERS(TopSet))
 		formatString: #,##0
 		displayFolder: 07 Top / Loss
 		lineageTag: top0unit-1111-2222-3333-444455550001
 
-	measure 'Top Revenu Commande' = IF([Top Keep Commande — Revenue] = 1, [Revenu (reconstruit)], BLANK())
+	measure 'Top Revenu Commande' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						NOT ISBLANK([Revenu (reconstruit)])
+					),
+					[Revenu (reconstruit)],
+					DESC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: top0rev0-1111-2222-3333-444455550001
 
-	measure 'Top Marge Commande' = IF([Top Keep Commande — Revenue] = 1, [Marge Brute], BLANK())
+	measure 'Top Marge Commande' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						NOT ISBLANK([Revenu (reconstruit)])
+					),
+					[Revenu (reconstruit)],
+					DESC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Marge Brute (reconstruit)], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: top0gp00-1111-2222-3333-444455550001
@@ -2113,19 +2172,19 @@ table _Mesures
 		displayFolder: 07 Top / Loss
 		lineageTag: top0isbn-1111-2222-3333-444455550007
 
-	/// Top loss makers (slide 11) — rang parmi commandes à Marge Brute < 0 (ASC = plus négatif d'abord).
+	/// Top loss makers (slide 11) — rang parmi commandes à Marge Brute (reconstruit) < 0 (ASC).
 	/// Affichage Top 10 via Keep + mesures Top Loss * (pattern B2C) — PAS filtre Rank PBIR.
 	/// Customer name = INTERIM I3 (absent).
 	measure 'Top Rank Loss — Gross Profit (full)' =
 			IF(
-				NOT ISNUMBER([Marge Brute]) || [Marge Brute] >= 0,
+				NOT ISNUMBER([Marge Brute (reconstruit)]) || [Marge Brute (reconstruit)] >= 0,
 				BLANK(),
 				RANKX(
 					FILTER(
 						ALLSELECTED(fact_commandes[id_commande]),
-						[Marge Brute] < 0
+						[Marge Brute (reconstruit)] < 0
 					),
-					[Marge Brute],
+					[Marge Brute (reconstruit)],
 					,
 					ASC,
 					DENSE
@@ -2142,63 +2201,207 @@ table _Mesures
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0keep-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Unités' = IF([Top Keep Loss — Gross Profit] = 1, [Unités commandées], BLANK())
+	/// TOPN + tie-break id_commande (pattern Top * Commande corrigé) — le IF(Keep) par ligne
+	/// faisait retomber le total visuel à BLANK (marge agrégée >= 0 hors Top Rank Loss).
+	measure 'Top Loss — Unités' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Unités commandées], KEEPFILTERS(TopSet))
 		formatString: #,##0
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0unit-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Revenue' = IF([Top Keep Loss — Gross Profit] = 1, [Revenu (reconstruit)], BLANK())
+	measure 'Top Loss — Revenue' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0rev0-1111-2222-3333-444455550001
 
-	measure 'Top Loss — COGS' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Achat Total], BLANK())
+	measure 'Top Loss — COGS' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Coût Achat Total], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0cogs-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Inbound' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Transport Amont], BLANK())
+	measure 'Top Loss — Inbound' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Coût Transport Amont], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0inbd-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Shipping' = IF([Top Keep Loss — Gross Profit] = 1, [Coût Transport Outbound (Retenu)], BLANK())
+	measure 'Top Loss — Shipping' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Coût Transport Outbound (Retenu)], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0ship-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Duties' = IF([Top Keep Loss — Gross Profit] = 1, [Douanes Taxes], BLANK())
+	measure 'Top Loss — Duties' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Douanes Taxes], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0duty-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Marketplace fees' = IF([Top Keep Loss — Gross Profit] = 1, [Commissions Marketplace], BLANK())
+	measure 'Top Loss — Marketplace fees' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Commissions Marketplace], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0mktf-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Supplies' = IF([Top Keep Loss — Gross Profit] = 1, [Fournitures Expédition], BLANK())
+	measure 'Top Loss — Supplies' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Fournitures Expédition], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0supp-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Returns' = IF([Top Keep Loss — Gross Profit] = 1, [Retours Remboursements], BLANK())
+	measure 'Top Loss — Returns' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Retours Remboursements], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0retn-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Generic' = IF([Top Keep Loss — Gross Profit] = 1, [Coûts Génériques], BLANK())
+	measure 'Top Loss — Generic' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Coûts Génériques], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0genr-1111-2222-3333-444455550001
 
-	measure 'Top Loss — Gross Profit' = IF([Top Keep Loss — Gross Profit] = 1, [Marge Brute], BLANK())
+	measure 'Top Loss — Gross Profit' =
+			VAR TopSet =
+				TOPN(
+					10,
+					FILTER(
+						ALLSELECTED(fact_commandes[id_commande]),
+						[Marge Brute (reconstruit)] < 0
+					),
+					[Marge Brute (reconstruit)],
+					ASC,
+					fact_commandes[id_commande],
+					ASC
+				)
+			RETURN CALCULATE([Marge Brute (reconstruit)], KEEPFILTERS(TopSet))
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0gp00-1111-2222-3333-444455550001
 
-	/// Frais de port hors CANCELLED - meme perimetre que [Marge Brute] L331.
-	/// Necessaire pour que la somme des Delta postes du bridge PnL boucle sur [Marge Brute YoY Δ].
+	/// Frais de port hors CANCELLED - même périmètre que le revenu publié.
 	measure 'Frais Port Net Annulation' = CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
@@ -2215,17 +2418,17 @@ table _Mesures
 		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0003
 
 	/// =====================================================================
-	/// Profit bridge PnL (page 9). Axe BridgePnL = Marge brute N-1 + 10 postes signes.
-	/// MB_PY = [Marge Brute PY] ; autres postes = YoY Delta * Signe (revenu +1, couts -1).
-	/// =====================================================================
+	/// Profit bridge PnL. Axe = GP reconstruit N-1 + 7 postes + retours/génériques below-the-line.
+	/// MB_PY = [Marge Brute (reconstruit) PY]. CA = YoY du CA reconstruit net annulation.
+	/// RETOURS / GENERIQUES restent en fin d'axe (hors formule des 7 postes).
 	measure 'Bridge PnL YoY' =
 			VAR poste = SELECTEDVALUE(BridgePnL[Poste])
 			VAR signe = SELECTEDVALUE(BridgePnL[Signe])
 			RETURN
 				SWITCH(
 					poste,
-					"MB_PY", [Marge Brute PY],
-					"CA", [CA HT Net Annulation YoY Δ] * signe,
+					"MB_PY", [Marge Brute (reconstruit) PY],
+					"CA", ([Revenu (reconstruit) YoY Δ] - [Frais Port Net Annulation YoY Δ]) * signe,
 					"PORT", [Frais Port Net Annulation YoY Δ] * signe,
 					"ACHAT", [Coût Achat Total YoY Δ] * signe,
 					"AMONT", [Coût Transport Amont YoY Δ] * signe,
@@ -2300,17 +2503,13 @@ table _Mesures
 		displayFolder: 03 Coûts
 		lineageTag: 915b1437-3dcd-4ac3-84e4-01cd6bc5cce7
 
-	/// Field cadrage n°25 : Gross Profit per unit = Marge brute / ordered units.
-	/// Numerateur [Marge Brute] : revenu hors CANCELLED, couts toutes commandes (Marc).
-	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
-	/// Perimetre DIVERGENT (definition client) : marge (revenu net, couts bruts) /
-	/// unites commandees (annulees incluses).
-	measure 'Marge Brute par unité' = DIVIDE([Marge Brute], [Unités commandées], 0)
+	/// Field cadrage n°25 : Gross Profit per unit = marge publiée / ordered units.
+	measure 'Marge Brute par unité' = DIVIDE([Marge Brute (reconstruit)], [Unités commandées], 0)
 		formatString: #,##0.00 €
 		displayFolder: 04 Marge
 		lineageTag: 2e22f371-881d-4cbd-82eb-70cbdf3f4787
 
-	/// Page 11 Loss analysis : nombre de commandes a marge_brute_commande < 0.
+	/// Page 11 Loss analysis : nombre de commandes à marge_brute_commande < 0 (7 postes, CA reconstruit).
 	measure 'Nb Commandes Deficitaires' =
 			CALCULATE(
 				COUNTROWS(fact_commandes),
@@ -2336,8 +2535,8 @@ table _Mesures
 		displayFolder: 11 Loss analysis
 		lineageTag: c011b001-4e11-4b11-8b11-000000000003
 
-	/// Page 11 Loss analysis : |pertes| / marge brute globale.
-	measure 'Part Pertes Marge Brute' = DIVIDE(-[Pertes Totales], [Marge Brute], 0)
+	/// Page 11 Loss analysis : |pertes| / marge brute publiée.
+	measure 'Part Pertes Marge Brute' = DIVIDE(-[Pertes Totales], [Marge Brute (reconstruit)], 0)
 		formatString: 0.0%
 		displayFolder: 11 Loss analysis
 		lineageTag: c011b001-4e11-4b11-8b11-000000000004
@@ -2347,6 +2546,70 @@ table _Mesures
 		formatString: #,##0.00 €
 		displayFolder: 11 Loss analysis
 		lineageTag: c011b001-4e11-4b11-8b11-000000000005
+
+	/// Cartes KPI GP : navy charte si >= 0, rouge si negatif. Pas de vert (identite visuelle).
+	measure 'KPI couleur — valeur' = IF([Marge Brute (reconstruit)] >= 0, "#1B3A5C", "#C0504D")
+		displayFolder: 01 KPI publiés
+		lineageTag: bb000005-1111-2222-3333-444455550005
+
+	/// Cartes KPI Gross Margin : signe du taux affiche, pas du GP (CA = 0 → taux 0, GP peut etre < 0).
+	measure 'KPI couleur — Gross Margin' = IF([Taux Marge Brute (reconstruit)] >= 0, "#1B3A5C", "#C0504D")
+		displayFolder: 01 KPI publiés
+		lineageTag: bb000006-1111-2222-3333-444455550006
+
+	/// Carte Profit bridge GP/unité : signe de [Marge Brute par unité] (unités = 0 → 0, GP peut etre < 0).
+	measure 'KPI couleur — Marge par unité' = IF([Marge Brute par unité] >= 0, "#1B3A5C", "#C0504D")
+		displayFolder: 01 KPI publiés
+		lineageTag: bb000007-1111-2222-3333-444455550007
+
+	/// Carte Profit bridge PPM : signe de [Taux Marge Commerciale] (PPP/CA, distinct du GP).
+	measure 'KPI couleur — PPM' = IF([Taux Marge Commerciale] >= 0, "#1B3A5C", "#C0504D")
+		displayFolder: 01 KPI publiés
+		lineageTag: bb000008-1111-2222-3333-444455550008
+
+	/// General View charts — étiquettes totaux empilés (format carte KPI Compact).
+	/// labelDisplayUnits natif ne permet pas €…k en préfixe ; mesure texte sur totals.
+	measure 'GV Chart Label — Revenue' = [KPI Compact — Revenue]
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: gv0lbl0-1111-2222-3333-444455550001
+
+	measure 'GV Chart Label — Gross Profit' = [KPI Compact — Gross Profit]
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: gv0lbl0-1111-2222-3333-444455550002
+
+	measure 'GV Chart Label — Revenue PY' =
+			VAR v = [Revenu (reconstruit) PY]
+			VAR a = ABS(v)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					SWITCH(
+						TRUE(),
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+						"€" & FORMAT(v, "#,##0")
+					)
+				)
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: gv0lbl0-1111-2222-3333-444455550003
+
+	measure 'GV Chart Label — Gross Profit PY' =
+			VAR v = [Marge Brute (reconstruit) PY]
+			VAR a = ABS(v)
+			RETURN
+				IF(
+					ISBLANK(v),
+					BLANK(),
+					SWITCH(
+						TRUE(),
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+						"€" & FORMAT(v, "#,##0")
+					)
+				)
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: gv0lbl0-1111-2222-3333-444455550004
 
 	column Dummy
 		lineageTag: 8b077e7c-c0c2-475a-9b63-bed5f82bf07a

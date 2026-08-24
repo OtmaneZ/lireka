@@ -43,11 +43,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Marge Brute YoY %"
+                  "Property": "Marge Brute (reconstruit) YoY %"
                 }
               },
-              "queryRef": "_Mesures.Marge Brute YoY %",
-              "nativeQueryRef": "Marge Brute YoY %",
+              "queryRef": "_Mesures.Marge Brute (reconstruit) YoY %",
+              "nativeQueryRef": "Marge Brute (reconstruit) YoY %",
               "displayName": "Gross Profit YoY%"
             }
           ]
@@ -136,7 +136,7 @@
             }
           },
           "selector": {
-            "metadata": "_Mesures.Marge Brute YoY %"
+            "metadata": "_Mesures.Marge Brute (reconstruit) YoY %"
           }
         }
       ],

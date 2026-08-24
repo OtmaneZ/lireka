@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "la_table_channel",
   "position": {
-    "x": 237,
-    "y": 370,
+    "x": 236.99563318777294,
+    "y": 424.80349344978168,
     "z": 27000,
-    "height": 326,
-    "width": 1035,
+    "height": 272.76855895196508,
+    "width": 1035.17903930131,
     "tabOrder": 27000
   },
   "visual": {
@@ -173,11 +173,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Marge Brute YoY %"
+                  "Property": "Marge Brute (reconstruit) YoY %"
                 }
               },
-              "queryRef": "_Mesures.Marge Brute YoY %",
-              "nativeQueryRef": "Marge Brute YoY %",
+              "queryRef": "_Mesures.Marge Brute (reconstruit) YoY %",
+              "nativeQueryRef": "Marge Brute (reconstruit) YoY %",
               "displayName": "Gross Profit YoY%"
             },
             {
@@ -188,11 +188,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Taux Marge Brute (revenu reconstruit)"
+                  "Property": "Taux Marge Brute (reconstruit)"
                 }
               },
-              "queryRef": "_Mesures.Taux Marge Brute (revenu reconstruit)",
-              "nativeQueryRef": "Taux Marge Brute (revenu reconstruit)",
+              "queryRef": "_Mesures.Taux Marge Brute (reconstruit)",
+              "nativeQueryRef": "Taux Marge Brute (reconstruit)",
               "displayName": "Gross Margin"
             },
             {
@@ -203,11 +203,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Taux Marge Brute (revenu reconstruit) YoY bps"
+                  "Property": "Taux Marge Brute (reconstruit) YoY bps"
                 }
               },
-              "queryRef": "_Mesures.Taux Marge Brute (revenu reconstruit) YoY bps",
-              "nativeQueryRef": "Taux Marge Brute (revenu reconstruit) YoY bps",
+              "queryRef": "_Mesures.Taux Marge Brute (reconstruit) YoY bps",
+              "nativeQueryRef": "Taux Marge Brute (reconstruit) YoY bps",
               "displayName": "Gross Margin YoY bps"
             }
           ]
@@ -435,6 +435,29 @@
                           "Entity": "_Mesures"
                         }
                       },
+                      "Property": "KPI couleur — valeur"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.GV Display — Gross Profit"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Mesures"
+                        }
+                      },
                       "Property": "Couleur YoY — Gross Profit"
                     }
                   }
@@ -443,7 +466,7 @@
             }
           },
           "selector": {
-            "metadata": "_Mesures.Marge Brute YoY %"
+            "metadata": "_Mesures.Marge Brute (reconstruit) YoY %"
           }
         },
         {
@@ -466,7 +489,7 @@
             }
           },
           "selector": {
-            "metadata": "_Mesures.Taux Marge Brute (revenu reconstruit) YoY bps"
+            "metadata": "_Mesures.Taux Marge Brute (reconstruit) YoY bps"
           }
         }
       ],
@@ -518,6 +541,22 @@
                 }
               }
             }
+          }
+        }
+      ],
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "84.6873996415585D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.Marge Brute (reconstruit) YoY %"
           }
         }
       ]

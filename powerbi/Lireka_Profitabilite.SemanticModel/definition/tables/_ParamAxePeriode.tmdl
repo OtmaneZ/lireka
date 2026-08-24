@@ -34,6 +34,6 @@ table _ParamAxePeriode
 		source =
 				{
 					("Month", NAMEOF(dim_date[mois_annee_court_en]), 0),
-					("Week", NAMEOF(dim_date[semaine_annee_libelle]), 1)
+					("Week", NAMEOF(dim_date[semaine_annee_court]), 1)
 				}
 

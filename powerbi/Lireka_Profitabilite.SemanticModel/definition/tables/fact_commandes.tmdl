@@ -217,7 +217,7 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: canal_bascule
 
-	/// CA HT net annulation (0 si CANCELLED) — entree des ratios mediane et du poste basculant.
+	/// CA HT net annulation, base reconstruite (0 si CANCELLED) — ratios médiane et poste basculant.
 	column ca_ht_net
 		dataType: double
 		isHidden
@@ -265,10 +265,9 @@ table fact_commandes
 		lineageTag: c011a001-4e11-4a11-8a11-000000000014
 		summarizeBy: sum
 
-	/// Page 11 Loss analysis : marge brute au grain commande (formule [Marge Brute] a 10 postes).
-	/// Outbound = cout_transport_retenu (facture rapprochee si dispo, sinon backend), agrege DAX.
-	/// CANCELLED : CA et frais de port a 0 en ligne (les postes de cout restent inchanges).
-	/// frais_port_net inline = meme logique que l'etape M #"Frais port net".
+	/// Page 11 Loss analysis : marge brute au grain commande = formule publiée 7 postes,
+	/// base CA reconstruit (colonne ca_ht_reconstruit, présente par commande).
+	/// CANCELLED : CA et frais de port à 0 ; les coûts restent. Hors retours / génériques.
 	column marge_brute_commande =
 			fact_commandes[ca_ht_net]
 				+ IF(fact_commandes[state] = "CANCELLED", 0, IF(ISBLANK(fact_commandes[frais_port_encaisse]), 0, fact_commandes[frais_port_encaisse]))
@@ -278,8 +277,6 @@ table fact_commandes
 				- fact_commandes[duties_taxes_cmd]
 				- IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace])
 				- fact_commandes[fournitures_cmd]
-				- IF(ISBLANK(fact_commandes[retours_remboursements]), 0, fact_commandes[retours_remboursements])
-				- IF(ISBLANK(fact_commandes[couts_generiques]), 0, fact_commandes[couts_generiques])
 		dataType: double
 		formatString: #,##0.00 €
 		lineageTag: c011a001-4e11-4a11-8a11-000000000001
@@ -496,16 +493,12 @@ table fact_commandes
 				VAR v_duties = IF(ISBLANK(fact_commandes[duties_taxes_cmd]), 0, fact_commandes[duties_taxes_cmd])
 				VAR v_commissions = IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace])
 				VAR v_fournitures = IF(ISBLANK(fact_commandes[fournitures_cmd]), 0, fact_commandes[fournitures_cmd])
-				VAR v_retours = IF(ISBLANK(fact_commandes[retours_remboursements]), 0, fact_commandes[retours_remboursements])
-				VAR v_generiques = IF(ISBLANK(fact_commandes[couts_generiques]), 0, fact_commandes[couts_generiques])
 				VAR med_achat = IF(ISBLANK(fact_commandes[med_r_achat]), 0, fact_commandes[med_r_achat])
 				VAR med_amont = IF(ISBLANK(fact_commandes[med_r_amont]), 0, fact_commandes[med_r_amont])
 				VAR med_outbound = IF(ISBLANK(fact_commandes[med_r_outbound]), 0, fact_commandes[med_r_outbound])
 				VAR med_duties = IF(ISBLANK(fact_commandes[med_r_duties]), 0, fact_commandes[med_r_duties])
 				VAR med_commissions = IF(ISBLANK(fact_commandes[med_r_commissions]), 0, fact_commandes[med_r_commissions])
 				VAR med_fournitures = IF(ISBLANK(fact_commandes[med_r_fournitures]), 0, fact_commandes[med_r_fournitures])
-				VAR med_retours = IF(ISBLANK(fact_commandes[med_r_retours]), 0, fact_commandes[med_r_retours])
-				VAR med_generiques = IF(ISBLANK(fact_commandes[med_r_generiques]), 0, fact_commandes[med_r_generiques])
 				VAR a1 = v_achat - med_achat * ca
 				VAR n1 = m0 + a1
 				VAR a2 = v_amont - med_amont * ca
@@ -518,10 +511,6 @@ table fact_commandes
 				VAR n5 = m0 + a5
 				VAR a6 = v_fournitures - med_fournitures * ca
 				VAR n6 = m0 + a6
-				VAR a7 = v_retours - med_retours * ca
-				VAR n7 = m0 + a7
-				VAR a8 = v_generiques - med_generiques * ca
-				VAR n8 = m0 + a8
 				VAR s0_a = -1.0E+100
 				VAR s1_a = IF(n1 > 0 && a1 > s0_a, a1, s0_a)
 				VAR s1_l = IF(n1 > 0 && a1 > s0_a, "Cost of goods", BLANK())
@@ -535,11 +524,7 @@ table fact_commandes
 				VAR s5_l = IF(n5 > 0 && a5 > s4_a, "Marketplace commissions", s4_l)
 				VAR s6_a = IF(n6 > 0 && a6 > s5_a, a6, s5_a)
 				VAR s6_l = IF(n6 > 0 && a6 > s5_a, "Shipping supplies", s5_l)
-				VAR s7_a = IF(n7 > 0 && a7 > s6_a, a7, s6_a)
-				VAR s7_l = IF(n7 > 0 && a7 > s6_a, "Returns and refunds", s6_l)
-				VAR s8_a = IF(n8 > 0 && a8 > s7_a, a8, s7_a)
-				VAR s8_l = IF(n8 > 0 && a8 > s7_a, "Generic costs", s7_l)
-				RETURN IF(ISBLANK(s8_l), "Structurally loss-making", s8_l)
+				RETURN IF(ISBLANK(s6_l), "Structurally loss-making", s6_l)
 			)
 		dataType: string
 		lineageTag: c011a001-4e11-4a11-8a11-000000000002
@@ -633,7 +618,7 @@ table fact_commandes
 					#"CA HT net" = Table.AddColumn(
 						#"Canal bascule",
 						"ca_ht_net",
-						each if [state] = "CANCELLED" then 0 else if [ca_ht] = null then 0 else [ca_ht],
+						each if [state] = "CANCELLED" then 0 else if [ca_ht_reconstruit] = null then 0 else [ca_ht_reconstruit],
 						type number
 					),
 					#"Frais port net" = Table.AddColumn(

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "la_chart_gp",
   "position": {
     "x": 760,
@@ -23,12 +23,13 @@
                       "Entity": "dim_date"
                     }
                   },
-                  "Property": "mois_annee_court_en"
+                  "Property": "semaine_annee_court"
                 }
               },
-              "queryRef": "dim_date.mois_annee_court_en",
-              "nativeQueryRef": "mois_annee_court_en",
-              "active": true
+              "queryRef": "dim_date.semaine_annee_court",
+              "nativeQueryRef": "Week",
+              "active": true,
+              "displayName": "Week"
             }
           ],
           "fieldParameters": [
@@ -67,6 +68,24 @@
             }
           ]
         },
+        "Totals": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
+                  "Property": "GV Chart Label — Gross Profit"
+                }
+              },
+              "queryRef": "_Mesures.GV Chart Label — Gross Profit",
+              "nativeQueryRef": "GV Chart Label — Gross Profit"
+            }
+          ]
+        },
         "Y": {
           "projections": [
             {
@@ -77,11 +96,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Marge Brute"
+                  "Property": "Marge Brute (reconstruit)"
                 }
               },
-              "queryRef": "_Mesures.Marge Brute",
-              "nativeQueryRef": "Marge Brute"
+              "queryRef": "_Mesures.Marge Brute (reconstruit)",
+              "nativeQueryRef": "Marge Brute (reconstruit)"
             }
           ]
         },
@@ -95,32 +114,15 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Marge Brute PY"
+                  "Property": "Marge Brute (reconstruit) PY"
                 }
               },
-              "queryRef": "_Mesures.Marge Brute PY",
-              "nativeQueryRef": "Marge Brute PY",
+              "queryRef": "_Mesures.Marge Brute (reconstruit) PY",
+              "nativeQueryRef": "Marge Brute (reconstruit) PY",
               "displayName": "PY"
             }
           ]
         }
-      },
-      "sortDefinition": {
-        "sort": [
-          {
-            "field": {
-              "Column": {
-                "Expression": {
-                  "SourceRef": {
-                    "Entity": "dim_date"
-                  }
-                },
-                "Property": "annee_mois"
-              }
-            },
-            "direction": "Ascending"
-          }
-        ]
       }
     },
     "objects": {
@@ -144,7 +146,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
@@ -185,14 +187,14 @@
             "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "1000000D"
+                  "Value": "1000D"
                 }
               }
             },
             "labelPrecision": {
               "expr": {
                 "Literal": {
-                  "Value": "1L"
+                  "Value": "0L"
                 }
               }
             }
@@ -266,21 +268,20 @@
             "show": {
               "expr": {
                 "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "totals": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
                   "Value": "true"
-                }
-              }
-            },
-            "labelDisplayUnits": {
-              "expr": {
-                "Literal": {
-                  "Value": "1000000D"
-                }
-              }
-            },
-            "labelPrecision": {
-              "expr": {
-                "Literal": {
-                  "Value": "1L"
                 }
               }
             },
@@ -291,10 +292,10 @@
                 }
               }
             },
-            "enableBackground": {
+            "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "1D"
                 }
               }
             }
@@ -440,7 +441,7 @@
             }
           },
           "selector": {
-            "metadata": "_Mesures.Marge Brute PY"
+            "metadata": "_Mesures.Marge Brute (reconstruit) PY"
           }
         }
       ]

@@ -12,19 +12,7 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Marge Brute PY"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "PY": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "table_mesures.revenu_reconstruit_py": {
 			      "Definition": {
@@ -196,19 +184,7 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Marge Brute"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "Gross profit": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "table_mesures.marge_brute_yoy_": {
 			      "Definition": {
@@ -217,10 +193,19 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Marge Brute YoY %"
 			        }
 			      },
+			      "State": "Generated"
+			    },
+			    "table_mesures.taux_marge_brute_revenu_reconstruit": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Mesures",
+			          "ConceptualProperty": "Taux Marge Brute (reconstruit)"
+			        }
+			      },
 			      "State": "Generated",
 			      "Terms": [
 			        {
-			          "Gross Profit YoY%": {
+			          "Gross Margin": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",
@@ -228,20 +213,9 @@ cultureInfo fr-FR
 			            },
 			            "Weight": 0.9
 			          }
-			        }
-			      ]
-			    },
-			    "table_mesures.taux_marge_brute_revenu_reconstruit": {
-			      "Definition": {
-			        "Binding": {
-			          "ConceptualEntity": "_Mesures",
-			          "ConceptualProperty": "Taux Marge Brute (revenu reconstruit)"
-			        }
-			      },
-			      "State": "Generated",
-			      "Terms": [
+			        },
 			        {
-			          "Gross Margin": {
+			          "Gross margin %": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",
@@ -256,7 +230,7 @@ cultureInfo fr-FR
 			      "Definition": {
 			        "Binding": {
 			          "ConceptualEntity": "_Mesures",
-			          "ConceptualProperty": "Taux Marge Brute (revenu reconstruit) YoY bps"
+			          "ConceptualProperty": "Taux Marge Brute (reconstruit) YoY bps"
 			        }
 			      },
 			      "State": "Generated",
@@ -698,19 +672,7 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "B2C Sort Key"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "​": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "table_mesures.revenu_reconstruit_alloué_langue_py": {
 			      "Definition": {
@@ -1070,19 +1032,7 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Top Rank ISBN — Revenue"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "​": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "table_mesures.top_rank_commande__revenue": {
 			      "Definition": {
@@ -1091,19 +1041,7 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Top Rank Commande — Revenue"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "​": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "fact_lignes.isbn": {
 			      "Definition": {
@@ -1251,19 +1189,7 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Top Rank Loss — Gross Profit"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "​": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "table_mesures.top_unités_commande": {
 			      "Definition": {
@@ -1797,19 +1723,7 @@ cultureInfo fr-FR
 			          "ConceptualProperty": "Taux Marge Brute"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "Gross margin %": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "table_mesures.nb_commandes_deficitaires": {
 			      "Definition": {
@@ -1900,6 +1814,141 @@ cultureInfo fr-FR
 			        "Binding": {
 			          "ConceptualEntity": "dim_date",
 			          "ConceptualProperty": "semaine_annee_libelle"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_date.mois_annee_court_en": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_date",
+			          "ConceptualProperty": "mois_annee_court_en"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Month": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_mesures.marge_brute_reconstruit_py": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Mesures",
+			          "ConceptualProperty": "Marge Brute (reconstruit) PY"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "PY": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_mesures.marge_brute_reconstruit_yoy_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Mesures",
+			          "ConceptualProperty": "Marge Brute (reconstruit) YoY %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Gross Profit YoY%": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_mesures.marge_brute_reconstruit": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Mesures",
+			          "ConceptualProperty": "Marge Brute (reconstruit)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Gross profit": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_isbn.title": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_isbn",
+			          "ConceptualProperty": "title"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Title": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_isbn.author": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_isbn",
+			          "ConceptualProperty": "author"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Author": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_date.semaine_annee_court": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_date",
+			          "ConceptualProperty": "semaine_annee_court"
 			        }
 			      },
 			      "State": "Generated",

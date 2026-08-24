@@ -41,8 +41,8 @@ table BridgePnL
 		mode: import
 		source =
 				let
-					// AMONT exclu : poste vide depuis 2022, contribution YoY nulle sur
-					// 2025/2026. Mesures conservees ; reintegration possible via SWITCH.
+					// AMONT exclu : poste vide depuis 2022, contribution YoY nulle.
+					// RETOURS / GENERIQUES en fin d'axe = below-the-line (hors 7 postes GP).
 					Source = #table(
 						type table [Ordre = Int64.Type, Libelle = text, Poste = text, Signe = Int64.Type],
 						{

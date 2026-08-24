@@ -136,6 +136,28 @@ table dim_date
 
 		changedProperty = IsHidden
 
+	/// Clé année-semaine (AAAASww) pour tri/filtre chronologique en mode Week.
+	column annee_semaine
+		dataType: int64
+		formatString: 0
+		lineageTag: d2e3f4a5-b6c7-8901-cdef-345678901235
+		summarizeBy: sum
+		sourceColumn: annee_semaine
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Libellé semaine court (Sww) — axe chart mode Week ; tri via annee_semaine.
+	column semaine_annee_court
+		dataType: string
+		lineageTag: e3f4a5b6-c7d8-9012-defa-456789012346
+		summarizeBy: none
+		sourceColumn: semaine_annee_court
+		sortByColumn: annee_semaine
+
+		changedProperty = IsHidden
+
 	partition dim_date = m
 		mode: import
 		source =
@@ -163,8 +185,20 @@ table dim_date
 						each Text.From([annee]) & "-S" & Text.PadStart(Text.From([semaine]), 2, "0"),
 						type text
 					),
-					#"Nom mois annee" = Table.AddColumn(
+					#"Annee semaine ajoutee" = Table.AddColumn(
 						#"Semaine annee libelle",
+						"annee_semaine",
+						each [annee] * 100 + [semaine],
+						Int64.Type
+					),
+					#"Semaine annee court" = Table.AddColumn(
+						#"Annee semaine ajoutee",
+						"semaine_annee_court",
+						each "S" & Text.PadStart(Text.From([semaine]), 2, "0"),
+						type text
+					),
+					#"Nom mois annee" = Table.AddColumn(
+						#"Semaine annee court",
 						"nom_mois_annee",
 						each [nom_mois] & " " & Text.From([annee]),
 						type text
