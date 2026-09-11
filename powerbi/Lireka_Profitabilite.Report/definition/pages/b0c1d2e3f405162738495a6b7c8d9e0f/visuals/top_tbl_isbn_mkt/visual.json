@@ -92,6 +92,23 @@
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Mesures"
+                  }
+                },
+                "Property": "Top Revenu ISBN"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
       }
     },
     "objects": {

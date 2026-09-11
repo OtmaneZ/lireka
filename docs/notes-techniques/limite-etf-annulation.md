@@ -1,8 +1,8 @@
 # Limite ETF — proxy package_id pour l'annulation avant/après expédition
 
-> **Statut** : implémenté dans `Lireka_Profitabilite.SemanticModel` le 15/07/2026  
+> **Statut** : implémenté dans `Lireka_Profitabilite.SemanticModel` le 15/07/2026 ; **COGS sur CANCELLED mis à jour le 25/08/2026** (décision Marc : neutraliser le coût d'achat, conserver l'inbound).  
 > **Décision** : Marc Bordier (Slack) — logique avant/après expédition ; proxy technique ZineInsights  
-> **Référence code** : colonne `fact_lignes[statut_annulation_ligne]`, mesures Bloc 3 dans `_Mesures.tmdl`
+> **Référence code** : colonne `fact_lignes[statut_annulation_ligne]`, `fact_commandes[cout_achat_net]`, mesures Bloc 3 dans `_Mesures.tmdl`
 
 ---
 
@@ -93,14 +93,16 @@ Audit Bloc 3 (reconstruction CA au grain article) :
 
 `customer_price_per_item_eur` est à **0 sur 94,6 %** des articles : impossible d'appliquer la règle Marc « CA = 0 sur annulation » via le grain article sans sous-estimer massivement le revenu. Le CA fiable est `order_amount_eur` au niveau `customer_order.csv`.
 
-### Règle livrée dans `[Marge Brute]`
+### Règle livrée dans `[Marge Brute]` / `[Marge Brute (reconstruit)]`
 
 | Poste | Traitement grain commande |
 |-------|---------------------------|
 | CA (`order_amount_eur`) | **Zéro** sur `state = CANCELLED` via `[CA HT Net Annulation]` |
 | Frais de port encaissés | **Exclus** sur `state = CANCELLED` (1 283 €, audit 15/07/2026) |
-| Coût achat, commissions, transport amont | **Conservés** sur toutes commandes (y compris annulées) |
-| Transport sortant (`fact_transport`) | **Inchangé** — commande sans colis = pas de ligne transport (avant expédition) ; avec colis = coût conservé (après expédition) |
+| Coût achat (COGS) | **Zéro** (pas BLANK) sur `state = CANCELLED` — décision Marc 25/08/2026 (`[Coût Achat Total]` = `SUM(cout_achat_net)`). Commandes actives inchangées. |
+| Transport amont | **Conservé à 100 %** quel que soit le statut (décision Marc 25/08/2026). Pas de filtre CANCELLED. Un 0 affiché est un 0 source (`inbound_transportation_cost_eur` = 0 depuis 2022). |
+| Transport sortant (`fact_transport`) | **Inchangé** — commande sans colis = pas de ligne transport (jamais expédiée) ; avec colis = coût conservé (annulée après expédition). |
+| Retours / remboursements | Inclus **si le montant est non nul** (proxy « remboursée » — pas de flag distinct). Poste below-the-line pour `[Marge Brute (reconstruit)]` ; visible dans Top loss makers via `[Retours Remboursements]`. |
 
 ### Ce qui n'est pas capturé
 
@@ -150,7 +152,7 @@ Aucun visuel dashboard ajouté.
 
 - [ ] Valider le proxy `package_id` null / non-null comme substitut du sous-statut ETF
 - [ ] Trancher sur les 10 packages à états mixtes (classer item par item vs package entier)
-- [ ] Confirmer que le coût achat produit est conservé dans **tous** les cas d'annulation
+- [x] Confirmer que le coût achat produit est **neutralisé** (0) sur `state = CANCELLED` (décision Marc 25/08/2026 ; ancienne règle « conservé dans tous les cas » retirée de la marge publiée)
 - [ ] Valider l'application grain **commande** de la règle CA=0 (`[Marge Brute]` livrée)
 - [ ] Arbitrer sur l'export de `customer_price_per_item_eur` au grain article (bascule future)
 - [ ] Décider si `[Marge Brute (grain article, prov.)]` peut un jour remplacer `[Marge Brute]`

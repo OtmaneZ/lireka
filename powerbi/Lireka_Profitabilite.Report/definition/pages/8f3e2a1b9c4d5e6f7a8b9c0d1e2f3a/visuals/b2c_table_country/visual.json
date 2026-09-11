@@ -224,6 +224,21 @@
               "queryRef": "_Mesures.B2C Display - GM YoY bps",
               "nativeQueryRef": "B2C Display - GM YoY bps",
               "displayName": "Gross Margin YoY (bps)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
+                  "Property": "B2C Sort Key"
+                }
+              },
+              "queryRef": "_Mesures.B2C Sort Key",
+              "nativeQueryRef": "B2C Sort Key",
+              "displayName": " "
             }
           ]
         }
@@ -238,7 +253,7 @@
                     "Entity": "_Mesures"
                   }
                 },
-                "Property": "B2C Display - COGS"
+                "Property": "B2C Sort Key"
               }
             },
             "direction": "Descending"
@@ -693,6 +708,22 @@
                 }
               }
             }
+          }
+        }
+      ],
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.B2C Sort Key"
           }
         }
       ]

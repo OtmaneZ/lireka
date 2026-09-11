@@ -49,3 +49,10 @@ scripts/**/*_output.txt
 scripts/**/rapport_*.txt
 scripts/validation/impact_export_marge_out/
 out/
+
+# Sorties d'audit contenant des données de production (NDA)
+scripts/validation/*_out/
+tools/**/*_out/
+
+# Power BI PBIP — sauvegardes locales
+**/.pbi/*.bak

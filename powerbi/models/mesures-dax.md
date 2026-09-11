@@ -145,11 +145,18 @@ CA Total HT (grain article, ajusté annulation) = SUMX(
 
 ## Coût Achat Total (grain article)
 
-> Bloc3 — coût d'achat au grain article. Conservé dans TOUS les cas d'annulation  
-> (avant ET après expédition, décision Marc) — contrôle vs [Coût Achat Total] (grain commande).  
+> Bloc3 — coût d'achat au grain article. Aligné sur la décision Marc 25/08/2026 :
+> 0 si la commande (`fact_commandes[state]`) est CANCELLED ; inchangé sinon
+> (y compris articles CANCELLED d'une commande encore active = annulation partielle).
 
 ```dax
-Coût Achat Total (grain article) = SUM(fact_lignes[product_cost_eur])
+Coût Achat Total (grain article) =
+        VAR cogsActif =
+            CALCULATE(
+                SUM(fact_lignes[product_cost_eur]),
+                KEEPFILTERS(fact_commandes[state] <> "CANCELLED")
+            )
+        RETURN IF(ISBLANK(cogsActif), 0, cogsActif)
 ```
 
 *Format* : `#,##0.00 €`
@@ -282,10 +289,11 @@ CA Commandes Annulation Partielle = CALCULATE(
 
 ## Coût Achat Total
 
-> Coût d'achat total des livres (product_cost_eur).  
+> Coût d'achat total des livres (product_cost_eur), **net annulation**.  
+> Décision Marc 25/08/2026 : 0 (pas BLANK) si `state = CANCELLED` ; commandes actives inchangées.
 
 ```dax
-Coût Achat Total = SUM(fact_commandes[cout_achat])
+Coût Achat Total = SUM(fact_commandes[cout_achat_net])
 ```
 
 *Format* : `#,##0.00 €`
@@ -530,21 +538,11 @@ Coûts Génériques = SUM(fact_commandes[couts_generiques])
 
 ## Marge Brute
 
-> MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).  
-> Revenu = CA hors commandes annulées (règle Marc "CA=0 sur annulation", grain commande).  
-> Coûts conservés sur toutes commandes y compris annulées (décision Marc : coût produit  
-> + transport si après expédition). Frais de port encaissés exclus sur commandes CANCELLED  
-> (1 283 € sur l'entrepôt actuel, audit 15/07/2026). Annulations partielles non ajustées  
-> (~8 900 cmd, limite connue — voir docs/notes-techniques/limite-etf-annulation.md).  
-> Grain article [Marge Brute (grain article, prov.)] conservé comme contrôle et chemin de  
-> bascule si customer_price_per_item_eur devient disponible par ligne.  
-> Revenue (incl. shipping revenue if relevant) - COGS - Inbound transportation costs  
-> - Outbound transportation costs - Duties and Taxes - Marketplace commission fees  
-> - Shipping supplies - Returns/refunds - Generic costs.  
-> Retours/remboursements + coûts génériques inclus (Bloc 5, dette technique provisoire —  
-> Marc doit revoir total_generic_costs_eur ; valider risque double comptage returns/refunds  
-> vs product_cost conservé sur annulation). Grain commande (agrégés par order_id depuis  
-> customer_order_item).  
+> MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09),  
+> COGS sur annulation mis à jour (Marc, 25/08/2026) : [Coût Achat Total] = 0 si  
+> state = CANCELLED. Revenu = CA hors commandes annulées. Transport amont conservé  
+> 100 %. Outbound via colis (inclus seulement si expédiée). Frais de port encaissés  
+> exclus sur CANCELLED. Annulations partielles non ajustées (~8 900 cmd).  
 
 ```dax
 Marge Brute = [CA HT Net Annulation]

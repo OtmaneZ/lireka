@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "b2c_slicer_langue",
   "position": {
-    "x": 6.3716814159292037,
-    "y": 447.61061946902657,
+    "x": 6.371681415929204,
+    "y": 360.0,
     "z": 5000,
-    "height": 65.309734513274336,
+    "height": 65.30973451327434,
     "width": 207.0796460176991,
     "tabOrder": 5000
   },
@@ -217,6 +217,11 @@
           }
         }
       ]
+    },
+    "syncGroup": {
+      "groupName": "LanguageSync",
+      "fieldChanges": true,
+      "filterChanges": true
     }
   }
 }

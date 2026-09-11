@@ -77,6 +77,23 @@
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Mesures"
+                  }
+                },
+                "Property": "Top Revenu Commande"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
       }
     },
     "objects": {

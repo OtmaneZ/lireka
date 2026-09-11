@@ -1,4 +1,4 @@
-/// Dimension — calendrier (2020-01-01 -> 2026-12-31), libellés en français.
+/// Dimension — calendrier (2020-01-01 -> fin de l'année suivante, glissant), libellés en français.
 /// Étendue à 2020 pour couvrir l'historique backend (origin_created dès 2020-01)
 /// et permettre le YoY sur toute la plage. Table générée en Power Query
 /// (indépendante des sources). Reliée à fact_commandes[date_commande] et
@@ -158,13 +158,24 @@ table dim_date
 
 		changedProperty = IsHidden
 
+	/// "Oui" si date > (refresh - 12 mois) et date <= refresh, sinon "Non". Texte (pas booleen) : forme Categorical PBIR verifiable (Literal "'Oui'"). Filtre page 12 mois glissants. 2026-08-29.
+	column fenetre_12_mois
+		dataType: string
+		lineageTag: f4a5b6c7-d8e9-0123-efab-567890123457
+		summarizeBy: none
+		sourceColumn: fenetre_12_mois
+
+		changedProperty = IsHidden
+
 	partition dim_date = m
 		mode: import
 		source =
 				let
+					// Date du refresh, evaluation unique (FixedLocalNow) — unique source temporelle (borne Fin + indicateur 12 mois)
+					Aujourdhui = DateTime.Date(DateTime.FixedLocalNow()),
 					// Bornes du calendrier (historique backend dès 2020 — requis pour YoY)
 					Debut = #date(2020, 1, 1),
-					Fin = #date(2026, 12, 31),
+					Fin = Date.EndOfYear(Date.AddYears(Aujourdhui, 1)),
 					NbJours = Duration.Days(Fin - Debut) + 1,
 					// Génération de la liste continue de dates
 					ListeDates = List.Dates(Debut, NbJours, #duration(1, 0, 0, 0)),
@@ -208,7 +219,16 @@ table dim_date
 						"mois_annee_court_en",
 						each Date.ToText([date], [Format = "MMM yy", Culture = "en-US"]),
 						type text
+					),
+					// Fenetre 12 derniers mois glissants (filtre page, 2026-08-29) :
+					// "Oui" si [date] > Aujourdhui-12 mois et [date] <= Aujourdhui (haute incluse, basse exclusive), sinon "Non".
+					#"12 derniers mois" = Table.AddColumn(
+						#"Mois annee court EN",
+						"fenetre_12_mois",
+						each if [date] > Date.AddMonths(Aujourdhui, -12) and [date] <= Aujourdhui
+						     then "Oui" else "Non",
+						type text
 					)
 				in
-					#"Mois annee court EN"
+					#"12 derniers mois"
 

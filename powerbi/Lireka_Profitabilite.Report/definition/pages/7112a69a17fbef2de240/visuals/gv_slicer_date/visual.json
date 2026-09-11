@@ -35,33 +35,6 @@
       }
     },
     "objects": {
-      "data": [
-        {
-          "properties": {
-            "startDate": {
-              "expr": {
-                "Literal": {
-                  "Value": "datetime'2025-08-25T00:00:00'"
-                }
-              }
-            },
-            "mode": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Between'"
-                }
-              }
-            },
-            "endDate": {
-              "expr": {
-                "Literal": {
-                  "Value": "datetime'2026-08-24T00:00:00'"
-                }
-              }
-            }
-          }
-        }
-      ],
       "header": [
         {
           "properties": {
@@ -123,72 +96,6 @@
                     }
                   }
                 }
-              }
-            }
-          }
-        }
-      ],
-      "general": [
-        {
-          "properties": {
-            "filter": {
-              "filter": {
-                "Version": 2,
-                "From": [
-                  {
-                    "Name": "d",
-                    "Entity": "dim_date",
-                    "Type": 0
-                  }
-                ],
-                "Where": [
-                  {
-                    "Condition": {
-                      "And": {
-                        "Left": {
-                          "Comparison": {
-                            "ComparisonKind": 2,
-                            "Left": {
-                              "Column": {
-                                "Expression": {
-                                  "SourceRef": {
-                                    "Source": "d"
-                                  }
-                                },
-                                "Property": "date"
-                              }
-                            },
-                            "Right": {
-                              "Literal": {
-                                "Value": "datetime'2025-08-25T00:00:00'"
-                              }
-                            }
-                          }
-                        },
-                        "Right": {
-                          "Comparison": {
-                            "ComparisonKind": 3,
-                            "Left": {
-                              "Column": {
-                                "Expression": {
-                                  "SourceRef": {
-                                    "Source": "d"
-                                  }
-                                },
-                                "Property": "date"
-                              }
-                            },
-                            "Right": {
-                              "Literal": {
-                                "Value": "datetime'2026-08-25T00:00:00'"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                ]
               }
             }
           }
@@ -283,80 +190,5 @@
       "fieldChanges": true,
       "filterChanges": true
     }
-  },
-  "filterConfig": {
-    "filters": [
-      {
-        "name": "dateDefault12m",
-        "field": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "dim_date"
-              }
-            },
-            "Property": "date"
-          }
-        },
-        "type": "RelativeDate",
-        "filter": {
-          "Version": 2,
-          "From": [
-            {
-              "Name": "d",
-              "Entity": "dim_date",
-              "Type": 0
-            }
-          ],
-          "Where": [
-            {
-              "Condition": {
-                "Between": {
-                  "Expression": {
-                    "Column": {
-                      "Expression": {
-                        "SourceRef": {
-                          "Source": "d"
-                        }
-                      },
-                      "Property": "date"
-                    }
-                  },
-                  "LowerBound": {
-                    "DateSpan": {
-                      "Expression": {
-                        "DateAdd": {
-                          "Expression": {
-                            "DateAdd": {
-                              "Expression": {
-                                "Now": {}
-                              },
-                              "Amount": 1,
-                              "TimeUnit": 0
-                            }
-                          },
-                          "Amount": -12,
-                          "TimeUnit": 2
-                        }
-                      },
-                      "TimeUnit": 0
-                    }
-                  },
-                  "UpperBound": {
-                    "DateSpan": {
-                      "Expression": {
-                        "Now": {}
-                      },
-                      "TimeUnit": 0
-                    }
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "howCreated": "User"
-      }
-    ]
   }
 }

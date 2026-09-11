@@ -140,7 +140,7 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
-	/// Coût d'achat des livres en EUR (product_cost_eur).
+	/// Coût d'achat des livres en EUR (product_cost_eur) — brut, y compris CANCELLED.
 	column cout_achat
 		dataType: double
 		formatString: #,##0.00 €
@@ -149,6 +149,20 @@ table fact_commandes
 		sourceColumn: cout_achat
 
 		changedProperty = IsHidden
+
+	/// COGS net annulation (décision Marc 25/08/2026) : 0 si CANCELLED, sinon cout_achat.
+	/// Alimente [Coût Achat Total] — 0 (pas BLANK) sur une commande annulée.
+	column cout_achat_net =
+			IF(
+				fact_commandes[state] = "CANCELLED",
+				0,
+				IF(ISBLANK(fact_commandes[cout_achat]), 0, fact_commandes[cout_achat])
+			)
+		dataType: double
+		isHidden
+		formatString: #,##0.00 €
+		lineageTag: c011a001-4e11-4a11-8a11-000000000030
+		summarizeBy: sum
 
 	/// Coût transport estimé par le backend (total_shipping_cost_to_delivery_country_eur).
 	column cout_transport_estime
@@ -267,11 +281,12 @@ table fact_commandes
 
 	/// Page 11 Loss analysis : marge brute au grain commande = formule publiée 7 postes,
 	/// base CA reconstruit (colonne ca_ht_reconstruit, présente par commande).
-	/// CANCELLED : CA et frais de port à 0 ; les coûts restent. Hors retours / génériques.
+	/// CANCELLED : CA, frais de port et COGS à 0 ; transport amont conservé ; outbound /
+	/// duties / fournitures via colis (0 si jamais expédiée). Hors retours / génériques.
 	column marge_brute_commande =
 			fact_commandes[ca_ht_net]
 				+ IF(fact_commandes[state] = "CANCELLED", 0, IF(ISBLANK(fact_commandes[frais_port_encaisse]), 0, fact_commandes[frais_port_encaisse]))
-				- IF(ISBLANK(fact_commandes[cout_achat]), 0, fact_commandes[cout_achat])
+				- fact_commandes[cout_achat_net]
 				- IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont])
 				- fact_commandes[cout_transport_retenu_cmd]
 				- fact_commandes[duties_taxes_cmd]
@@ -287,7 +302,7 @@ table fact_commandes
 			CALCULATE(
 				MEDIANX(
 					fact_commandes,
-					DIVIDE(IF(ISBLANK(fact_commandes[cout_achat]), 0, fact_commandes[cout_achat]), fact_commandes[ca_ht_net])
+					DIVIDE(fact_commandes[cout_achat_net], fact_commandes[ca_ht_net])
 				),
 				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
 				fact_commandes[marge_brute_commande] >= 0,
@@ -487,7 +502,7 @@ table fact_commandes
 				BLANK(),
 				VAR ca = fact_commandes[ca_ht_net]
 				VAR m0 = fact_commandes[marge_brute_commande]
-				VAR v_achat = IF(ISBLANK(fact_commandes[cout_achat]), 0, fact_commandes[cout_achat])
+				VAR v_achat = fact_commandes[cout_achat_net]
 				VAR v_amont = IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont])
 				VAR v_outbound = IF(ISBLANK(fact_commandes[cout_transport_retenu_cmd]), 0, fact_commandes[cout_transport_retenu_cmd])
 				VAR v_duties = IF(ISBLANK(fact_commandes[duties_taxes_cmd]), 0, fact_commandes[duties_taxes_cmd])

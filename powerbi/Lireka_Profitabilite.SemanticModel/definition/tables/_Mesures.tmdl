@@ -84,9 +84,17 @@ table _Mesures
 		displayFolder: 02 Revenus
 		lineageTag: a3b4c5d6-e7f8-4901-c234-567890abcdef
 
-	/// Bloc3 — coût d'achat au grain article. Conservé dans TOUS les cas d'annulation
-	/// (avant ET après expédition, décision Marc) — contrôle vs [Coût Achat Total] (grain commande).
-	measure 'Coût Achat Total (grain article)' = SUM(fact_lignes[product_cost_eur])
+	/// Bloc3 — coût d'achat au grain article. Aligné sur la décision Marc 25/08/2026 :
+	/// 0 si la commande (fact_commandes[state]) est CANCELLED ; inchangé sinon
+	/// (y compris articles CANCELLED d'une commande encore active = annulation partielle).
+	/// Contrôle vs [Coût Achat Total] (grain commande).
+	measure 'Coût Achat Total (grain article)' =
+			VAR cogsActif =
+				CALCULATE(
+					SUM(fact_lignes[product_cost_eur]),
+					KEEPFILTERS(fact_commandes[state] <> "CANCELLED")
+				)
+			RETURN IF(ISBLANK(cogsActif), 0, cogsActif)
 		formatString: #,##0.00 €
 		isHidden
 		displayFolder: 08 Contrôles
@@ -173,8 +181,10 @@ table _Mesures
 		displayFolder: 08 Contrôles
 		lineageTag: f8091234-5678-9abc-def0-123456789abf
 
-	/// Coût d'achat total des livres (product_cost_eur).
-	measure 'Coût Achat Total' = SUM(fact_commandes[cout_achat])
+	/// Coût d'achat total des livres (product_cost_eur), net annulation.
+	/// Décision Marc 25/08/2026 : COGS = 0 (pas BLANK) si state = CANCELLED — la vente
+	/// n'a pas eu lieu. Commandes actives inchangées (SUM de cout_achat_net).
+	measure 'Coût Achat Total' = SUM(fact_commandes[cout_achat_net])
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 494ae678-7bb6-4cd5-a3c8-0e49d6296417
@@ -264,12 +274,19 @@ table _Mesures
 		lineageTag: 5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a9b
 
 	/// Fix F-04 : coût de transport amont (inbound_transportation_cost_eur).
+	/// Pas de filtre CANCELLED — décision Marc 25/08/2026 : conserver 100 % quel que
+	/// soit le statut (marchandise déjà acheminée jusqu'à Grenoble). Un 0 affiché est
+	/// un 0 source (inbound_transportation_cost_eur = 0 depuis 2022), pas une exclusion.
 	measure 'Coût Transport Amont' = SUM(fact_commandes[cout_transport_amont])
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b0c
 
 	/// Fix F-02/F-04 : coût transport outbound RETENU (facturé si rapproché, sinon estimé backend).
+	/// Grain colis (fact_transport). Décision Marc 25/08/2026 : sur CANCELLED, n'inclure
+	/// que si la commande a quand même été expédiée — déjà le cas : pas de colis = 0 ;
+	/// colis présent (proxy package_id / 243 cmd CANCELLED avec package) = coût conservé.
+	/// Pas de filtre state : un filtre CANCELLED exclurait à tort les expédiées-puis-annulées.
 	measure 'Coût Transport Outbound (Retenu)' = SUM(fact_transport[cout_transport_retenu])
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
@@ -294,10 +311,11 @@ table _Mesures
 		lineageTag: 0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a
 
 	/// Bloc5 (dette technique) — retours et remboursements (returns_and_refunds_cost_eur,
-	/// agrégé par commande). Provisoire : Marc doit revoir le périmètre de son côté.
-	/// Risque double comptage à valider avec Marc : sur CANCELLED, product_cost (cout_achat)
-	/// est conservé ET returns_and_refunds est aussi soustrait — coexistence réelle dans les
-	/// données (pas d'identité rr≈pc ; ratio médian rr/pc ≈ 2,4 %). Voir dette-technique-bloc5.md.
+	/// agrégé par commande). Décision Marc 25/08/2026 : inclure uniquement si la commande
+	/// a été remboursée — proxifié par le montant (pas de flag « refunded » distinct dans
+	/// le modèle). SUM du champ = 0 si non remboursé, montant réel sinon ; pas de filtre
+	/// CANCELLED. Double comptage vs COGS sur annulation clos : [Coût Achat Total] = 0
+	/// si state = CANCELLED. Poste below-the-line pour [Marge Brute (reconstruit)].
 	measure 'Retours Remboursements' = SUM(fact_commandes[retours_remboursements])
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
@@ -311,21 +329,21 @@ table _Mesures
 		displayFolder: 03 Coûts
 		lineageTag: f9a0b1c2-d3e4-4567-f890-1234ef012345
 
-	/// MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09).
-	/// Revenu = CA hors commandes annulées (règle Marc "CA=0 sur annulation", grain commande).
-	/// Coûts conservés sur toutes commandes y compris annulées (décision Marc : coût produit
-	/// + transport si après expédition). Frais de port encaissés exclus sur commandes CANCELLED
-	/// (1 283 € sur l'entrepôt actuel, audit 15/07/2026). Annulations partielles non ajustées
-	/// (~8 900 cmd, limite connue — voir docs/notes-techniques/limite-etf-annulation.md).
+	/// MARGE BRUTE — formule confirmée par Marc Bordier (Slack, 13/07/2026 16h09),
+	/// COGS sur annulation mis à jour (Marc, 25/08/2026) : [Coût Achat Total] = 0 si
+	/// state = CANCELLED. Revenu = CA hors commandes annulées. Transport amont conservé
+	/// 100 %. Outbound via colis (inclus seulement si expédiée). Frais de port encaissés
+	/// exclus sur CANCELLED. Annulations partielles non ajustées (~8 900 cmd, limite
+	/// connue — voir docs/notes-techniques/limite-etf-annulation.md).
 	/// Grain article [Marge Brute (grain article, prov.)] conservé comme contrôle et chemin de
 	/// bascule si customer_price_per_item_eur devient disponible par ligne.
 	/// Revenue (incl. shipping revenue if relevant) - COGS - Inbound transportation costs
 	/// - Outbound transportation costs - Duties and Taxes - Marketplace commission fees
 	/// - Shipping supplies - Returns/refunds - Generic costs.
 	/// Retours/remboursements + coûts génériques inclus (Bloc 5, dette technique provisoire —
-	/// Marc doit revoir total_generic_costs_eur ; valider risque double comptage returns/refunds
-	/// vs product_cost conservé sur annulation). Grain commande (agrégés par order_id depuis
-	/// customer_order_item).
+	/// Marc doit revoir total_generic_costs_eur). Double comptage returns vs COGS sur
+	/// CANCELLED clos (COGS neutralisé). Grain commande.
+
 	measure 'Marge Brute' =
 			[CA HT Net Annulation]
 				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
@@ -845,8 +863,9 @@ table _Mesures
 
 	/// Marge brute publiée — 7 postes contractuels Marc, base CA reconstruit.
 	/// Revenu (CA reconstruit net annulation + frais de port hors CANCELLED)
-	/// − COGS − transport amont − transport sortant − droits et taxes
-	/// − commissions marketplace − fournitures d'expédition.
+	/// − COGS (0 si state = CANCELLED, décision Marc 25/08/2026) − transport amont
+	/// (conservé 100 %, pas de filtre statut) − transport sortant (colis, donc seulement
+	/// si expédiée) − droits et taxes − commissions marketplace − fournitures d'expédition.
 	/// Retours / coûts génériques exclus (below-the-line, profit bridge uniquement).
 	measure 'Marge Brute (reconstruit)' =
 			[CA HT Net Annulation (reconstruit)]
@@ -1483,22 +1502,28 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000004-1111-2222-3333-444455550004
 
+	/// TOPN + tie-break nom_pays_en (PAS Rank DENSE) ; BLANK hors TopSet (contrat 1-15, pas de rang 16+). 2026-08-29.
 	measure 'B2C Rank' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR TopSet =
+				TOPN(
+					15,
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						dim_pays[nom_pays_en] <> "Rest of the world"
+					),
+					[Revenu (reconstruit)],
+					DESC,
+					dim_pays[nom_pays_en],
+					ASC
+				)
+			VAR InTop = CALCULATE(COUNTROWS(dim_pays), KEEPFILTERS(TopSet))
 			RETURN
 				IF(
-					OR(ISBLANK(Country), Country = "Rest of the world"),
+					OR(ISBLANK(Country), Country = "Rest of the world")
+						|| ISBLANK(InTop) || InTop = 0,
 					BLANK(),
-					RANKX(
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						,
-						DESC,
-						DENSE
-					)
+					RANKX(TopSet, [Revenu (reconstruit)], , DESC, DENSE)
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000003-1111-2222-3333-444455550003
@@ -1506,22 +1531,14 @@ table _Mesures
 	measure 'B2C Rest Sales' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Revenu (reconstruit)]
 				)
 			VAR Total =
-				CALCULATE(
-					[Revenu (reconstruit)],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Revenu (reconstruit)], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1530,22 +1547,14 @@ table _Mesures
 	measure 'B2C Rest Sales PY' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Revenu (reconstruit) PY]
 				)
 			VAR Total =
-				CALCULATE(
-					[Revenu (reconstruit) PY],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Revenu (reconstruit) PY], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1554,22 +1563,14 @@ table _Mesures
 	measure 'B2C Rest COGS' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Coût Achat Total]
 				)
 			VAR Total =
-				CALCULATE(
-					[Coût Achat Total],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Coût Achat Total], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1578,22 +1579,14 @@ table _Mesures
 	measure 'B2C Rest Product profit' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Profit Produit Pur]
 				)
 			VAR Total =
-				CALCULATE(
-					[Profit Produit Pur],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Profit Produit Pur], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1602,22 +1595,14 @@ table _Mesures
 	measure 'B2C Rest Returns' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Retours Remboursements]
 				)
 			VAR Total =
-				CALCULATE(
-					[Retours Remboursements],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Retours Remboursements], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1626,22 +1611,14 @@ table _Mesures
 	measure 'B2C Rest Inbound' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Coût Transport Amont]
 				)
 			VAR Total =
-				CALCULATE(
-					[Coût Transport Amont],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Coût Transport Amont], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1650,22 +1627,14 @@ table _Mesures
 	measure 'B2C Rest Shipping' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Coût Transport Outbound (Retenu)]
 				)
 			VAR Total =
-				CALCULATE(
-					[Coût Transport Outbound (Retenu)],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Coût Transport Outbound (Retenu)], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1674,22 +1643,14 @@ table _Mesures
 	measure 'B2C Rest Duties' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Douanes Taxes]
 				)
 			VAR Total =
-				CALCULATE(
-					[Douanes Taxes],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Douanes Taxes], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1698,22 +1659,14 @@ table _Mesures
 	measure 'B2C Rest Supplies' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Fournitures Expédition]
 				)
 			VAR Total =
-				CALCULATE(
-					[Fournitures Expédition],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Fournitures Expédition], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1722,22 +1675,14 @@ table _Mesures
 	measure 'B2C Rest Generic' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Coûts Génériques]
 				)
 			VAR Total =
-				CALCULATE(
-					[Coûts Génériques],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Coûts Génériques], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1746,22 +1691,14 @@ table _Mesures
 	measure 'B2C Rest Gross profit' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Marge Brute]
 				)
 			VAR Total =
-				CALCULATE(
-					[Marge Brute],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Marge Brute], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		isHidden
@@ -1771,22 +1708,14 @@ table _Mesures
 	measure 'B2C Rest Gross profit PY' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Marge Brute PY]
 				)
 			VAR Total =
-				CALCULATE(
-					[Marge Brute PY],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Marge Brute PY], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		isHidden
@@ -1796,22 +1725,14 @@ table _Mesures
 	measure 'B2C Rest GP reconstruit' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Marge Brute (reconstruit)]
 				)
 			VAR Total =
-				CALCULATE(
-					[Marge Brute (reconstruit)],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Marge Brute (reconstruit)], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1820,22 +1741,14 @@ table _Mesures
 	measure 'B2C Rest GP reconstruit PY' =
 			VAR TopPart =
 				SUMX(
-					TOPN(
-						15,
-						FILTER(
-							ALLSELECTED(dim_pays[nom_pays_en]),
-							dim_pays[nom_pays_en] <> "Rest of the world"
-						),
-						[Revenu (reconstruit)],
-						DESC
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
 					),
 					[Marge Brute (reconstruit) PY]
 				)
 			VAR Total =
-				CALCULATE(
-					[Marge Brute (reconstruit) PY],
-					ALLSELECTED(dim_pays[nom_pays_en])
-				)
+				CALCULATE([Marge Brute (reconstruit) PY], ALLSELECTED(dim_pays[nom_pays_en]))
 			RETURN Total - TopPart
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1866,8 +1779,8 @@ table _Mesures
 
 	/// =====================================================================
 	/// B2C contribution bridges (slide 7). Axe _BridgePaysYoY = Prior year + Top 15 + Rest.
-	/// Le Top 15 est figé dans la table : ces mesures rendent juste le delta de chaque
-	/// ligne présente (Start = PY · Country = Δ YoY · Rest = Δ Rest). Total auto ≈ CY.
+	/// Rest = complement de l'axe fige (Total - somme des 15 pays de l'axe). 2026-08-29.
+	/// Ce Top 15 (refresh) differe volontairement de celui du tableau P&L (dynamique, via [B2C Rank]).
 	/// =====================================================================
 	measure 'B2C Bridge — Revenue' =
 			VAR k = SELECTEDVALUE(_BridgePaysYoY[Kind])
@@ -1879,7 +1792,25 @@ table _Mesures
 						CALCULATE([Revenu (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
 					k = "Rest",
 						CALCULATE(
-							[B2C Rest Sales] - [B2C Rest Sales PY],
+							VAR TotalCY = [Revenu (reconstruit)]
+							VAR TotalPY = [Revenu (reconstruit) PY]
+							VAR AxisCY =
+								SUMX(
+									FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
+									CALCULATE(
+										[Revenu (reconstruit)],
+										TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
+									)
+								)
+							VAR AxisPY =
+								SUMX(
+									FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
+									CALCULATE(
+										[Revenu (reconstruit) PY],
+										TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
+									)
+								)
+							RETURN (TotalCY - AxisCY) - (TotalPY - AxisPY),
 							REMOVEFILTERS(_BridgePaysYoY)
 						),
 					k = "Country",
@@ -1904,7 +1835,25 @@ table _Mesures
 						CALCULATE([Marge Brute (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
 					k = "Rest",
 						CALCULATE(
-							[B2C Rest GP reconstruit] - [B2C Rest GP reconstruit PY],
+							VAR TotalCY = [Marge Brute (reconstruit)]
+							VAR TotalPY = [Marge Brute (reconstruit) PY]
+							VAR AxisCY =
+								SUMX(
+									FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
+									CALCULATE(
+										[Marge Brute (reconstruit)],
+										TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
+									)
+								)
+							VAR AxisPY =
+								SUMX(
+									FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
+									CALCULATE(
+										[Marge Brute (reconstruit) PY],
+										TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
+									)
+								)
+							RETURN (TotalCY - AxisCY) - (TotalPY - AxisPY),
 							REMOVEFILTERS(_BridgePaysYoY)
 						),
 					k = "Country",
@@ -2446,13 +2395,13 @@ table _Mesures
 
 	/// Field cadrage n°11 : Pure Product Margin (PPM) = PPP / Revenue.
 	/// Numerateur [Profit Produit Pur] = [Revenu (reconstruit)] - [Coût Achat Total].
-	/// [Revenu (reconstruit)] : hors CANCELLED. [Coût Achat Total] : toutes commandes (brut).
+	/// [Revenu (reconstruit)] : hors CANCELLED. [Coût Achat Total] : net annulation
+	/// (0 si state = CANCELLED, décision Marc 25/08/2026).
 	/// Denominateur [Revenu] : hors CANCELLED (CA HT Net Annulation + frais port).
 	/// Coherence volet revenu : depuis neutralisation fallback FX (19/07),
 	/// [Revenu] = [Revenu (reconstruit)] (ecart 0 sur entrepot). Choix [Revenu]
 	/// car definition client litterale (produit + frais de port).
-	/// Perimetre ratio : coherent sur le revenu ; le PPP conserve le cout d'achat brut
-	/// (definition PPP = Revenue - Product cost, couts conserves sur annulation).
+	/// Perimetre ratio : revenu et COGS tous deux hors vente annulée.
 	measure 'Taux Marge Commerciale' = DIVIDE([Profit Produit Pur], [Revenu], 0)
 		formatString: 0.0%
 		displayFolder: 04 Marge
@@ -2473,7 +2422,7 @@ table _Mesures
 	/// Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED.
 	/// Denominateur [Revenu] : hors CANCELLED.
 	/// Perimetre DIVERGENT : cout brut colis / revenu net annulation, meme traitement
-	/// des couts que [Marge Brute] / [Taux Marge Brute] (couts conserves sur annulation).
+	/// des couts que [Marge Brute] / [Taux Marge Brute] (outbound conserve si colis).
 	/// Variante nette des deux cotes (non retenue) :
 	/// DIVIDE(CALCULATE([Coût Transport Outbound (Retenu)], fact_commandes[state] <> "CANCELLED"), [Revenu], 0).
 	/// Choix : formules client via mesures existantes, aligne sur [Taux Marge Brute].

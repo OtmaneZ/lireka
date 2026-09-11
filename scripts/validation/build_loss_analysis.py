@@ -816,6 +816,14 @@ def update_pages_json() -> None:
 
 
 def main() -> int:
+    raise SystemExit(
+        "SCRIPT OBSOLETE - execution bloquee.\n"
+        "1. Schema visuel 2.9.0.\n"
+        "2. Absence de DateSync ; reinjection de dateDefault12m.\n"
+        "3. Ecrasement du filtre de page 12 mois.\n"
+        "Le rapport se maintient desormais a la main dans Power BI Desktop.\n"
+        "Pour reactiver : corriger les 3 points puis retirer ce garde-fou. 2026-08-29."
+    )
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
