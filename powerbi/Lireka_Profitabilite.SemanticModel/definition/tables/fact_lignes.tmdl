@@ -1,5 +1,5 @@
 /// Faits — lignes d'articles par commande (grain : un article physique / customer_order_item).
-/// Source : stg_Commande_Items (customer_order_item) ⋈ customer_order_item_group (ISBN / prix).
+/// Source : customer_order_item ⋈ customer_order_item_group (ISBN / prix) ⋈ customer_order (source), jointures en SQL natif.
 /// Relié à fact_commandes par order_id. Alimente le nombre d'articles (COUNTROWS).
 table fact_lignes
 	lineageTag: 131fd8d8-579b-4f13-8a68-fe0b13ecbd52
@@ -136,48 +136,31 @@ table fact_lignes
 		mode: import
 		source =
 				let
-					#"Articles types" = Table.SelectColumns(stg_Commande_Items, {
-						"id", "order_id", "item_group_id", "internal_state", "package_id", "product_cost_eur"
-					}),
-					#"Groupes brut" = fnLireVue("customer_order_item_group"),
-					#"Groupes source" = #"Groupes brut",
-					#"Groupes types" = Table.SelectColumns(
-						Table.TransformColumnTypes(#"Groupes source", {
-							{"id", Int64.Type},
-							{"isbn", type text},
-							{"quantity", Int64.Type},
-							{"list_price_eur", type number},
-							{"customer_price_per_item_eur", type number},
-							{"group_type", type text}
-						}, "en-US"),
-						{"id", "isbn", "quantity", "list_price_eur", "customer_price_per_item_eur", "group_type"}
-					),
-					#"Jointure articles groupes" = Table.NestedJoin(
-						#"Articles types",
-						{"item_group_id"},
-						#"Groupes types",
-						{"id"},
-						"groupe",
-						JoinKind.LeftOuter
-					),
-					#"Colonnes groupe developpees" = Table.ExpandTableColumn(
-						#"Jointure articles groupes",
-						"groupe",
-						{"isbn", "quantity", "list_price_eur", "customer_price_per_item_eur", "group_type"},
-						{"isbn", "quantity_groupe", "list_price_eur", "customer_price_per_item_eur", "group_type"}
-					),
-					#"Colonnes renommees" = Table.RenameColumns(#"Colonnes groupe developpees", {{"id", "id_article"}}),
-					#"Sources commande" = Table.SelectColumns(stg_customer_order, {"id", "source"}),
-					#"Jointure source commande" = Table.NestedJoin(
-						#"Colonnes renommees",
-						{"order_id"},
-						#"Sources commande",
-						{"id"},
-						"cmd",
-						JoinKind.LeftOuter
-					),
-					#"Source developpee" = Table.ExpandTableColumn(#"Jointure source commande", "cmd", {"source"}, {"source"}),
-					#"Canal ajoute" = Table.AddColumn(#"Source developpee", "canal_ligne", each
+					// Articles ⋈ groupes (ISBN / prix) ⋈ commandes (source) : jointures calculées par PostgreSQL.
+					Source = fnRequeteSql(Text.Combine({
+						"SELECT i.id, i.order_id, i.item_group_id, i.internal_state, i.package_id, i.product_cost_eur,",
+						"g.isbn, g.quantity AS quantity_groupe, g.list_price_eur, g.customer_price_per_item_eur, g.group_type,",
+						"o.source",
+						"FROM " & PgSchema & ".customer_order_item i",
+						"LEFT JOIN " & PgSchema & ".customer_order_item_group g ON g.id = i.item_group_id",
+						"LEFT JOIN public.customer_order o ON o.id = i.order_id"
+					}, " ")),
+					#"Types appliques" = Table.TransformColumnTypes(Source, {
+						{"id", Int64.Type},
+						{"order_id", Int64.Type},
+						{"item_group_id", Int64.Type},
+						{"internal_state", type text},
+						{"package_id", Int64.Type},
+						{"product_cost_eur", type number},
+						{"isbn", type text},
+						{"quantity_groupe", Int64.Type},
+						{"list_price_eur", type number},
+						{"customer_price_per_item_eur", type number},
+						{"group_type", type text},
+						{"source", type text}
+					}, "en-US"),
+					#"Colonnes renommees" = Table.RenameColumns(#"Types appliques", {{"id", "id_article"}}),
+					#"Canal ajoute" = Table.AddColumn(#"Colonnes renommees", "canal_ligne", each
 						let
 							raw = if [source] = null then "" else Text.Upper(Text.Trim([source])),
 							s = if raw = "" then "INCONNU" else raw

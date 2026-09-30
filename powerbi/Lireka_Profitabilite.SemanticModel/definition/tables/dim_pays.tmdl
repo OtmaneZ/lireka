@@ -50,8 +50,11 @@ table dim_pays
 		mode: import
 		source =
 				let
-					// Distinct dynamique depuis stg_customer_order (SelectColumns tôt, pas de Buffer).
-					#"Codes bruts" = Table.SelectColumns(stg_customer_order, {"destination_country"}),
+					// Codes distincts calculés par PostgreSQL (public.customer_order).
+					#"Codes bruts" = Table.TransformColumnTypes(
+						fnRequeteSql("SELECT DISTINCT destination_country FROM public.customer_order"),
+						{{"destination_country", type text}}
+					),
 					#"Codes normalises" = Table.AddColumn(
 						#"Codes bruts",
 						"code_pays",

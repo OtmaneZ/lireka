@@ -1,5 +1,5 @@
 /// Faits — colis / coûts de transport (grain : une ligne par colis).
-/// Source : PostgreSQL analytics_views.package (via stg_package).
+/// Source : PostgreSQL analytics_views.package + montants v_carrier_invoice_lines agrégés par colis (SQL natif).
 /// cout_transport = shipping_cost_eur (estimation backend ou coût saisi).
 /// Fix F-02 : cout_transport_facture = montant facturé rapproché ; cout_transport_retenu =
 /// facturé si disponible sinon estimé (poste "outbound" de la marge).
@@ -114,37 +114,35 @@ table fact_transport
 		mode: import
 		source =
 				let
-					#"Types appliques" = stg_package,
-					#"Transporteur infere" = Table.AddColumn(#"Types appliques", "transporteur", each fnNormaliserTransporteur([tracking_id]), type text),
+					// Colis + montant facturé transporteur agrégé par colis (v_carrier_invoice_lines.package_id).
+					// Jointure et SUM calculés par PostgreSQL : la passerelle reçoit une ligne par colis.
+					Source = fnRequeteSql(Text.Combine({
+						"SELECT p.id, p.order_id, p.tracking_id, p.weight, p.shipping_cost_eur, p.shipping_supply_cost_eur, p.duties_taxes_eur,",
+						"f.cout_transport_facture",
+						"FROM " & PgSchema & ".package p",
+						"LEFT JOIN (SELECT package_id, SUM(amount_excl_vat_eur) AS cout_transport_facture",
+						"FROM " & PgSchema & ".v_carrier_invoice_lines WHERE package_id IS NOT NULL GROUP BY package_id) f",
+						"ON f.package_id = p.id"
+					}, " ")),
+					#"Types appliques" = Table.TransformColumnTypes(Source, {
+						{"id", Int64.Type},
+						{"order_id", Int64.Type},
+						{"tracking_id", type text},
+						{"weight", Int64.Type},
+						{"shipping_cost_eur", type number},
+						{"shipping_supply_cost_eur", type number},
+						{"duties_taxes_eur", type number},
+						{"cout_transport_facture", type number}
+					}, "en-US"),
+					#"Suivi normalise" = Table.AddColumn(#"Types appliques", "numero_suivi", each fnNormaliserSuivi([tracking_id]), type text),
+					#"Transporteur infere" = Table.AddColumn(#"Suivi normalise", "transporteur", each fnNormaliserTransporteur([tracking_id]), type text),
 					#"Poids en kg" = Table.AddColumn(#"Transporteur infere", "poids_kg", each [weight] / 1000, type number),
 					#"Colonnes renommees" = Table.RenameColumns(#"Poids en kg", {
 						{"id", "id_package"},
 						{"shipping_cost_eur", "cout_transport"}
 					}),
-					// Agrégat ensembliste des coûts facture par colis (évite Sum row-by-row sur nid).
-					#"Couts facture par colis" = Table.Group(
-						Table.SelectRows(
-							Table.SelectColumns(stg_factures_transport_resolu, {"id_package", "cout_transport"}),
-							each [id_package] <> null
-						),
-						{"id_package"},
-						{{"cout_transport_facture", each List.Sum(List.RemoveNulls([cout_transport])), type number}}
-					),
-					#"Jointure facture" = Table.ExpandTableColumn(
-						Table.NestedJoin(
-							#"Colonnes renommees",
-							{"id_package"},
-							#"Couts facture par colis",
-							{"id_package"},
-							"fact",
-							JoinKind.LeftOuter
-						),
-						"fact",
-						{"cout_transport_facture"},
-						{"cout_transport_facture"}
-					),
 					#"Cout retenu ajoute" = Table.AddColumn(
-						#"Jointure facture",
+						#"Colonnes renommees",
 						"cout_transport_retenu",
 						each if [cout_transport_facture] <> null then [cout_transport_facture] else [cout_transport],
 						type nullable number

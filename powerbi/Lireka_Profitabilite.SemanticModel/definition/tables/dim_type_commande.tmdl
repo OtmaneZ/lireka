@@ -47,8 +47,11 @@ table dim_type_commande
 		mode: import
 		source =
 				let
-					// Distinct dynamique depuis stg_customer_order (SelectColumns tôt, pas de Buffer).
-					#"Sources brutes" = Table.SelectColumns(stg_customer_order, {"source"}),
+					// Sources distinctes calculées par PostgreSQL (public.customer_order).
+					#"Sources brutes" = Table.TransformColumnTypes(
+						fnRequeteSql("SELECT DISTINCT source FROM public.customer_order"),
+						{{"source", type text}}
+					),
 					#"Types normalises" = Table.AddColumn(
 						#"Sources brutes",
 						"type_commande",

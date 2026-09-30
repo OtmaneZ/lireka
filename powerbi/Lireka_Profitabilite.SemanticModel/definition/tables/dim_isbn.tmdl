@@ -27,8 +27,8 @@ table dim_isbn
 		mode: import
 		source =
 				let
-					#"Groupes brut" = fnLireVue("customer_order_item_group"),
-					#"Groupes source" = #"Groupes brut",
+					// ISBN distincts calculés par PostgreSQL.
+					#"Groupes source" = fnRequeteSql("SELECT DISTINCT isbn FROM " & PgSchema & ".customer_order_item_group"),
 					#"Isbns types" = Table.TransformColumnTypes(
 						Table.SelectColumns(#"Groupes source", {"isbn"}),
 						{{"isbn", type text}},

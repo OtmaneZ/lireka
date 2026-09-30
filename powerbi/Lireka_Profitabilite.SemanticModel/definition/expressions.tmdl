@@ -39,22 +39,13 @@ expression PgSchema = "analytics_views" meta [IsParameterQuery=true, Type="Text"
 
 	annotation PBI_ResultType = Text
 
-/// Lit une vue/table PostgreSQL (schéma PgSchema par défaut, ou schéma explicite). Les colonnes date/heure sont converties en texte ISO
-/// (yyyy-MM-ddTHH:mm:ss) pour conserver le comportement des anciens CSV
-/// (ex. Text.Start([origin_created], 10) dans stg_customer_order).
-expression fnLireVue =
-		(nomVue as text, optional schema as nullable text) as table =>
-		let
-			Base = PostgreSQL.Database(PgServer, PgDatabase),
-			Vue = Base{[Schema = if schema = null then PgSchema else schema, Item = nomVue]}[Data],
-			ColonnesDate = Table.ColumnsOfType(Vue, {type nullable date, type nullable datetime, type nullable datetimezone}),
-			EnTexte = Table.TransformColumns(
-				Vue,
-				List.Transform(ColonnesDate, (c) => {c, each if _ = null then null else DateTime.ToText(DateTime.From(_), [Format = "yyyy-MM-ddTHH:mm:ss", Culture = "en-US"]), type text})
-			)
-		in
-			EnTexte
-	lineageTag: 6c405f7e-8d91-42a3-bdc4-e5f607182934
+/// Exécute une requête SQL native sur PostgreSQL (même source que la connexion passerelle).
+/// Les jointures, agrégations et DISTINCT sont calculés par le serveur PostgreSQL :
+/// la passerelle ne reçoit que le résultat et n'applique que les règles de ligne (typage, libellés).
+expression fnRequeteSql =
+		(requete as text) as table =>
+		PostgreSQL.Database(PgServer, PgDatabase, [Query = requete])
+	lineageTag: 28d009d9-e35f-4e0f-9847-973cc2cfb104
 
 /// Normalise un transporteur à partir du numéro de suivi (tracking_id).
 /// Méthode : inférence par motif, alignée sur l'analyse backend du 12/07/2026
@@ -122,125 +113,6 @@ expression fnNormaliserSuivi =
 			Text.Upper(sansEspaces)
 	lineageTag: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e
 
-/// Staging (non chargé) — vue analytics_views.customer_order_item nettoyée.
-/// Partagé par stg_couts_bloc5_commande et fact_lignes.
-expression stg_Commande_Items =
-		let
-			Source = fnLireVue("customer_order_item"),
-			#"En-tetes promus" = Source,
-			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
-				{"id", Int64.Type},
-				{"item_group_id", Int64.Type},
-				{"order_id", Int64.Type},
-				{"package_id", Int64.Type},
-				{"internal_state", type text},
-				{"product_cost_eur", type number},
-				{"returns_and_refunds_cost_eur", type number},
-				{"freight_in_cost_eur", type number},
-				{"shipping_cost_to_delivery_country_eur", type number},
-				{"shipping_supplies_cost_eur", type number},
-				{"generic_costs_eur", type number}
-			}, "en-US")
-		in
-			#"Types appliques"
-	lineageTag: 0a8b65e4-a441-4c67-9c33-2084f7ea6296
-
-/// Staging (non chargé) — coûts Bloc 5 agrégés par commande depuis customer_order_item.
-/// Grain article → grain commande (SUM par order_id). Consommé par fact_commandes.
-expression stg_couts_bloc5_commande =
-		let
-			Source = Table.SelectColumns(stg_Commande_Items, {"order_id", "returns_and_refunds_cost_eur", "generic_costs_eur"}),
-			#"Couts agreges par commande" = Table.Group(Source, {"order_id"}, {
-				{"retours_remboursements", each List.Sum(List.RemoveNulls([returns_and_refunds_cost_eur])), type number},
-				{"couts_generiques", each List.Sum(List.RemoveNulls([generic_costs_eur])), type number}
-			})
-		in
-			#"Couts agreges par commande"
-	lineageTag: b5c6d7e8-f9a0-4123-b456-7890abcdef01
-
-/// Staging (non chargé) — table public.customer_order lue et typée
-/// (absente de analytics_views au 30/09/2026 : à confirmer avec COex).
-/// Consommé par fact_commandes, matching factures, dim_pays, dim_type_commande, stg_taux_moyen_mensuel.
-expression stg_customer_order =
-		let
-			Source = fnLireVue("customer_order", "public"),
-			#"En-tetes promus" = Source,
-			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
-				{"id", Int64.Type},
-				{"origin_order_id", type text},
-				{"state", type text},
-				{"source", type text},
-				{"destination_country", type text},
-				{"currency", type text},
-				{"currency_rate", type number},
-				{"order_amount_local", type number},
-				{"origin_created", type text},
-				{"order_amount_eur", type number},
-				{"shipping_fee_eur", type number},
-				{"marketplace_fees_eur", type number},
-				{"product_cost_eur", type number},
-				{"total_shipping_cost_to_delivery_country_eur", type number},
-				{"duties_and_taxes_eur", type number},
-				{"gross_profit_eur", type number},
-				{"gross_margin", type number},
-				{"contribution_profit_eur", type number},
-				{"contribution_margin", type number}
-			}, "en-US")
-		in
-			#"Types appliques"
-	lineageTag: b3c8e1f2-4a5d-6e7f-8091-a2b3c4d5e6f7
-
-/// Staging (non chargé) — taux de change moyen mensuel par devise.
-/// Calculé à partir des lignes customer_order où currency_rate est renseigné (toutes sources).
-/// Consommé par fact_commandes pour la reconstruction du CA marketplace (option B).
-expression stg_taux_moyen_mensuel =
-		let
-			#"Date commande ajoutee" = Table.AddColumn(
-				stg_customer_order,
-				"date_commande",
-				each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null,
-				type date
-			),
-			#"Annee mois ajoutee" = Table.AddColumn(
-				#"Date commande ajoutee",
-				"annee_mois",
-				each if [date_commande] = null then null else Date.Year([date_commande]) * 100 + Date.Month([date_commande]),
-				Int64.Type
-			),
-			#"Taux valides" = Table.SelectRows(
-				#"Annee mois ajoutee",
-				each [currency_rate] <> null and [currency] <> null and Text.Trim([currency]) <> "" and [annee_mois] <> null
-			),
-			#"Taux moyen par devise mois" = Table.Group(
-				#"Taux valides",
-				{"currency", "annee_mois"},
-				{{"taux_moyen_mensuel", each List.Average([currency_rate]), type number}}
-			),
-			#"Colonnes renommees" = Table.RenameColumns(#"Taux moyen par devise mois", {{"currency", "devise"}})
-		in
-			#"Colonnes renommees"
-	lineageTag: c4d5e6f7-a8b9-4012-cdef-3456789abcde
-
-/// Staging (non chargé) — vue analytics_views.package.
-/// Consommé par fact_transport et stg_factures_transport_resolu.
-expression stg_package =
-		let
-			Source = fnLireVue("package"),
-			#"En-tetes promus" = Source,
-			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
-				{"id", Int64.Type},
-				{"order_id", Int64.Type},
-				{"tracking_id", type text},
-				{"weight", Int64.Type},
-				{"shipping_cost_eur", type number},
-				{"shipping_supply_cost_eur", type number},
-				{"duties_taxes_eur", type number}
-			}, "en-US"),
-			#"Suivi normalise" = Table.AddColumn(#"Types appliques", "numero_suivi", each fnNormaliserSuivi([tracking_id]), type text)
-		in
-			#"Suivi normalise"
-	lineageTag: a7b8c9d0-e1f2-4a3b-9c0d-1e2f3a4b5c6d
-
 /// Staging (non chargé) — lignes de factures transporteurs depuis analytics_views.v_carrier_invoice_lines.
 /// Le backend COex rattache chaque ligne au colis (package_id) et à la commande (order_id) :
 /// plus de rapprochement par numéro de suivi côté Power BI. Toutes les lignes sont conservées
@@ -269,7 +141,7 @@ expression stg_factures_brutes =
 	lineageTag: b8c9d0e1-f2a3-4b5c-0d1e-2f3a4b5c6d7e
 
 /// Staging (non chargé) — lignes de factures transporteurs rattachées au colis par le backend.
-/// Consommé par fact_factures_transport et fact_transport (colonne source_cout).
+/// Consommé par fact_factures_transport (fact_transport agrège les montants par colis en SQL).
 /// nb_candidats_resolution : 1 si la ligne est rattachée à un colis, 0 sinon (compatibilité mesures).
 expression stg_factures_transport_resolu =
 		let

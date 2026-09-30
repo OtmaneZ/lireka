@@ -1,5 +1,5 @@
 /// Faits — commandes clients (grain : une ligne par commande).
-/// Source : PostgreSQL analytics_views.customer_order (via stg_customer_order).
+/// Source : PostgreSQL public.customer_order + coûts Bloc 5 agrégés depuis customer_order_item (SQL natif).
 /// Clé : id_commande (customer_order.id). Porte le CA, les coûts backend et
 /// la marge existante (gross_profit_eur) conservée comme référence de contrôle.
 table fact_commandes
@@ -549,31 +549,54 @@ table fact_commandes
 		mode: import
 		source =
 				let
-					// Fix F-04 : typage des postes de marge manquants (inbound + commissions marketplace)
-					// avant de les exposer au modèle. shipping_fee_eur / duties / supplies déjà typés en amont.
-					#"Types postes marge" = Table.TransformColumnTypes(stg_customer_order, {
+					// Commandes (public.customer_order) + coûts Bloc 5 agrégés par commande (customer_order_item).
+					// Jointure et SUM calculés par PostgreSQL : la passerelle reçoit une ligne par commande.
+					Source = fnRequeteSql(Text.Combine({
+						"SELECT o.id, o.origin_order_id, o.state, o.source, o.destination_country, o.currency, o.origin_created,",
+						"o.order_amount_eur, o.shipping_fee_eur, o.marketplace_fees_eur, o.product_cost_eur,",
+						"o.inbound_transportation_cost_eur, o.total_shipping_cost_to_delivery_country_eur,",
+						"o.gross_profit_eur, o.gross_margin, o.contribution_profit_eur, o.contribution_margin,",
+						"b.retours_remboursements, b.couts_generiques",
+						"FROM public.customer_order o",
+						"LEFT JOIN (SELECT order_id, SUM(returns_and_refunds_cost_eur) AS retours_remboursements,",
+						"SUM(generic_costs_eur) AS couts_generiques",
+						"FROM " & PgSchema & ".customer_order_item GROUP BY order_id) b ON b.order_id = o.id"
+					}, " ")),
+					#"Types appliques" = Table.TransformColumnTypes(Source, {
+						{"id", Int64.Type},
+						{"origin_order_id", type text},
+						{"state", type text},
+						{"source", type text},
+						{"destination_country", type text},
+						{"currency", type text},
+						{"order_amount_eur", type number},
+						{"shipping_fee_eur", type number},
+						{"marketplace_fees_eur", type number},
+						{"product_cost_eur", type number},
 						{"inbound_transportation_cost_eur", type number},
-						{"marketplace_fees_eur", type number}
+						{"total_shipping_cost_to_delivery_country_eur", type number},
+						{"gross_profit_eur", type number},
+						{"gross_margin", type number},
+						{"contribution_profit_eur", type number},
+						{"contribution_margin", type number},
+						{"retours_remboursements", type number},
+						{"couts_generiques", type number}
 					}, "en-US"),
-					#"Date commande ajoutee" = Table.AddColumn(#"Types postes marge", "date_commande", each try Date.FromText(Text.Start([origin_created], 10), [Format = "yyyy-MM-dd"]) otherwise null, type date),
-					#"Annee mois ajoutee" = Table.AddColumn(
-						#"Date commande ajoutee",
-						"annee_mois",
-						each if [date_commande] = null then null else Date.Year([date_commande]) * 100 + Date.Month([date_commande]),
-						Int64.Type
+					// Date de commande = jour UTC de origin_created (même règle que l'ancienne conversion texte ISO).
+					#"Date commande ajoutee" = Table.AddColumn(
+						#"Types appliques",
+						"date_commande",
+						each
+							let v = [origin_created] in
+							if v = null then null
+							else if Value.Is(v, type datetimezone) then DateTime.Date(DateTimeZone.RemoveZone(DateTimeZone.ToUtc(v)))
+							else if Value.Is(v, type datetime) then DateTime.Date(v)
+							else if Value.Is(v, type date) then v
+							else try Date.FromText(Text.Start(Text.From(v), 10), [Format = "yyyy-MM-dd"]) otherwise null,
+						type nullable date
 					),
-					// CA reconstruit marketplace (taux moyen mensuel).
-					#"Jointure taux mensuel" = Table.NestedJoin(
-						#"Annee mois ajoutee",
-						{"currency", "annee_mois"},
-						stg_taux_moyen_mensuel,
-						{"devise", "annee_mois"},
-						"taux",
-						JoinKind.LeftOuter
-					),
-					#"Taux mensuel etendu" = Table.ExpandTableColumn(#"Jointure taux mensuel", "taux", {"taux_moyen_mensuel"}, {"taux_moyen_mensuel"}),
 					#"CA eur reconstruit" = Table.AddColumn(
-						#"Taux mensuel etendu",
+						#"Date commande ajoutee",
 						"order_amount_eur_reconstruit",
 						each
 							let
@@ -597,22 +620,8 @@ table fact_commandes
 						{"inbound_transportation_cost_eur", "cout_transport_amont"},
 						{"marketplace_fees_eur", "commissions_marketplace"}
 					}),
-					#"Jointure couts bloc5" = Table.NestedJoin(
-						#"Colonnes renommees",
-						{"id_commande"},
-						stg_couts_bloc5_commande,
-						{"order_id"},
-						"bloc5",
-						JoinKind.LeftOuter
-					),
-					#"Couts bloc5 developpes" = Table.ExpandTableColumn(
-						#"Jointure couts bloc5",
-						"bloc5",
-						{"retours_remboursements", "couts_generiques"},
-						{"retours_remboursements", "couts_generiques"}
-					),
 					#"Avec bloc5" = Table.ReplaceValue(
-						#"Couts bloc5 developpes",
+						#"Colonnes renommees",
 						null,
 						0,
 						Replacer.ReplaceValue,
