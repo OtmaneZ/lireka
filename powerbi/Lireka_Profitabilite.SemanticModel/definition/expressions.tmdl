@@ -39,14 +39,14 @@ expression PgSchema = "analytics_views" meta [IsParameterQuery=true, Type="Text"
 
 	annotation PBI_ResultType = Text
 
-/// Lit une vue analytics_views. Les colonnes date/heure sont converties en texte ISO
+/// Lit une vue/table PostgreSQL (schéma PgSchema par défaut, ou schéma explicite). Les colonnes date/heure sont converties en texte ISO
 /// (yyyy-MM-ddTHH:mm:ss) pour conserver le comportement des anciens CSV
 /// (ex. Text.Start([origin_created], 10) dans stg_customer_order).
 expression fnLireVue =
-		(nomVue as text) as table =>
+		(nomVue as text, optional schema as nullable text) as table =>
 		let
 			Base = PostgreSQL.Database(PgServer, PgDatabase),
-			Vue = Base{[Schema = PgSchema, Item = nomVue]}[Data],
+			Vue = Base{[Schema = if schema = null then PgSchema else schema, Item = nomVue]}[Data],
 			ColonnesDate = Table.ColumnsOfType(Vue, {type nullable date, type nullable datetime, type nullable datetimezone}),
 			EnTexte = Table.TransformColumns(
 				Vue,
@@ -158,11 +158,12 @@ expression stg_couts_bloc5_commande =
 			#"Couts agreges par commande"
 	lineageTag: b5c6d7e8-f9a0-4123-b456-7890abcdef01
 
-/// Staging (non chargé) — vue analytics_views.customer_order lue et typée.
+/// Staging (non chargé) — table public.customer_order lue et typée
+/// (absente de analytics_views au 30/09/2026 : à confirmer avec COex).
 /// Consommé par fact_commandes, matching factures, dim_pays, dim_type_commande, stg_taux_moyen_mensuel.
 expression stg_customer_order =
 		let
-			Source = fnLireVue("customer_order"),
+			Source = fnLireVue("customer_order", "public"),
 			#"En-tetes promus" = Source,
 			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
 				{"id", Int64.Type},
@@ -240,139 +241,47 @@ expression stg_package =
 			#"Suivi normalise"
 	lineageTag: a7b8c9d0-e1f2-4a3b-9c0d-1e2f3a4b5c6d
 
-/// Staging (non chargé) — rapprochement factures transporteurs DÉSACTIVÉ (30/09/2026).
-/// Depuis septembre 2026, COex rattache les coûts réels des factures transporteurs à chaque colis
-/// dans le backoffice : ils arrivent directement dans analytics_views.package.shipping_cost_eur
-/// (sauf My Delivengo, factures agrégées par pays, en cours côté COex).
-/// Table vide conservée pour garder le schéma de stg_factures_transport_resolu / fact_factures_transport.
-/// Ancienne lecture des récaps CSV Colissimo/Chronopost : voir historique git (commit 0048db6).
+/// Staging (non chargé) — lignes de factures transporteurs depuis analytics_views.v_carrier_invoice_lines.
+/// Le backend COex rattache chaque ligne au colis (package_id) et à la commande (order_id) :
+/// plus de rapprochement par numéro de suivi côté Power BI. Toutes les lignes sont conservées
+/// (TRANSPORTATION, FUEL_SURCHARGE, OTHER_SURCHARGE, CREDIT) : aucune ligne de douane/taxe (vérifié le 30/09/2026).
 expression stg_factures_brutes =
-		#table(
-			type table [numero_facture = nullable text, date_facture = nullable date, numero_suivi = nullable text, transporteur = nullable text, service = nullable text, pays_destination = nullable text, poids = nullable number, cout_transport = nullable number],
-			{}
-		)
+		let
+			Source = PostgreSQL.Database(PgServer, PgDatabase){[Schema = PgSchema, Item = "v_carrier_invoice_lines"]}[Data],
+			Colonnes = Table.SelectColumns(Source, {"invoice_number", "invoice_date", "tracking_number", "carrier_name", "service_code", "invoice_country_code", "weight_billed_grams", "amount_excl_vat_eur", "order_id", "package_id"}),
+			Transformees = Table.TransformColumns(Colonnes, {
+				{"invoice_date", each if _ = null then null else Date.From(_), type nullable date},
+				{"tracking_number", each fnNormaliserSuivi(_), type text},
+				{"carrier_name", each fnCanonTransporteur(_), type text},
+				{"weight_billed_grams", each if _ = null then null else _ / 1000, type nullable number}
+			}),
+			Renommees = Table.RenameColumns(Transformees, {
+				{"invoice_number", "numero_facture"}, {"invoice_date", "date_facture"}, {"tracking_number", "numero_suivi"},
+				{"carrier_name", "transporteur"}, {"service_code", "service"}, {"invoice_country_code", "pays_destination"},
+				{"weight_billed_grams", "poids"}, {"amount_excl_vat_eur", "cout_transport"}, {"package_id", "id_package"}
+			}),
+			Types = Table.TransformColumnTypes(Renommees, {
+				{"numero_facture", type text}, {"service", type text}, {"pays_destination", type text},
+				{"cout_transport", type number}, {"order_id", Int64.Type}, {"id_package", Int64.Type}
+			})
+		in
+			Types
 	lineageTag: b8c9d0e1-f2a3-4b5c-0d1e-2f3a4b5c6d7e
 
-/// Staging (non chargé) — résolution facture -> colis par proximité de date.
+/// Staging (non chargé) — lignes de factures transporteurs rattachées au colis par le backend.
 /// Consommé par fact_factures_transport et fact_transport (colonne source_cout).
-/// Matching ensembliste (Join + Sort + Distinct) — même règle F-11 que l'ancien row-by-row :
-/// 1 candidat = accepté ; ≥2 = meilleur delta puis id_package, rejet si delta > 7j.
+/// nb_candidats_resolution : 1 si la ligne est rattachée à un colis, 0 sinon (compatibilité mesures).
 expression stg_factures_transport_resolu =
 		let
-			// Fix F-11 : fenêtre de tolérance (jours) si numéro de suivi recyclé (≥2 candidats).
-			// TODO Marc: seuil à valider. Valeur par défaut conservatrice.
-			FenetreToleranceJours = 7,
-			#"Facture en texte" = stg_factures_brutes,
-			#"Pkg suivi" = stg_package,
-			#"Cmd dates" = Table.AddColumn(
-				Table.SelectColumns(stg_customer_order, {"id", "origin_created"}),
-				"date_commande",
-				each try Date.FromText(Text.Start([origin_created], 10)) otherwise null,
-				type date
-			),
-			#"Colis dates" = Table.ExpandTableColumn(
-				Table.NestedJoin(
-					Table.SelectColumns(Table.RenameColumns(#"Pkg suivi", {{"id", "id_package"}}), {"id_package", "order_id", "numero_suivi"}),
-					{"order_id"},
-					#"Cmd dates",
-					{"id"},
-					"cmd",
-					JoinKind.LeftOuter
-				),
-				"cmd",
-				{"date_commande"},
-				{"date_commande"}
-			),
-			// Exclut les suivis vides du matching (évite produit cartésien sur "").
-			#"Factures matching" = Table.SelectRows(#"Facture en texte", each [numero_suivi] <> null and [numero_suivi] <> ""),
-			#"Colis dates matching" = Table.SelectRows(#"Colis dates", each [numero_suivi] <> null and [numero_suivi] <> ""),
-			#"Factures index" = Table.AddIndexColumn(#"Factures matching", "inv_idx", 0, 1, Int64.Type),
-			#"Candidats" = Table.Join(
-				#"Factures index",
-				{"numero_suivi"},
-				#"Colis dates matching",
-				{"numero_suivi"},
-				JoinKind.Inner
-			),
-			#"Avec delta" = Table.AddColumn(
-				#"Candidats",
-				"delta",
-				each if [date_commande] = null or [date_facture] = null then 1000000000.0
-					else Number.Abs(Duration.TotalDays([date_commande] - [date_facture])),
-				type number
-			),
-			#"Nb candidats" = Table.Group(
-				#"Avec delta",
-				{"inv_idx"},
-				{{"nb_candidats_resolution", each Table.RowCount(_), Int64.Type}}
-			),
-			#"Tries" = Table.Sort(
-				#"Avec delta",
-				{{"inv_idx", Order.Ascending}, {"delta", Order.Ascending}, {"id_package", Order.Ascending}}
-			),
-			#"Meilleur par facture" = Table.Distinct(#"Tries", {"inv_idx"}),
-			#"Meilleur + nb" = Table.ExpandTableColumn(
-				Table.NestedJoin(
-					#"Meilleur par facture",
-					{"inv_idx"},
-					#"Nb candidats",
-					{"inv_idx"},
-					"nb",
-					JoinKind.LeftOuter
-				),
-				"nb",
-				{"nb_candidats_resolution"},
-				{"nb_candidats_resolution"}
-			),
-			#"Id package resolu" = Table.AddColumn(
-				#"Meilleur + nb",
-				"id_package_final",
-				each
-					if [nb_candidats_resolution] = 1 then [id_package]
-					else if [delta] > FenetreToleranceJours then null
-					else [id_package],
-				Int64.Type
-			),
-			#"Order id resolu" = Table.AddColumn(
-				#"Id package resolu",
-				"order_id_final",
-				each if [id_package_final] = null then null else [order_id],
-				Int64.Type
-			),
-			#"Resolu colonnes" = Table.RenameColumns(
-				Table.SelectColumns(#"Order id resolu", {"inv_idx", "id_package_final", "order_id_final", "nb_candidats_resolution"}),
-				{{"id_package_final", "id_package"}, {"order_id_final", "order_id"}}
-			),
-			#"Factures resolues" = Table.ExpandTableColumn(
-				Table.NestedJoin(
-					#"Factures index",
-					{"inv_idx"},
-					#"Resolu colonnes",
-					{"inv_idx"},
-					"r",
-					JoinKind.LeftOuter
-				),
-				"r",
-				{"id_package", "order_id", "nb_candidats_resolution"},
-				{"id_package", "order_id", "nb_candidats_resolution"}
-			),
-			#"Nb zero" = Table.ReplaceValue(
-				#"Factures resolues",
-				null,
-				0,
-				Replacer.ReplaceValue,
-				{"nb_candidats_resolution"}
-			),
-			#"Colonnes finales" = Table.SelectColumns(
-				Table.RemoveColumns(#"Nb zero", {"inv_idx"}),
-				{
-					"numero_facture", "date_facture", "numero_suivi", "transporteur", "service",
-					"pays_destination", "poids", "cout_transport", "order_id", "id_package",
-					"nb_candidats_resolution"
-				}
-			)
+			Source = stg_factures_brutes,
+			AvecNb = Table.AddColumn(Source, "nb_candidats_resolution", each if [id_package] = null then 0 else 1, type number),
+			Colonnes = Table.SelectColumns(AvecNb, {
+				"numero_facture", "date_facture", "numero_suivi", "transporteur", "service",
+				"pays_destination", "poids", "cout_transport", "order_id", "id_package",
+				"nb_candidats_resolution"
+			})
 		in
-			#"Colonnes finales"
+			Colonnes
 	lineageTag: f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c
 
 /// Staging (non chargé) — catalogue ISBN (title / author). Aucune source disponible en base à ce jour :
