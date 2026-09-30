@@ -240,53 +240,17 @@ expression stg_package =
 			#"Suivi normalise"
 	lineageTag: a7b8c9d0-e1f2-4a3b-9c0d-1e2f3a4b5c6d
 
-/// Staging (non chargé) — récaps Colissimo/Chronopost unifiés (sans jointure).
-/// Consommé uniquement par stg_factures_transport_resolu.
+/// Staging (non chargé) — rapprochement factures transporteurs DÉSACTIVÉ (30/09/2026).
+/// Depuis septembre 2026, COex rattache les coûts réels des factures transporteurs à chaque colis
+/// dans le backoffice : ils arrivent directement dans analytics_views.package.shipping_cost_eur
+/// (sauf My Delivengo, factures agrégées par pays, en cours côté COex).
+/// Table vide conservée pour garder le schéma de stg_factures_transport_resolu / fact_factures_transport.
+/// Ancienne lecture des récaps CSV Colissimo/Chronopost : voir historique git (commit 0048db6).
 expression stg_factures_brutes =
-		let
-			fnChronoUnifie = (src as table, facCol as text, suiviCol as text) as table =>
-				let
-					t = Table.TransformColumnTypes(src, {{"Date", type date}, {"Poids (kg)", type number}, {"TOTAL HT", type number}}, "fr-FR"),
-					r = Table.RenameColumns(t, {{"Date", "date_facture"}, {"Poids (kg)", "poids"}, {"TOTAL HT", "cout_transport"}}),
-					f = Table.AddColumn(r, "numero_facture", each try Text.From(Record.Field(_, facCol)) otherwise null, type text),
-					s = Table.AddColumn(f, "numero_suivi", each fnNormaliserSuivi(Record.Field(_, suiviCol)), type text),
-					tr = Table.AddColumn(s, "transporteur", each fnCanonTransporteur("Chronopost"), type text),
-					sv = Table.AddColumn(tr, "service", each "Chronopost", type text),
-					pdst = Table.AddColumn(sv, "pays_destination", each null, type text)
-				in
-					Table.SelectColumns(pdst, {"numero_facture", "date_facture", "numero_suivi", "transporteur", "service", "pays_destination", "poids", "cout_transport"}),
-			ColisRacine = LocalRootPath & "\Dashboards_transporteurs\COLISSIMO Dashboard PowerBI\",
-			#"Colissimo combine" = Table.Combine({
-				Table.PromoteHeaders(Csv.Document(File.Contents(ColisRacine & "2025_COLISSIMO_récap.csv"), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]),
-				Table.PromoteHeaders(Csv.Document(File.Contents(ColisRacine & "2026_COLISSIMO_récap_au_30_juin_2026.csv"), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true])
-			}),
-			#"Colissimo types" = Table.TransformColumnTypes(#"Colissimo combine", {
-				{"Date", type date},
-				{"Poids kg", type number},
-				{"TOTAL HT", type number}
-			}, "fr-FR"),
-			#"Colissimo unifie" = Table.SelectColumns(
-				Table.AddColumn(
-					Table.AddColumn(
-						Table.AddColumn(
-							Table.AddColumn(
-								Table.AddColumn(
-									Table.RenameColumns(#"Colissimo types", {{"Date", "date_facture"}, {"Poids kg", "poids"}, {"TOTAL HT", "cout_transport"}}),
-									"numero_suivi", each fnNormaliserSuivi([#"N° de colis"]), type text),
-								"numero_facture", each null, type text),
-							"transporteur", each fnCanonTransporteur("Colissimo"), type text),
-						"service", each "Colissimo", type text),
-					"pays_destination", each try Text.BeforeDelimiter(Text.Trim([Destination]), " ") otherwise null, type text),
-				{"numero_facture", "date_facture", "numero_suivi", "transporteur", "service", "pays_destination", "poids", "cout_transport"}),
-			ChronoRacine = LocalRootPath & "\Dashboards_transporteurs\CHRONOPOST Dashboard PowerBI\",
-			#"Chronopost 2025" = fnChronoUnifie(Table.PromoteHeaders(Csv.Document(File.Contents(ChronoRacine & "2025_CHRONOPOST_récap.csv"), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]), "Facture", "N° de colis"),
-			#"Chronopost 2026" = fnChronoUnifie(Table.PromoteHeaders(Csv.Document(File.Contents(ChronoRacine & "2026_CHRONOPOST_V2.csv"), [Delimiter = ";", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]), "N° Facture", "N° de colis (N° objet)"),
-			#"Chronopost unifie" = Table.Combine({#"Chronopost 2025", #"Chronopost 2026"}),
-			#"Factures combinees" = Table.Combine({#"Colissimo unifie", #"Chronopost unifie"}),
-			#"Lignes valides" = Table.SelectRows(#"Factures combinees", each [cout_transport] <> null),
-			#"Facture en texte" = Table.TransformColumnTypes(#"Lignes valides", {{"numero_facture", type text}})
-		in
-			#"Facture en texte"
+		#table(
+			type table [numero_facture = nullable text, date_facture = nullable date, numero_suivi = nullable text, transporteur = nullable text, service = nullable text, pays_destination = nullable text, poids = nullable number, cout_transport = nullable number],
+			{}
+		)
 	lineageTag: b8c9d0e1-f2a3-4b5c-0d1e-2f3a4b5c6d7e
 
 /// Staging (non chargé) — résolution facture -> colis par proximité de date.
@@ -411,27 +375,9 @@ expression stg_factures_transport_resolu =
 			#"Colonnes finales"
 	lineageTag: f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c
 
-/// Staging (non chargé) — export catalogue ISBN (Title / Author par ISBN).
-/// Fichier attendu : Données_Backend\catalogue_isbn.csv (isbn, title, author).
-/// Absent ou vide → table schéma seul ; dim_isbn conserve les ISBN avec title/author null.
+/// Staging (non chargé) — catalogue ISBN (title / author). Aucune source disponible en base à ce jour :
+/// table vide, dim_isbn conserve les ISBN avec title/author null. À rebrancher sur une vue COex.
 expression stg_catalogue_isbn =
-		let
-			Path = LocalRootPath & "\Données_Backend\catalogue_isbn.csv",
-			SchemaVide = #table(
-				type table [isbn = text, title = text, author = text],
-				{}
-			),
-			Raw = try Csv.Document(
-				File.Contents(Path),
-				[Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
-			) otherwise null,
-			Source = if Raw = null then SchemaVide else Table.PromoteHeaders(Raw, [PromoteAllScalars = true]),
-			Typed = Table.TransformColumnTypes(Source, {
-				{"isbn", type text},
-				{"title", type text},
-				{"author", type text}
-			}, "en-US")
-		in
-			Table.SelectColumns(Typed, {"isbn", "title", "author"})
+		#table(type table [isbn = text, title = text, author = text], {})
 	lineageTag: c4t4l0g-1111-2222-3333-444455550001
 
