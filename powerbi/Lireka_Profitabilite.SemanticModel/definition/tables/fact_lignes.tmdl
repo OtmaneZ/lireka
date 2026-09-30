@@ -139,8 +139,8 @@ table fact_lignes
 					#"Articles types" = Table.SelectColumns(stg_Commande_Items, {
 						"id", "order_id", "item_group_id", "internal_state", "package_id", "product_cost_eur"
 					}),
-					#"Groupes brut" = Csv.Document(File.Contents(LocalRootPath & "\Données_Backend\customer_order_item_group.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-					#"Groupes source" = Table.PromoteHeaders(#"Groupes brut", [PromoteAllScalars = true]),
+					#"Groupes brut" = fnLireVue("customer_order_item_group"),
+					#"Groupes source" = #"Groupes brut",
 					#"Groupes types" = Table.SelectColumns(
 						Table.TransformColumnTypes(#"Groupes source", {
 							{"id", Int64.Type},

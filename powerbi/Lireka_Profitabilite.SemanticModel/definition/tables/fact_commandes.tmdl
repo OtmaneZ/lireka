@@ -1,5 +1,5 @@
 /// Faits — commandes clients (grain : une ligne par commande).
-/// Source locale : Données_Backend/customer_order.csv (File.Contents via stg_customer_order).
+/// Source : PostgreSQL analytics_views.customer_order (via stg_customer_order).
 /// Clé : id_commande (customer_order.id). Porte le CA, les coûts backend et
 /// la marge existante (gross_profit_eur) conservée comme référence de contrôle.
 table fact_commandes

@@ -21,6 +21,41 @@ expression LocalRootPath = "C:\Users\OtmaneBoulahia\Documents\lireka\Power_BI_Da
 
 	annotation PBI_ResultType = Text
 
+/// Serveur PostgreSQL analytique Lireka (joignable via Lireka-Gateway + VPN COex).
+expression PgServer = "10.111.119.1:5432" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 3f1d2c4b-5a6e-4f70-8a91-b2c3d4e5f601
+
+	annotation PBI_ResultType = Text
+
+/// Base PostgreSQL analytique.
+expression PgDatabase = "analytics" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 4a2e3d5c-6b7f-4081-9ba2-c3d4e5f60712
+
+	annotation PBI_ResultType = Text
+
+/// Schéma des vues exposées à Power BI (mêmes noms et colonnes que les anciens CSV Données_Backend).
+expression PgSchema = "analytics_views" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 5b3f4e6d-7c80-4192-acb3-d4e5f6071823
+
+	annotation PBI_ResultType = Text
+
+/// Lit une vue analytics_views. Les colonnes date/heure sont converties en texte ISO
+/// (yyyy-MM-ddTHH:mm:ss) pour conserver le comportement des anciens CSV
+/// (ex. Text.Start([origin_created], 10) dans stg_customer_order).
+expression fnLireVue =
+		(nomVue as text) as table =>
+		let
+			Base = PostgreSQL.Database(PgServer, PgDatabase),
+			Vue = Base{[Schema = PgSchema, Item = nomVue]}[Data],
+			ColonnesDate = Table.ColumnsOfType(Vue, {type nullable date, type nullable datetime, type nullable datetimezone}),
+			EnTexte = Table.TransformColumns(
+				Vue,
+				List.Transform(ColonnesDate, (c) => {c, each if _ = null then null else DateTime.ToText(DateTime.From(_), [Format = "yyyy-MM-ddTHH:mm:ss", Culture = "en-US"]), type text})
+			)
+		in
+			EnTexte
+	lineageTag: 6c405f7e-8d91-42a3-bdc4-e5f607182934
+
 /// Normalise un transporteur à partir du numéro de suivi (tracking_id).
 /// Méthode : inférence par motif, alignée sur l'analyse backend du 12/07/2026
 /// (rapport_backend.txt). Sorties canoniques : UPS, La Poste, Postes Canada,
@@ -87,12 +122,12 @@ expression fnNormaliserSuivi =
 			Text.Upper(sansEspaces)
 	lineageTag: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e
 
-/// Staging (non chargé) — customer_order_item.csv nettoyé.
+/// Staging (non chargé) — vue analytics_views.customer_order_item nettoyée.
 /// Partagé par stg_couts_bloc5_commande et fact_lignes.
 expression stg_Commande_Items =
 		let
-			Source = Csv.Document(File.Contents(LocalRootPath & "\Données_Backend\customer_order_item.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			Source = fnLireVue("customer_order_item"),
+			#"En-tetes promus" = Source,
 			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
 				{"id", Int64.Type},
 				{"item_group_id", Int64.Type},
@@ -123,12 +158,12 @@ expression stg_couts_bloc5_commande =
 			#"Couts agreges par commande"
 	lineageTag: b5c6d7e8-f9a0-4123-b456-7890abcdef01
 
-/// Staging (non chargé) — customer_order.csv lu et typé.
+/// Staging (non chargé) — vue analytics_views.customer_order lue et typée.
 /// Consommé par fact_commandes, matching factures, dim_pays, dim_type_commande, stg_taux_moyen_mensuel.
 expression stg_customer_order =
 		let
-			Source = Csv.Document(File.Contents(LocalRootPath & "\Données_Backend\customer_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			Source = fnLireVue("customer_order"),
+			#"En-tetes promus" = Source,
 			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
 				{"id", Int64.Type},
 				{"origin_order_id", type text},
@@ -185,12 +220,12 @@ expression stg_taux_moyen_mensuel =
 			#"Colonnes renommees"
 	lineageTag: c4d5e6f7-a8b9-4012-cdef-3456789abcde
 
-/// Staging (non chargé) — package.csv (lecture File.Contents directe).
+/// Staging (non chargé) — vue analytics_views.package.
 /// Consommé par fact_transport et stg_factures_transport_resolu.
 expression stg_package =
 		let
-			Source = Csv.Document(File.Contents(LocalRootPath & "\Données_Backend\package.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-			#"En-tetes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			Source = fnLireVue("package"),
+			#"En-tetes promus" = Source,
 			#"Types appliques" = Table.TransformColumnTypes(#"En-tetes promus", {
 				{"id", Int64.Type},
 				{"order_id", Int64.Type},
