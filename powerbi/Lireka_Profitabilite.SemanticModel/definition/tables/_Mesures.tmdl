@@ -343,7 +343,6 @@ table _Mesures
 	/// Retours/remboursements + coûts génériques inclus (Bloc 5, dette technique provisoire —
 	/// Marc doit revoir total_generic_costs_eur). Double comptage returns vs COGS sur
 	/// CANCELLED clos (COGS neutralisé). Grain commande.
-
 	measure 'Marge Brute' =
 			[CA HT Net Annulation]
 				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
