@@ -113,6 +113,29 @@ expression fnNormaliserSuivi =
 			Text.Upper(sansEspaces)
 	lineageTag: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e
 
+/// Date de la dernière commande en base (jour UTC de max(origin_created), public.customer_order).
+/// Référence temporelle unique de dim_date : borne Fin du calendrier et fenêtre 12 derniers mois.
+/// Conversion identique à fact_commandes[date_commande] (étape "Date commande ajoutee").
+/// Erreur explicite si la table est vide : un refresh ne doit pas publier une fenêtre vide.
+expression DateDerniereCommande =
+		let
+			Source = fnRequeteSql("SELECT max(origin_created) AS derniere_commande FROM public.customer_order"),
+			v = Source{0}[derniere_commande],
+			d =
+				if v = null then null
+				else if Value.Is(v, type datetimezone) then DateTime.Date(DateTimeZone.RemoveZone(DateTimeZone.ToUtc(v)))
+				else if Value.Is(v, type datetime) then DateTime.Date(v)
+				else if Value.Is(v, type date) then v
+				else try Date.FromText(Text.Start(Text.From(v), 10), [Format = "yyyy-MM-dd"]) otherwise null,
+			Resultat =
+				if d = null then error Error.Record("DateDerniereCommande", "max(origin_created) introuvable dans public.customer_order")
+				else d
+		in
+			Resultat
+	lineageTag: 5e37419d-284f-4e0f-a980-aba4619829cb
+
+	annotation PBI_ResultType = Date
+
 /// Staging (non chargé) — lignes de factures transporteurs depuis analytics_views.v_carrier_invoice_lines.
 /// Le backend COex rattache chaque ligne au colis (package_id) et à la commande (order_id) :
 /// plus de rapprochement par numéro de suivi côté Power BI. Toutes les lignes sont conservées

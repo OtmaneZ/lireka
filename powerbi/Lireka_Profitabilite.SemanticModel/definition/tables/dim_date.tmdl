@@ -158,7 +158,7 @@ table dim_date
 
 		changedProperty = IsHidden
 
-	/// "Oui" si date > (refresh - 12 mois) et date <= refresh, sinon "Non". Texte (pas booleen) : forme Categorical PBIR verifiable (Literal "'Oui'"). Filtre page 12 mois glissants. 2026-08-29.
+	/// "Oui" si date > (dernière commande - 12 mois) et date <= dernière commande, sinon "Non". Texte (pas booleen) : forme Categorical PBIR verifiable (Literal "'Oui'"). Filtre page 12 mois glissants. 2026-08-29.
 	column fenetre_12_mois
 		dataType: string
 		lineageTag: f4a5b6c7-d8e9-0123-efab-567890123457
@@ -171,11 +171,11 @@ table dim_date
 		mode: import
 		source =
 				let
-					// Date du refresh, evaluation unique (FixedLocalNow) — unique source temporelle (borne Fin + indicateur 12 mois)
-					Aujourdhui = DateTime.Date(DateTime.FixedLocalNow()),
+					// Date de la dernière commande en base (DateDerniereCommande) — unique source temporelle (borne Fin + indicateur 12 mois)
+					DerniereCommande = DateDerniereCommande,
 					// Bornes du calendrier (historique backend dès 2020 — requis pour YoY)
 					Debut = #date(2020, 1, 1),
-					Fin = Date.EndOfYear(Date.AddYears(Aujourdhui, 1)),
+					Fin = Date.EndOfYear(Date.AddYears(DerniereCommande, 1)),
 					NbJours = Duration.Days(Fin - Debut) + 1,
 					// Génération de la liste continue de dates
 					ListeDates = List.Dates(Debut, NbJours, #duration(1, 0, 0, 0)),
@@ -221,11 +221,11 @@ table dim_date
 						type text
 					),
 					// Fenetre 12 derniers mois glissants (filtre page, 2026-08-29) :
-					// "Oui" si [date] > Aujourdhui-12 mois et [date] <= Aujourdhui (haute incluse, basse exclusive), sinon "Non".
+					// "Oui" si [date] > DerniereCommande-12 mois et [date] <= DerniereCommande (haute incluse, basse exclusive), sinon "Non".
 					#"12 derniers mois" = Table.AddColumn(
 						#"Mois annee court EN",
 						"fenetre_12_mois",
-						each if [date] > Date.AddMonths(Aujourdhui, -12) and [date] <= Aujourdhui
+						each if [date] > Date.AddMonths(DerniereCommande, -12) and [date] <= DerniereCommande
 						     then "Oui" else "Non",
 						type text
 					)

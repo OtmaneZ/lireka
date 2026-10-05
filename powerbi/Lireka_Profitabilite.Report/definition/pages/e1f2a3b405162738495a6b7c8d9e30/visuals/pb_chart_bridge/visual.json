@@ -278,7 +278,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Gross profit bridge, current year vs prior year'"
+                  "Value": "'Gross profit bridge, last 12 months vs prior year'"
                 }
               }
             },
