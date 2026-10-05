@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Taux Douanes Taxes"
+                  "Property": "KPI Sous-titre — Douanes"
                 }
               },
-              "queryRef": "_Mesures.Taux Douanes Taxes",
-              "nativeQueryRef": "Taux Douanes Taxes"
+              "queryRef": "_Mesures.KPI Sous-titre — Douanes",
+              "nativeQueryRef": "KPI Sous-titre — Douanes"
             }
           ]
         }

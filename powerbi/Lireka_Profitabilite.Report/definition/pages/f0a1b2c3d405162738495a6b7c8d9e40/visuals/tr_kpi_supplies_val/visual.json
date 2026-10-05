@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Fournitures Expédition"
+                  "Property": "Fournitures Expédition (tous colis)"
                 }
               },
-              "queryRef": "_Mesures.Fournitures Expédition",
-              "nativeQueryRef": "Fournitures Expédition"
+              "queryRef": "_Mesures.Fournitures Expédition (tous colis)",
+              "nativeQueryRef": "Fournitures Expédition (tous colis)"
             }
           ]
         }

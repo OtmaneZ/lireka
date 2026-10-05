@@ -12,7 +12,26 @@
   "visual": {
     "visualType": "card",
     "query": {
-      "queryState": {}
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
+                  "Property": "KPI Sous-titre — Transport par unité"
+                }
+              },
+              "queryRef": "_Mesures.KPI Sous-titre — Transport par unité",
+              "nativeQueryRef": "KPI Sous-titre — Transport par unité"
+            }
+          ]
+        }
+      }
     },
     "objects": {
       "labels": [

@@ -12,7 +12,26 @@
   "visual": {
     "visualType": "card",
     "query": {
-      "queryState": {}
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
+                  "Property": "KPI Sous-titre — Commandes déficitaires"
+                }
+              },
+              "queryRef": "_Mesures.KPI Sous-titre — Commandes déficitaires",
+              "nativeQueryRef": "KPI Sous-titre — Commandes déficitaires"
+            }
+          ]
+        }
+      }
     },
     "objects": {
       "labels": [

@@ -3,7 +3,12 @@ table _Mesures
 	lineageTag: a2e58751-5502-46c6-95f8-1dc665aa31ec
 
 	/// Nombre de commandes (grain fact_commandes).
-	measure 'Nb Commandes' = COUNTROWS(fact_commandes)
+	measure 'Nb Commandes' =
+			IF(
+				[_Allocation ligne active],
+				DISTINCTCOUNT(fact_lignes[order_id]),
+				COUNTROWS(fact_commandes)
+			)
 		formatString: #,##0
 		displayFolder: 01 KPI publiés
 		lineageTag: 2a5e017f-d3b9-4fc8-bc92-1f1b103b9945
@@ -43,6 +48,96 @@ table _Mesures
 		displayFolder: 08 Contrôles
 		lineageTag: e8d8c253-ebbc-411c-a7c6-70f93389efb0
 
+	/// Vrai si un filtre porte sur la langue du livre ou l'ISBN (fact_lignes) : les mesures socle
+	/// grain commande sont alors réparties par article (1/n de la commande par article,
+	/// fact_lignes[nb_articles_commande]). Sinon, agrégation commande directe.
+	measure '_Allocation ligne active' = ISFILTERED(fact_lignes[langue_livre]) || ISFILTERED(fact_lignes[isbn])
+		isHidden
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000001
+
+	/// Nombre de commandes sans montant de vente EUR en base (ca_disponible = "Non").
+	/// Exclues du revenu, des coûts et de la marge.
+	measure 'Nb commandes sans CA' = CALCULATE(COUNTROWS(fact_commandes), KEEPFILTERS(fact_commandes[ca_disponible] = "Non"))
+		formatString: #,##0
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000002
+
+	/// Nombre de commandes dont la source n'est rattachée à aucun canal (canal "Other").
+	/// Ignore le filtre canal de la page : contrôle de la correspondance source -> canal.
+	measure 'Nb commandes canal non mappé' =
+			CALCULATE(
+				COUNTROWS(fact_commandes),
+				REMOVEFILTERS(dim_type_commande),
+				dim_type_commande[canal] = "Other"
+			)
+		formatString: #,##0
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000003
+
+	/// Bandeau Marketplaces : commandes exclues faute de montant de vente en base ("" si aucune).
+	measure 'Avertissement — commandes sans CA' =
+			VAR n = [Nb commandes sans CA]
+			RETURN
+				IF(
+					n > 0,
+					FORMAT(n, "#,##0") & " orders have no sales amount in the source data and are excluded from revenue, costs and margin",
+					""
+				)
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000004
+
+	/// Bandeau General View : commandes sans CA + commandes de canal non mappé ("" si aucune).
+	measure 'Avertissement — données' =
+			VAR a = [Avertissement — commandes sans CA]
+			VAR m = [Nb commandes canal non mappé]
+			VAR b = IF(m > 0, FORMAT(m, "#,##0") & " orders from unmapped sales channels are excluded from all pages", "")
+			RETURN a & IF(a <> "" && b <> "", "  |  ", "") & b
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000005
+
+	/// Unités commandées des commandes avec CA : dénominateur des ratios par unité.
+	measure 'Unités commandées (avec CA)' = CALCULATE([Unités commandées], KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+		formatString: #,##0
+		isHidden
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000006
+
+	/// Page Transport : coût outbound de tous les colis (vue transporteurs), sans filtre ca_disponible.
+	measure 'Coût Transport Outbound (tous colis)' = SUM(fact_transport[cout_transport_retenu])
+		formatString: #,##0.00 €
+		displayFolder: 03 Coûts
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000007
+
+	measure 'Coût Transport Outbound (tous colis) PY' = CALCULATE([Coût Transport Outbound (tous colis)], SAMEPERIODLASTYEAR(dim_date[date]))
+		formatString: #,##0.00 €
+		displayFolder: 05 YoY
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000008
+
+	measure 'Coût Transport Outbound (tous colis) YoY %' = DIVIDE([Coût Transport Outbound (tous colis)] - [Coût Transport Outbound (tous colis) PY], [Coût Transport Outbound (tous colis) PY])
+		formatString: 0.0%
+		displayFolder: 05 YoY
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000009
+
+	/// Page Transport : droits et taxes de tous les colis, sans filtre ca_disponible.
+	measure 'Douanes Taxes (tous colis)' = SUM(fact_transport[duties_taxes_eur])
+		formatString: #,##0.00 €
+		displayFolder: 03 Coûts
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000010
+
+	measure 'Douanes Taxes (tous colis) YoY %' =
+			VAR py = CALCULATE([Douanes Taxes (tous colis)], SAMEPERIODLASTYEAR(dim_date[date]))
+			RETURN DIVIDE([Douanes Taxes (tous colis)] - py, py)
+		formatString: 0.0%
+		displayFolder: 05 YoY
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000011
+
+	/// Page Transport : fournitures d'expédition de tous les colis, sans filtre ca_disponible.
+	measure 'Fournitures Expédition (tous colis)' = SUM(fact_transport[shipping_supply_cost_eur])
+		formatString: #,##0.00 €
+		displayFolder: 03 Coûts
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000012
+
 	/// Fix Bloc2 — grain passé de groupe/titre à article physique le 15/07/2026.
 	/// Ancienne mesure basée sur SUM(quantity_groupe) déduplicable en contrôle si besoin,
 	/// voir [Nb Articles (contrôle grain groupe)].
@@ -72,13 +167,16 @@ table _Mesures
 	/// Remplace fact_commandes[ca_ht] pour la logique de marge Bloc 3 : zéro appliqué au grain
 	/// article, pas commande, pour gérer les annulations partielles (~8 900 commandes, audit 15/07/2026).
 	measure 'CA Total HT (grain article, ajusté annulation)' =
-			SUMX(
-				fact_lignes,
-				IF(
-					fact_lignes[statut_annulation_ligne] = "NON_ANNULE",
-					fact_lignes[customer_price_per_item_eur],
-					0
-				)
+			CALCULATE(
+				SUMX(
+					fact_lignes,
+					IF(
+						fact_lignes[statut_annulation_ligne] = "NON_ANNULE",
+						fact_lignes[customer_price_per_item_eur],
+						0
+					)
+				),
+				KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
 			)
 		formatString: #,##0.00 €
 		displayFolder: 02 Revenus
@@ -92,7 +190,8 @@ table _Mesures
 			VAR cogsActif =
 				CALCULATE(
 					SUM(fact_lignes[product_cost_eur]),
-					KEEPFILTERS(fact_commandes[state] <> "CANCELLED")
+					KEEPFILTERS(fact_commandes[state] <> "CANCELLED"),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
 				)
 			RETURN IF(ISBLANK(cogsActif), 0, cogsActif)
 		formatString: #,##0.00 €
@@ -124,7 +223,15 @@ table _Mesures
 		lineageTag: e7f8a9b0-c1d2-4345-a678-901234ef0123
 
 	/// Chiffre d'affaires HT (order_amount_eur).
-	measure 'CA Total HT' = SUM(fact_commandes[ca_ht])
+	measure 'CA Total HT' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[ca_ht]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE(SUM(fact_commandes[ca_ht]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 02 Revenus
 		lineageTag: dda226fa-8e6c-4c56-acbd-56fa1c84d136
@@ -132,7 +239,15 @@ table _Mesures
 	/// CA HT reconstruit — order_amount_eur natif si présent, sinon order_amount_local / taux mensuel moyen.
 	/// Variante parallèle à [CA Total HT], sur le même modèle que [Marge Brute] vs [Marge Brute (prov.)].
 	/// Voir docs/notes-techniques/reconstruction-ca-marketplace.md.
-	measure 'CA Total HT (reconstruit)' = SUM(fact_commandes[ca_ht_reconstruit])
+	measure 'CA Total HT (reconstruit)' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[ca_ht_reconstruit]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE(SUM(fact_commandes[ca_ht_reconstruit]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 02 Revenus
 		lineageTag: f8091234-5678-9abc-def0-123456789abc
@@ -184,7 +299,15 @@ table _Mesures
 	/// Coût d'achat total des livres (product_cost_eur), net annulation.
 	/// Décision Marc 25/08/2026 : COGS = 0 (pas BLANK) si state = CANCELLED — la vente
 	/// n'a pas eu lieu. Commandes actives inchangées (SUM de cout_achat_net).
-	measure 'Coût Achat Total' = SUM(fact_commandes[cout_achat_net])
+	measure 'Coût Achat Total' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[cout_achat_net]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE(SUM(fact_commandes[cout_achat_net]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 494ae678-7bb6-4cd5-a3c8-0e49d6296417
@@ -268,7 +391,15 @@ table _Mesures
 
 	/// Fix F-04 : frais de port encaissés par le client (marketplace notamment).
 	/// Périmètre d'inclusion ("if relevant") non tranché — inclus par défaut dans [Marge Brute].
-	measure 'Frais Port Encaissés' = SUM(fact_commandes[frais_port_encaisse])
+	measure 'Frais Port Encaissés' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[frais_port_encaisse]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE(SUM(fact_commandes[frais_port_encaisse]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 02 Revenus
 		lineageTag: 5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a9b
@@ -277,7 +408,15 @@ table _Mesures
 	/// Pas de filtre CANCELLED — décision Marc 25/08/2026 : conserver 100 % quel que
 	/// soit le statut (marchandise déjà acheminée jusqu'à Grenoble). Un 0 affiché est
 	/// un 0 source (inbound_transportation_cost_eur = 0 depuis 2022), pas une exclusion.
-	measure 'Coût Transport Amont' = SUM(fact_commandes[cout_transport_amont])
+	measure 'Coût Transport Amont' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[cout_transport_amont]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE(SUM(fact_commandes[cout_transport_amont]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b0c
@@ -287,25 +426,57 @@ table _Mesures
 	/// que si la commande a quand même été expédiée — déjà le cas : pas de colis = 0 ;
 	/// colis présent (proxy package_id / 243 cmd CANCELLED avec package) = coût conservé.
 	/// Pas de filtre state : un filtre CANCELLED exclurait à tort les expédiées-puis-annulées.
-	measure 'Coût Transport Outbound (Retenu)' = SUM(fact_transport[cout_transport_retenu])
+	measure 'Coût Transport Outbound (Retenu)' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[cout_transport_retenu_cmd]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE([Coût Transport Outbound (tous colis)], KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c1d
 
 	/// Fix F-04 : douanes et taxes (duties_taxes_eur) — poste "duties and taxes" de la formule Marc.
-	measure 'Douanes Taxes' = SUM(fact_transport[duties_taxes_eur])
+	measure 'Douanes Taxes' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[duties_taxes_cmd]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE([Douanes Taxes (tous colis)], KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d2e
 
 	/// Fix F-04 : commissions marketplace (marketplace_fees_eur).
-	measure 'Commissions Marketplace' = SUM(fact_commandes[commissions_marketplace])
+	measure 'Commissions Marketplace' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[commissions_marketplace]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE(SUM(fact_commandes[commissions_marketplace]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 02 Revenus
 		lineageTag: 9c0d1e2f-3a4b-4c5d-6e7f-8a9b0c1d2e3f
 
 	/// Fix F-04 : fournitures d'expédition (shipping_supply_cost_eur).
-	measure 'Fournitures Expédition' = SUM(fact_transport[shipping_supply_cost_eur])
+	measure 'Fournitures Expédition' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[fournitures_cmd]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE([Fournitures Expédition (tous colis)], KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a
@@ -316,7 +487,15 @@ table _Mesures
 	/// le modèle). SUM du champ = 0 si non remboursé, montant réel sinon ; pas de filtre
 	/// CANCELLED. Double comptage vs COGS sur annulation clos : [Coût Achat Total] = 0
 	/// si state = CANCELLED. Poste below-the-line pour [Marge Brute (reconstruit)].
-	measure 'Retours Remboursements' = SUM(fact_commandes[retours_remboursements])
+	measure 'Retours Remboursements' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[retours_remboursements]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE(SUM(fact_commandes[retours_remboursements]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: e8f9a0b1-c2d3-4456-e789-0123def01234
@@ -324,7 +503,15 @@ table _Mesures
 	/// Bloc5 (dette technique) — coûts génériques (generic_costs_eur, agrégé par commande).
 	/// Provisoire : Marc doit revoir total_generic_costs_eur / la définition de generic costs
 	/// de son côté avant de figer ce poste dans la marge.
-	measure 'Coûts Génériques' = SUM(fact_commandes[couts_generiques])
+	measure 'Coûts Génériques' =
+			IF(
+				[_Allocation ligne active],
+				CALCULATE(
+					SUMX(fact_lignes, DIVIDE(RELATED(fact_commandes[couts_generiques]), fact_lignes[nb_articles_commande])),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")
+				),
+				CALCULATE(SUM(fact_commandes[couts_generiques]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
+			)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: f9a0b1c2-d3e4-4567-f890-1234ef012345
@@ -894,7 +1081,8 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 88889999-0000-1111-2222-333344445555
 
-	measure 'Taux Marge Brute (reconstruit)' = DIVIDE([Marge Brute (reconstruit)], [Revenu (reconstruit)], 0)
+	measure 'Taux Marge Brute (reconstruit)' =
+			DIVIDE([Marge Brute (reconstruit)], [Revenu (reconstruit)])
 		formatString: 0.0%
 		displayFolder: 04 Marge
 		lineageTag: 99990000-1111-2222-3333-444455556666
@@ -1127,7 +1315,7 @@ table _Mesures
 			RETURN
 				IF(
 					ISBLANK(v),
-					BLANK(),
+					"n/a",
 					SWITCH(
 						TRUE(),
 						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
@@ -1144,7 +1332,7 @@ table _Mesures
 			RETURN
 				IF(
 					ISBLANK(v),
-					BLANK(),
+					"n/a",
 					SWITCH(
 						TRUE(),
 						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
@@ -1155,7 +1343,9 @@ table _Mesures
 		displayFolder: 01 KPI publiés
 		lineageTag: bb000003-1111-2222-3333-444455550003
 
-	measure 'KPI Compact — Gross Margin' = FORMAT([Taux Marge Brute (reconstruit)], "0.0%")
+	measure 'KPI Compact — Gross Margin' =
+			VAR r = [Taux Marge Brute (reconstruit)]
+			RETURN IF(ISBLANK(r), "n/a", FORMAT(r, "0.0%"))
 		displayFolder: 01 KPI publiés
 		lineageTag: bb000004-1111-2222-3333-444455550004
 
@@ -1164,11 +1354,13 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000011-1111-2222-3333-444455550011
 
-	measure 'GV Display — Revenue' = [KPI Compact — Revenue]
+	measure 'GV Display — Revenue' =
+			IF(ISBLANK([Revenu (reconstruit)]), BLANK(), [KPI Compact — Revenue])
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000012-1111-2222-3333-444455550012
 
-	measure 'GV Display — Gross Profit' = [KPI Compact — Gross Profit]
+	measure 'GV Display — Gross Profit' =
+			IF(ISBLANK([Marge Brute (reconstruit)]), BLANK(), [KPI Compact — Gross Profit])
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000013-1111-2222-3333-444455550013
 
@@ -1395,6 +1587,23 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000017-1111-2222-3333-444455550017
 
+	measure 'B2C Display - Marketplace fees' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR CountryRank = [B2C Rank]
+			VAR v =
+				IF(
+					ISBLANK(Country),
+					[Commissions Marketplace],
+					IF(
+						Country = "Rest of the world",
+						[B2C Rest Commissions],
+						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Commissions Marketplace], BLANK())
+					)
+				)
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000103
+
 	measure 'B2C Display - Generic costs' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
 			VAR CountryRank = [B2C Rank]
@@ -1413,9 +1622,28 @@ table _Mesures
 		lineageTag: cc000018-1111-2222-3333-444455550018
 
 	measure 'B2C Display - Revenue YoY %' =
+			VAR y = [B2C YoY - Revenue %]
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: cc000020-1111-2222-3333-444455550020
+
+	measure 'B2C Display - GP YoY %' =
+			VAR y = [B2C YoY - GP %]
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: cc000021-1111-2222-3333-444455550021
+
+	measure 'B2C Display - GM YoY bps' =
+			VAR y = [B2C YoY - GM bps]
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: cc000022-1111-2222-3333-444455550022
+
+	/// Valeur numérique de [B2C Display - Revenue YoY %] (Top 15 + Rest of the world) : base des couleurs.
+	measure 'B2C YoY - Revenue %' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
 			VAR CountryRank = [B2C Rank]
-			VAR y =
+			RETURN
 				IF(
 					ISBLANK(Country),
 					[Revenu (reconstruit) YoY %],
@@ -1425,14 +1653,16 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit) YoY %], BLANK())
 					)
 				)
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		formatString: 0.0%
+		isHidden
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
-		lineageTag: cc000020-1111-2222-3333-444455550020
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000104
 
-	measure 'B2C Display - GP YoY %' =
+	/// Valeur numérique de [B2C Display - GP YoY %] (Top 15 + Rest of the world) : base des couleurs.
+	measure 'B2C YoY - GP %' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
 			VAR CountryRank = [B2C Rank]
-			VAR y =
+			RETURN
 				IF(
 					ISBLANK(Country),
 					[Marge Brute (reconstruit) YoY %],
@@ -1442,28 +1672,59 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute (reconstruit) YoY %], BLANK())
 					)
 				)
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+		formatString: 0.0%
+		isHidden
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
-		lineageTag: cc000021-1111-2222-3333-444455550021
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000105
 
-	measure 'B2C Display - GM YoY bps' =
+	/// Valeur numérique de [B2C Display - GM YoY bps] (Top 15 + Rest of the world) : base des couleurs.
+	measure 'B2C YoY - GM bps' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
 			VAR CountryRank = [B2C Rank]
 			VAR RateCy = DIVIDE([B2C Rest GP reconstruit], [B2C Rest Sales])
 			VAR RatePy = DIVIDE([B2C Rest GP reconstruit PY], [B2C Rest Sales PY])
-			VAR y =
+			RETURN
 				IF(
 					ISBLANK(Country),
 					[Taux Marge Brute (reconstruit) YoY bps],
 					IF(
 						Country = "Rest of the world",
-						(RateCy - RatePy) * 10000,
+						IF(ISBLANK(RateCy) || ISBLANK(RatePy), BLANK(), (RateCy - RatePy) * 10000),
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Taux Marge Brute (reconstruit) YoY bps], BLANK())
 					)
 				)
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+		formatString: #,##0
+		isHidden
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
-		lineageTag: cc000022-1111-2222-3333-444455550022
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000106
+
+	/// Couleur colonne Revenue YoY des tableaux B2C / B2B (même valeur que l'affichage).
+	measure 'B2C Couleur - Revenue YoY' =
+			VAR y = [B2C YoY - Revenue %]
+			RETURN IF(NOT ISNUMBER(y), BLANK(), IF(y >= 0, "#6FA84B", "#C0504D"))
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000107
+
+	/// Couleur colonne Gross Profit YoY des tableaux B2C / B2B (même valeur que l'affichage).
+	measure 'B2C Couleur - GP YoY' =
+			VAR y = [B2C YoY - GP %]
+			RETURN IF(NOT ISNUMBER(y), BLANK(), IF(y >= 0, "#6FA84B", "#C0504D"))
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000108
+
+	/// Couleur colonne Gross Margin YoY (bps) des tableaux B2C / B2B : vert >= 0, rouge <= -100, neutre entre.
+	measure 'B2C Couleur - GM YoY' =
+			VAR bps = [B2C YoY - GM bps]
+			RETURN
+				SWITCH(
+					TRUE(),
+					NOT ISNUMBER(bps), BLANK(),
+					bps >= 0, "#6FA84B",
+					bps <= -100, "#C0504D",
+					"#1B3A5C"
+				)
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000109
 
 	measure 'B2C couleur - cout' = "#C86B5A"
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1671,6 +1932,22 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000038-1111-2222-3333-444455550038
 
+	measure 'B2C Rest Commissions' =
+			VAR TopPart =
+				SUMX(
+					FILTER(
+						ALLSELECTED(dim_pays[nom_pays_en]),
+						NOT ISBLANK([B2C Rank])
+					),
+					[Commissions Marketplace]
+				)
+			VAR Total =
+				CALCULATE([Commissions Marketplace], ALLSELECTED(dim_pays[nom_pays_en]))
+			RETURN Total - TopPart
+		formatString: #,##0.00 €
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000102
+
 	measure 'B2C Rest Generic' =
 			VAR TopPart =
 				SUMX(
@@ -1874,43 +2151,35 @@ table _Mesures
 		displayFolder: 07 Top / Loss
 		lineageTag: top0rank-1111-2222-3333-444455550001
 
-	/// Top sellers ISBN — revenu au grain ligne (customer_price), PAS l'allocation commande.
-	/// L'allocation SUMX(commandes)×RANKX(ISBN) faisait tourner les visuels à l'infini.
-	measure 'Revenu (reconstruit, alloué ISBN)' = [CA Total HT (grain article, ajusté annulation)]
+	/// Top sellers ISBN — revenu commande réparti par article (1/n par article, cf. [_Allocation ligne active]).
+	/// Calculé seulement pour les 10 ISBN retenus (classement sur les unités) : pas de RANKX sur le revenu.
+	measure 'Revenu (reconstruit, alloué ISBN)' =
+			[Revenu (reconstruit)]
 		formatString: #,##0.00 €
 		displayFolder: 02 Revenus
 		lineageTag: top0isbn-1111-2222-3333-444455550002
 
-	/// TOPN + tie-break ISBN (PAS Rank DENSE) — sinon égalités Marketplaces → >> 10 lignes.
+	/// Top 10 ISBN classés sur les unités commandées (champ toujours rempli) ; customer_price_per_item_eur
+	/// est vide sur ~95 % des articles. TOPN + tie-break ISBN (PAS Rank DENSE).
 	measure 'Top Rank ISBN — Revenue' =
 			VAR TopSet =
 				TOPN(
 					10,
 					FILTER(
 						ALLSELECTED(fact_lignes[isbn]),
-						NOT ISBLANK([Revenu (reconstruit, alloué ISBN)])
+						NOT ISBLANK([Unités commandées])
 					),
-					[Revenu (reconstruit, alloué ISBN)],
+					[Unités commandées],
 					DESC,
 					fact_lignes[isbn],
 					ASC
 				)
-			VAR InTop =
-				CALCULATE(
-					COUNTROWS(fact_lignes),
-					KEEPFILTERS(TopSet)
-				)
+			VAR InTop = CALCULATE(COUNTROWS(fact_lignes), KEEPFILTERS(TopSet))
 			RETURN
 				IF(
 					ISBLANK(InTop) || InTop = 0,
 					BLANK(),
-					RANKX(
-						TopSet,
-						[Revenu (reconstruit, alloué ISBN)],
-						,
-						DESC,
-						DENSE
-					)
+					RANKX(TopSet, [Unités commandées], , DESC, DENSE)
 				)
 		formatString: 0
 		displayFolder: 07 Top / Loss
@@ -1979,6 +2248,12 @@ table _Mesures
 			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00017-1111-2222-3333-444455550017
+
+	measure 'Mkt Display - Marketplace fees' =
+			VAR v = [Commissions Marketplace]
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000101
 
 	measure 'Mkt Display - Generic costs' =
 			VAR v = [Coûts Génériques]
@@ -2090,9 +2365,9 @@ table _Mesures
 					10,
 					FILTER(
 						ALLSELECTED(fact_lignes[isbn]),
-						NOT ISBLANK([Revenu (reconstruit, alloué ISBN)])
+						NOT ISBLANK([Unités commandées])
 					),
-					[Revenu (reconstruit, alloué ISBN)],
+					[Unités commandées],
 					DESC,
 					fact_lignes[isbn],
 					ASC
@@ -2108,9 +2383,9 @@ table _Mesures
 					10,
 					FILTER(
 						ALLSELECTED(fact_lignes[isbn]),
-						NOT ISBLANK([Revenu (reconstruit, alloué ISBN)])
+						NOT ISBLANK([Unités commandées])
 					),
-					[Revenu (reconstruit, alloué ISBN)],
+					[Unités commandées],
 					DESC,
 					fact_lignes[isbn],
 					ASC
@@ -2366,9 +2641,9 @@ table _Mesures
 		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0003
 
 	/// =====================================================================
-	/// Profit bridge PnL. Axe = GP reconstruit N-1 + 7 postes + retours/génériques below-the-line.
+	/// Profit bridge PnL. Axe = GP reconstruit N-1 + variations des postes de la formule de marge brute.
 	/// MB_PY = [Marge Brute (reconstruit) PY]. CA = YoY du CA reconstruit net annulation.
-	/// RETOURS / GENERIQUES restent en fin d'axe (hors formule des 7 postes).
+	/// Total waterfall = [Marge Brute (reconstruit)] (retours / génériques hors marge brute, hors axe).
 	measure 'Bridge PnL YoY' =
 			VAR poste = SELECTEDVALUE(BridgePnL[Poste])
 			VAR signe = SELECTEDVALUE(BridgePnL[Signe])
@@ -2384,8 +2659,6 @@ table _Mesures
 					"DOUANES", [Douanes Taxes YoY Δ] * signe,
 					"COMMISSIONS", [Commissions Marketplace YoY Δ] * signe,
 					"FOURNITURES", [Fournitures Expédition YoY Δ] * signe,
-					"RETOURS", [Retours Remboursements YoY Δ] * signe,
-					"GENERIQUES", [Coûts Génériques YoY Δ] * signe,
 					BLANK()
 				)
 		formatString: #,##0.00 €
@@ -2412,7 +2685,8 @@ table _Mesures
 	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
 	/// Perimetre DIVERGENT (definition client, pas une erreur C-01) : cout sur expedie /
 	/// unites commandees (annulees incluses). Applique tel quel.
-	measure 'Transport sortant par unité' = DIVIDE([Coût Transport Outbound (Retenu)], [Unités commandées], 0)
+	measure 'Transport sortant par unité' =
+			DIVIDE([Coût Transport Outbound (Retenu)], [Unités commandées (avec CA)], 0)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 25701a53-d548-4931-ab09-292b5a2a369d
@@ -2434,7 +2708,8 @@ table _Mesures
 	/// Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.
 	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
 	/// Perimetre DIVERGENT (definition client) : D/T sur colis expedies / unites commandees.
-	measure 'Douanes Taxes par unité' = DIVIDE([Douanes Taxes], [Unités commandées], 0)
+	measure 'Douanes Taxes par unité' =
+			DIVIDE([Douanes Taxes], [Unités commandées (avec CA)], 0)
 		formatString: #,##0.00 €
 		displayFolder: 03 Coûts
 		lineageTag: 01567c62-3855-4436-9e27-a3a089c715e2
@@ -2452,7 +2727,8 @@ table _Mesures
 		lineageTag: 915b1437-3dcd-4ac3-84e4-01cd6bc5cce7
 
 	/// Field cadrage n°25 : Gross Profit per unit = marge publiée / ordered units.
-	measure 'Marge Brute par unité' = DIVIDE([Marge Brute (reconstruit)], [Unités commandées], 0)
+	measure 'Marge Brute par unité' =
+			DIVIDE([Marge Brute (reconstruit)], [Unités commandées (avec CA)], 0)
 		formatString: #,##0.00 €
 		displayFolder: 04 Marge
 		lineageTag: 2e22f371-881d-4cbd-82eb-70cbdf3f4787
@@ -2468,7 +2744,12 @@ table _Mesures
 		lineageTag: c011b001-4e11-4b11-8b11-000000000001
 
 	/// Page 11 Loss analysis : part des commandes deficitaires dans le total.
-	measure 'Part Commandes Deficitaires' = DIVIDE([Nb Commandes Deficitaires], [Nb Commandes], 0)
+	measure 'Part Commandes Deficitaires' =
+			DIVIDE(
+				[Nb Commandes Deficitaires],
+				CALCULATE(COUNTROWS(fact_commandes), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui")),
+				0
+			)
 		formatString: 0.0%
 		displayFolder: 11 Loss analysis
 		lineageTag: c011b001-4e11-4b11-8b11-000000000002
@@ -2515,13 +2796,215 @@ table _Mesures
 		displayFolder: 01 KPI publiés
 		lineageTag: bb000008-1111-2222-3333-444455550008
 
+	/// Profit bridge — sous-titre carte marge brute par unité (PY + variation).
+	measure 'KPI Sous-titre — GP par unité' =
+			VAR cy = [Marge Brute par unité]
+			VAR py = CALCULATE([Marge Brute par unité], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR yoy = DIVIDE(cy - py, ABS(py))
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR pytxt =
+				"€" & FORMAT(py, "0.00")
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000201
+
+	/// Profit bridge — sous-titre carte marge produit (PY + variation en bps).
+	measure 'KPI Sous-titre — PPM' =
+			VAR cy = [Taux Marge Commerciale]
+			VAR py = CALCULATE([Taux Marge Commerciale], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR bps = (cy - py) * 10000
+			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000202
+
+	/// Profit bridge — sous-titre carte transport sortant par unité.
+	measure 'KPI Sous-titre — Transport par unité' =
+			VAR cy = [Transport sortant par unité]
+			VAR py = CALCULATE([Transport sortant par unité], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR yoy = DIVIDE(cy - py, ABS(py))
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR pytxt =
+				"€" & FORMAT(py, "0.00")
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000203
+
+	/// Profit bridge — sous-titre carte droits et taxes par unité.
+	measure 'KPI Sous-titre — Douanes par unité' =
+			VAR cy = [Douanes Taxes par unité]
+			VAR py = CALCULATE([Douanes Taxes par unité], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR yoy = DIVIDE(cy - py, ABS(py))
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR pytxt =
+				"€" & FORMAT(py, "0.00")
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000204
+
+	/// Loss analysis — sous-titre carte pertes totales.
+	measure 'KPI Sous-titre — Pertes' =
+			VAR cy = [Pertes Totales]
+			VAR py = CALCULATE([Pertes Totales], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR yoy = DIVIDE(cy - py, ABS(py))
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR pytxt =
+				SWITCH(
+					TRUE(),
+					ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
+					ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
+					"€" & FORMAT(py, "#,##0")
+				)
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000205
+
+	/// Loss analysis — sous-titre carte commandes déficitaires.
+	measure 'KPI Sous-titre — Commandes déficitaires' =
+			VAR cy = [Nb Commandes Deficitaires]
+			VAR py = CALCULATE([Nb Commandes Deficitaires], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR yoy = DIVIDE(cy - py, ABS(py))
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR pytxt =
+				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000206
+
+	/// Loss analysis — sous-titre carte part des pertes dans la marge brute.
+	measure 'KPI Sous-titre — Part pertes' =
+			VAR cy = [Part Pertes Marge Brute]
+			VAR py = CALCULATE([Part Pertes Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR bps = (cy - py) * 10000
+			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000207
+
+	/// Loss analysis — sous-titre carte part des commandes déficitaires.
+	measure 'KPI Sous-titre — Part commandes déficitaires' =
+			VAR cy = [Part Commandes Deficitaires]
+			VAR py = CALCULATE([Part Commandes Deficitaires], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR bps = (cy - py) * 10000
+			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000208
+
+	/// Transport — sous-titre carte colis.
+	measure 'KPI Sous-titre — Colis' =
+			VAR cy = [Nb Colis]
+			VAR py = CALCULATE([Nb Colis], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR yoy = DIVIDE(cy - py, ABS(py))
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR pytxt =
+				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000209
+
+	/// Transport — sous-titre carte outbound : part du revenu (commandes avec CA) et PY.
+	measure 'KPI Sous-titre — Outbound' =
+			VAR r = [Taux Transport sortant]
+			VAR rpy = CALCULATE([Taux Transport sortant], SAMEPERIODLASTYEAR(dim_date[date]))
+			RETURN
+				IF(
+					ISBLANK(r),
+					BLANK(),
+					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy), "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000210
+
+	/// Transport — sous-titre carte droits et taxes : part du revenu (commandes avec CA) et PY.
+	measure 'KPI Sous-titre — Douanes' =
+			VAR r = [Taux Douanes Taxes]
+			VAR rpy = CALCULATE([Taux Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date]))
+			RETURN
+				IF(
+					ISBLANK(r),
+					BLANK(),
+					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy), "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000211
+
+	/// Transport — sous-titre carte fournitures d'expédition (tous colis).
+	measure 'KPI Sous-titre — Fournitures' =
+			VAR cy = [Fournitures Expédition (tous colis)]
+			VAR py = CALCULATE([Fournitures Expédition (tous colis)], SAMEPERIODLASTYEAR(dim_date[date]))
+			VAR yoy = DIVIDE(cy - py, ABS(py))
+			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
+			VAR pytxt =
+				SWITCH(
+					TRUE(),
+					ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
+					ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
+					"€" & FORMAT(py, "#,##0")
+				)
+			RETURN
+				IF(
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					"PY: n/a",
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+				)
+		displayFolder: 01 KPI publiés
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000212
+
 	/// General View charts — étiquettes totaux empilés (format carte KPI Compact).
 	/// labelDisplayUnits natif ne permet pas €…k en préfixe ; mesure texte sur totals.
-	measure 'GV Chart Label — Revenue' = [KPI Compact — Revenue]
+	measure 'GV Chart Label — Revenue' =
+			IF(ISBLANK([Revenu (reconstruit)]), BLANK(), [KPI Compact — Revenue])
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: gv0lbl0-1111-2222-3333-444455550001
 
-	measure 'GV Chart Label — Gross Profit' = [KPI Compact — Gross Profit]
+	measure 'GV Chart Label — Gross Profit' =
+			IF(ISBLANK([Marge Brute (reconstruit)]), BLANK(), [KPI Compact — Gross Profit])
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: gv0lbl0-1111-2222-3333-444455550002
 

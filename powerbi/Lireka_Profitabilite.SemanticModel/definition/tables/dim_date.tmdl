@@ -148,7 +148,7 @@ table dim_date
 
 		annotation SummarizationSetBy = Automatic
 
-	/// Libellé semaine court (Sww) — axe chart mode Week ; tri via annee_semaine.
+	/// Libellé semaine court (Sww aa, ex. "S41 25") — axe chart mode Week ; tri via annee_semaine (1 pour 1).
 	column semaine_annee_court
 		dataType: string
 		lineageTag: e3f4a5b6-c7d8-9012-defa-456789012346
@@ -205,7 +205,7 @@ table dim_date
 					#"Semaine annee court" = Table.AddColumn(
 						#"Annee semaine ajoutee",
 						"semaine_annee_court",
-						each "S" & Text.PadStart(Text.From([semaine]), 2, "0"),
+						each "S" & Text.PadStart(Text.From([semaine]), 2, "0") & " " & Text.End(Text.From([annee]), 2),
 						type text
 					),
 					#"Nom mois annee" = Table.AddColumn(

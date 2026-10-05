@@ -83,21 +83,6 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "B2C Display - Returns and refunds"
-                }
-              },
-              "queryRef": "_Mesures.B2C Display - Returns and refunds",
-              "nativeQueryRef": "B2C Display - Returns and refunds",
-              "displayName": "Returns and refunds"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Mesures"
-                    }
-                  },
                   "Property": "B2C Display - Inbound freight"
                 }
               },
@@ -143,6 +128,21 @@
                       "Entity": "_Mesures"
                     }
                   },
+                  "Property": "B2C Display - Marketplace fees"
+                }
+              },
+              "queryRef": "_Mesures.B2C Display - Marketplace fees",
+              "nativeQueryRef": "B2C Display - Marketplace fees",
+              "displayName": "Marketplace fees"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
                   "Property": "B2C Display - Shipping supplies"
                 }
               },
@@ -158,12 +158,12 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "B2C Display - Generic costs"
+                  "Property": "B2C Display - Gross profit"
                 }
               },
-              "queryRef": "_Mesures.B2C Display - Generic costs",
-              "nativeQueryRef": "B2C Display - Generic costs",
-              "displayName": "Generic costs"
+              "queryRef": "_Mesures.B2C Display - Gross profit",
+              "nativeQueryRef": "B2C Display - Gross profit",
+              "displayName": "Gross profit"
             },
             {
               "field": {
@@ -173,12 +173,27 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "B2C Display - Gross profit"
+                  "Property": "B2C Display - Returns and refunds"
                 }
               },
-              "queryRef": "_Mesures.B2C Display - Gross profit",
-              "nativeQueryRef": "B2C Display - Gross profit",
-              "displayName": "Gross profit"
+              "queryRef": "_Mesures.B2C Display - Returns and refunds",
+              "nativeQueryRef": "B2C Display - Returns and refunds",
+              "displayName": "Returns and refunds (not in GP)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
+                  "Property": "B2C Display - Generic costs"
+                }
+              },
+              "queryRef": "_Mesures.B2C Display - Generic costs",
+              "nativeQueryRef": "B2C Display - Generic costs",
+              "displayName": "Generic costs (not in GP)"
             },
             {
               "field": {
@@ -358,213 +373,6 @@
               }
             }
           }
-        },
-        {
-          "properties": {
-            "fontColor": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Conditional": {
-                      "Cases": [
-                        {
-                          "Condition": {
-                            "Comparison": {
-                              "ComparisonKind": 3,
-                              "Left": {
-                                "Measure": {
-                                  "Expression": {
-                                    "SourceRef": {
-                                      "Entity": "_Mesures"
-                                    }
-                                  },
-                                  "Property": "Marge Brute YoY %"
-                                }
-                              },
-                              "Right": {
-                                "Literal": {
-                                  "Value": "0D"
-                                }
-                              }
-                            }
-                          },
-                          "Value": {
-                            "Literal": {
-                              "Value": "'#D64550'"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "selector": {
-            "data": [
-              {
-                "dataViewWildcard": {
-                  "matchingOption": 1
-                }
-              }
-            ],
-            "metadata": "_Mesures.B2C Display - GP YoY %"
-          }
-        },
-        {
-          "properties": {
-            "fontColor": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Conditional": {
-                      "Cases": [
-                        {
-                          "Condition": {
-                            "And": {
-                              "Left": {
-                                "Comparison": {
-                                  "ComparisonKind": 2,
-                                  "Left": {
-                                    "Measure": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "_Mesures"
-                                        }
-                                      },
-                                      "Property": "Taux Marge Brute YoY bps"
-                                    }
-                                  },
-                                  "Right": {
-                                    "Literal": {
-                                      "Value": "-9999D"
-                                    }
-                                  }
-                                }
-                              },
-                              "Right": {
-                                "Comparison": {
-                                  "ComparisonKind": 3,
-                                  "Left": {
-                                    "Measure": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "_Mesures"
-                                        }
-                                      },
-                                      "Property": "Taux Marge Brute YoY bps"
-                                    }
-                                  },
-                                  "Right": {
-                                    "Literal": {
-                                      "Value": "0D"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "Value": {
-                            "Literal": {
-                              "Value": "'#D64550'"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "selector": {
-            "data": [
-              {
-                "dataViewWildcard": {
-                  "matchingOption": 1
-                }
-              }
-            ],
-            "metadata": "_Mesures.B2C Display - GM YoY bps"
-          }
-        },
-        {
-          "properties": {
-            "fontColor": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Conditional": {
-                      "Cases": [
-                        {
-                          "Condition": {
-                            "And": {
-                              "Left": {
-                                "Comparison": {
-                                  "ComparisonKind": 1,
-                                  "Left": {
-                                    "Measure": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "_Mesures"
-                                        }
-                                      },
-                                      "Property": "Revenu YoY %"
-                                    }
-                                  },
-                                  "Right": {
-                                    "Literal": {
-                                      "Value": "-9999D"
-                                    }
-                                  }
-                                }
-                              },
-                              "Right": {
-                                "Comparison": {
-                                  "ComparisonKind": 3,
-                                  "Left": {
-                                    "Measure": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "_Mesures"
-                                        }
-                                      },
-                                      "Property": "Revenu YoY %"
-                                    }
-                                  },
-                                  "Right": {
-                                    "Literal": {
-                                      "Value": "0D"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "Value": {
-                            "Literal": {
-                              "Value": "'#D64550'"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "selector": {
-            "data": [
-              {
-                "dataViewWildcard": {
-                  "matchingOption": 1
-                }
-              }
-            ],
-            "metadata": "_Mesures.B2C Display - Revenue YoY %"
-          }
         }
       ],
       "columnFormatting": [
@@ -580,7 +388,7 @@
                           "Entity": "_Mesures"
                         }
                       },
-                      "Property": "KPI couleur — valeur"
+                      "Property": "B2C couleur - profit"
                     }
                   }
                 }
@@ -597,9 +405,13 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 1,
-                      "Percent": 0.2
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Mesures"
+                        }
+                      },
+                      "Property": "B2C Couleur - Revenue YoY"
                     }
                   }
                 }
@@ -616,9 +428,13 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 1,
-                      "Percent": 0.2
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Mesures"
+                        }
+                      },
+                      "Property": "B2C Couleur - GP YoY"
                     }
                   }
                 }
@@ -635,9 +451,13 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 1,
-                      "Percent": 0.2
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Mesures"
+                        }
+                      },
+                      "Property": "B2C Couleur - GM YoY"
                     }
                   }
                 }

@@ -158,12 +158,27 @@
                       "Entity": "_Mesures"
                     }
                   },
+                  "Property": "Top Loss — Gross Profit"
+                }
+              },
+              "queryRef": "_Mesures.Top Loss — Gross Profit",
+              "nativeQueryRef": "Top Loss — Gross Profit",
+              "displayName": "Gross Profit"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
                   "Property": "Top Loss — Returns"
                 }
               },
               "queryRef": "_Mesures.Top Loss — Returns",
               "nativeQueryRef": "Top Loss — Returns",
-              "displayName": "Returns and refunds"
+              "displayName": "Returns and refunds (not in GP)"
             },
             {
               "field": {
@@ -178,22 +193,7 @@
               },
               "queryRef": "_Mesures.Top Loss — Generic",
               "nativeQueryRef": "Top Loss — Generic",
-              "displayName": "Generic costs"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Mesures"
-                    }
-                  },
-                  "Property": "Top Loss — Gross Profit"
-                }
-              },
-              "queryRef": "_Mesures.Top Loss — Gross Profit",
-              "nativeQueryRef": "Top Loss — Gross Profit",
-              "displayName": "Gross Profit"
+              "displayName": "Generic costs (not in GP)"
             }
           ]
         }

@@ -34,15 +34,15 @@
   "filterConfig": {
     "filters": [
       {
-        "name": "fenetre12MoisProfitBridge",
+        "name": "canalScopeProfitBridge",
         "field": {
           "Column": {
             "Expression": {
               "SourceRef": {
-                "Entity": "dim_date"
+                "Entity": "dim_type_commande"
               }
             },
-            "Property": "fenetre_12_mois"
+            "Property": "canal"
           }
         },
         "type": "Categorical",
@@ -51,7 +51,7 @@
           "From": [
             {
               "Name": "d",
-              "Entity": "dim_date",
+              "Entity": "dim_type_commande",
               "Type": 0
             }
           ],
@@ -67,7 +67,7 @@
                             "Source": "d"
                           }
                         },
-                        "Property": "fenetre_12_mois"
+                        "Property": "canal"
                       }
                     }
                   ],
@@ -75,7 +75,21 @@
                     [
                       {
                         "Literal": {
-                          "Value": "'Oui'"
+                          "Value": "'Website B2C'"
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'Website B2B'"
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'Marketplaces'"
                         }
                       }
                     ]

@@ -61,11 +61,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Coût Transport Outbound (Retenu)"
+                  "Property": "Coût Transport Outbound (tous colis)"
                 }
               },
-              "queryRef": "_Mesures.Coût Transport Outbound (Retenu)",
-              "nativeQueryRef": "Coût Transport Outbound (Retenu)",
+              "queryRef": "_Mesures.Coût Transport Outbound (tous colis)",
+              "nativeQueryRef": "Coût Transport Outbound (tous colis)",
               "displayName": "Outbound"
             }
           ]
@@ -283,7 +283,7 @@
             }
           },
           "selector": {
-            "metadata": "_Mesures.Coût Transport Outbound (Retenu)"
+            "metadata": "_Mesures.Coût Transport Outbound (tous colis)"
           }
         }
       ]

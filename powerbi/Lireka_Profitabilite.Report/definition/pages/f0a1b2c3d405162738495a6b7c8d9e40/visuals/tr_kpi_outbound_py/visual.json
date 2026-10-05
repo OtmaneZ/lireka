@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Taux Transport sortant"
+                  "Property": "KPI Sous-titre — Outbound"
                 }
               },
-              "queryRef": "_Mesures.Taux Transport sortant",
-              "nativeQueryRef": "Taux Transport sortant"
+              "queryRef": "_Mesures.KPI Sous-titre — Outbound",
+              "nativeQueryRef": "KPI Sous-titre — Outbound"
             }
           ]
         }

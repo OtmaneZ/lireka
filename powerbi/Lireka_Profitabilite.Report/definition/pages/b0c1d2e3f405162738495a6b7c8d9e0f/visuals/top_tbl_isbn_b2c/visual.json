@@ -103,7 +103,7 @@
                     "Entity": "_Mesures"
                   }
                 },
-                "Property": "Top Revenu ISBN"
+                "Property": "Top Unités ISBN"
               }
             },
             "direction": "Descending"
@@ -260,7 +260,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Top 10 ISBNs, Website B2C (interim)'"
+                  "Value": "'Top 10 ISBNs by ordered units, Website B2C (interim)'"
                 }
               }
             },

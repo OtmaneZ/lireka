@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Douanes Taxes"
+                  "Property": "Douanes Taxes (tous colis)"
                 }
               },
-              "queryRef": "_Mesures.Douanes Taxes",
-              "nativeQueryRef": "Douanes Taxes"
+              "queryRef": "_Mesures.Douanes Taxes (tous colis)",
+              "nativeQueryRef": "Douanes Taxes (tous colis)"
             }
           ]
         }

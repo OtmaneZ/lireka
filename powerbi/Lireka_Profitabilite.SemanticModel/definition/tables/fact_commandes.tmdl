@@ -231,6 +231,16 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: canal_bascule
 
+	/// "Oui" si order_amount_eur > 0, sinon "Non" (marketplaces sans montant en base depuis 09/2024,
+	/// toutes sources sept.-nov. 2024). Revenu, coûts et marge ne portent que sur "Oui" :
+	/// une commande sans CA ne déduit aucun coût. Texte (pas booléen) pour les filtres PBIR.
+	column ca_disponible
+		dataType: string
+		isHidden
+		lineageTag: 4dbe9f34-4d15-457b-8845-9fa776d629b8
+		summarizeBy: none
+		sourceColumn: ca_disponible
+
 	/// CA HT net annulation, base reconstruite (0 si CANCELLED) — ratios médiane et poste basculant.
 	column ca_ht_net
 		dataType: double
@@ -283,15 +293,20 @@ table fact_commandes
 	/// base CA reconstruit (colonne ca_ht_reconstruit, présente par commande).
 	/// CANCELLED : CA, frais de port et COGS à 0 ; transport amont conservé ; outbound /
 	/// duties / fournitures via colis (0 si jamais expédiée). Hors retours / génériques.
+	/// BLANK si ca_disponible = "Non" : pas de perte artificielle sur une commande sans CA en base.
 	column marge_brute_commande =
-			fact_commandes[ca_ht_net]
-				+ IF(fact_commandes[state] = "CANCELLED", 0, IF(ISBLANK(fact_commandes[frais_port_encaisse]), 0, fact_commandes[frais_port_encaisse]))
-				- fact_commandes[cout_achat_net]
-				- IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont])
-				- fact_commandes[cout_transport_retenu_cmd]
-				- fact_commandes[duties_taxes_cmd]
-				- IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace])
-				- fact_commandes[fournitures_cmd]
+			IF(
+				fact_commandes[ca_disponible] = "Non",
+				BLANK(),
+				fact_commandes[ca_ht_net]
+					+ IF(fact_commandes[state] = "CANCELLED", 0, IF(ISBLANK(fact_commandes[frais_port_encaisse]), 0, fact_commandes[frais_port_encaisse]))
+					- fact_commandes[cout_achat_net]
+					- IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont])
+					- fact_commandes[cout_transport_retenu_cmd]
+					- fact_commandes[duties_taxes_cmd]
+					- IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace])
+					- fact_commandes[fournitures_cmd]
+			)
 		dataType: double
 		formatString: #,##0.00 €
 		lineageTag: c011a001-4e11-4a11-8a11-000000000001
@@ -651,14 +666,21 @@ table fact_commandes
 						each if [state] = "CANCELLED" then 0 else if [frais_port_encaisse] = null then 0 else [frais_port_encaisse],
 						type number
 					),
-					#"Colonnes conservees" = Table.SelectColumns(#"Frais port net", {
+					// ca_disponible : "Oui" si un montant de vente EUR existe en base (cf. colonne).
+					#"CA disponible" = Table.AddColumn(
+						#"Frais port net",
+						"ca_disponible",
+						each if [ca_ht] <> null and [ca_ht] > 0 then "Oui" else "Non",
+						type text
+					),
+					#"Colonnes conservees" = Table.SelectColumns(#"CA disponible", {
 						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
 						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						"cout_transport_amont", "commissions_marketplace",
 						"retours_remboursements", "couts_generiques",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande",
-						"canal_bascule", "ca_ht_net"
+						"canal_bascule", "ca_ht_net", "ca_disponible"
 					})
 				in
 					#"Colonnes conservees"

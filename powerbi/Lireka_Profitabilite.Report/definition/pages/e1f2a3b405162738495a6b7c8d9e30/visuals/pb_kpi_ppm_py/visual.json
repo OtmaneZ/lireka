@@ -12,7 +12,26 @@
   "visual": {
     "visualType": "card",
     "query": {
-      "queryState": {}
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
+                  "Property": "KPI Sous-titre — PPM"
+                }
+              },
+              "queryRef": "_Mesures.KPI Sous-titre — PPM",
+              "nativeQueryRef": "KPI Sous-titre — PPM"
+            }
+          ]
+        }
+      }
     },
     "objects": {
       "labels": [

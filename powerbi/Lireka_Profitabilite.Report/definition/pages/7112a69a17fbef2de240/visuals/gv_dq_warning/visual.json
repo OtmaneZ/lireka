@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
-  "name": "lo_kpi_losses_py",
+  "name": "gv_dq_warning",
   "position": {
-    "x": 767,
-    "y": 96,
-    "z": 18000,
-    "height": 22,
-    "width": 234,
-    "tabOrder": 18000
+    "x": 237,
+    "y": 368,
+    "z": 27500,
+    "height": 20,
+    "width": 1035,
+    "tabOrder": 27500
   },
   "visual": {
     "visualType": "card",
@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "KPI Sous-titre — Pertes"
+                  "Property": "Avertissement — données"
                 }
               },
-              "queryRef": "_Mesures.KPI Sous-titre — Pertes",
-              "nativeQueryRef": "KPI Sous-titre — Pertes"
+              "queryRef": "_Mesures.Avertissement — données",
+              "nativeQueryRef": "Avertissement — données"
             }
           ]
         }
@@ -42,7 +42,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#5A6A7A'"
+                      "Value": "'#C0504D'"
                     }
                   }
                 }

@@ -111,6 +111,17 @@ table fact_lignes
 		lineageTag: e5f6a7b8-c9d0-1234-efab-567890123456
 		summarizeBy: none
 
+	/// Nombre d'articles de la commande (COUNT(*) OVER PARTITION BY order_id, calculé par PostgreSQL).
+	/// Clé de répartition du revenu, des coûts et de la marge commande par article
+	/// (filtre langue du livre ou ISBN) : chaque article porte 1/n de sa commande.
+	column nb_articles_commande
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a6d71924-8d7f-4ae7-9c36-111be6331950
+		summarizeBy: none
+		sourceColumn: nb_articles_commande
+
 	/// Langue du livre (ISBN) — proxy Bloc 7 Finance dashboard. À remplacer si le backend exporte langue_livre.
 	column langue_livre
 		dataType: string
@@ -140,7 +151,7 @@ table fact_lignes
 					Source = fnRequeteSql(Text.Combine({
 						"SELECT i.id, i.order_id, i.item_group_id, i.internal_state, i.package_id, i.product_cost_eur,",
 						"g.isbn, g.quantity AS quantity_groupe, g.list_price_eur, g.customer_price_per_item_eur, g.group_type,",
-						"o.source",
+						"o.source, COUNT(*) OVER (PARTITION BY i.order_id) AS nb_articles_commande",
 						"FROM " & PgSchema & ".customer_order_item i",
 						"LEFT JOIN " & PgSchema & ".customer_order_item_group g ON g.id = i.item_group_id",
 						"LEFT JOIN public.customer_order o ON o.id = i.order_id"
@@ -157,7 +168,8 @@ table fact_lignes
 						{"list_price_eur", type number},
 						{"customer_price_per_item_eur", type number},
 						{"group_type", type text},
-						{"source", type text}
+						{"source", type text},
+						{"nb_articles_commande", Int64.Type}
 					}, "en-US"),
 					#"Colonnes renommees" = Table.RenameColumns(#"Types appliques", {{"id", "id_article"}}),
 					#"Canal ajoute" = Table.AddColumn(#"Colonnes renommees", "canal_ligne", each
@@ -191,7 +203,7 @@ table fact_lignes
 						"id_article", "order_id", "item_group_id", "isbn", "list_price_eur",
 						"customer_price_per_item_eur", "group_type", "quantity_groupe",
 						"internal_state", "package_id", "product_cost_eur",
-						"langue_livre", "canal_ligne", "canal_langue"
+						"langue_livre", "canal_ligne", "canal_langue", "nb_articles_commande"
 					})
 				in
 					#"Colonnes conservees"

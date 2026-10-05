@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Fournitures Expédition YoY %"
+                  "Property": "KPI Sous-titre — Fournitures"
                 }
               },
-              "queryRef": "_Mesures.Fournitures Expédition YoY %",
-              "nativeQueryRef": "Fournitures Expédition YoY %"
+              "queryRef": "_Mesures.KPI Sous-titre — Fournitures",
+              "nativeQueryRef": "KPI Sous-titre — Fournitures"
             }
           ]
         }

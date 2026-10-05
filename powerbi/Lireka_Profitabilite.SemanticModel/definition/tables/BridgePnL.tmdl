@@ -1,8 +1,8 @@
-/// Axe waterfall Profit bridge (page 9) - 10 lignes figees, sans dependance aux faits.
+/// Axe waterfall Profit bridge - 9 lignes figees, sans dependance aux faits.
 /// Ordre | Libelle | Poste | Signe (+1 revenu, -1 cout). Aucune relation vers les autres tables.
-/// Poste AMONT retire de l'axe : inbound_transportation_cost_eur = 0 depuis 2022
-/// (nul sur les deux exercices du bridge YTD). Mesures [Coût Transport Amont] /
-/// YoY conservees dans le modele ; alimentation du champ a poser au client.
+/// Uniquement les postes de la formule de marge brute (Marc) : Prior year + 8 variations.
+/// Total waterfall = [Marge Brute (reconstruit)] de la periode, a l'euro pres.
+/// Retours / couts generiques exclus (hors marge brute).
 table BridgePnL
 	lineageTag: b7c8d9e0-f1a2-4b3c-9d0e-1f2a3b4c5d6e
 
@@ -41,8 +41,8 @@ table BridgePnL
 		mode: import
 		source =
 				let
-					// AMONT exclu : poste vide depuis 2022, contribution YoY nulle.
-					// RETOURS / GENERIQUES en fin d'axe = below-the-line (hors 7 postes GP).
+					// Postes de la formule de marge brute uniquement (AMONT inclus : sinon le Total
+					// differe de la marge publiee de la variation du transport amont).
 					Source = #table(
 						type table [Ordre = Int64.Type, Libelle = text, Poste = text, Signe = Int64.Type],
 						{
@@ -50,12 +50,11 @@ table BridgePnL
 							{2, "Revenue", "CA", 1},
 							{3, "Shipping revenue", "PORT", 1},
 							{4, "Cost of goods", "ACHAT", -1},
-							{5, "Outbound transport", "OUTBOUND", -1},
-							{6, "Duties and taxes", "DOUANES", -1},
-							{7, "Marketplace commissions", "COMMISSIONS", -1},
-							{8, "Shipping supplies", "FOURNITURES", -1},
-							{9, "Returns and refunds", "RETOURS", -1},
-							{10, "Generic costs", "GENERIQUES", -1}
+							{5, "Inbound transport", "AMONT", -1},
+							{6, "Outbound transport", "OUTBOUND", -1},
+							{7, "Duties and taxes", "DOUANES", -1},
+							{8, "Marketplace commissions", "COMMISSIONS", -1},
+							{9, "Shipping supplies", "FOURNITURES", -1}
 						}
 					),
 					#"Trie par Ordre" = Table.Sort(Source, {{"Ordre", Order.Ascending}})
