@@ -33,66 +33,68 @@ Année civile 2025, sur `date_commande`. Découpage par canal : site direct d'un
 
 Ouvrir `powerbi/Lireka_Profitabilite.pbip` dans Power BI Desktop, refresh complet, puis connecter DAX Studio au modèle en mémoire.
 
+Requêtes alignées sur le modèle du 05/10/2026 (source PostgreSQL) : le canal est `dim_type_commande[canal]` ; les mesures de contrôle Bloc 5 et transport sont définies dans la requête (`DEFINE MEASURE`), rien n'est ajouté au modèle. Coller le bloc `DEFINE` en tête de chaque requête.
+
+> **Marketplaces** : `order_amount_eur` est vide en base sur 100 % des commandes marketplace depuis 09/2024 (vérifié le 05/10/2026). Ces commandes sont exclues du revenu, des coûts et de la marge (`fact_commandes[ca_disponible] = "Non"`). Les résultats 2025 sont donc **hors marketplaces** : A1, A3 et A5 ne sont pas vérifiables tant que le backend n'alimente pas ce champ. Seuls A2 et A4 (site direct) sont exploitables.
+
+```dax
+DEFINE
+    VAR P2025 = DATESBETWEEN(dim_date[date], DATE(2025, 1, 1), DATE(2025, 12, 31))
+    MEASURE _Mesures[Q Impact Bloc 5] = [Retours Remboursements] + [Coûts Génériques]
+    MEASURE _Mesures[Q Marge après Bloc 5] = [Marge Brute (reconstruit)] - [Q Impact Bloc 5]
+    MEASURE _Mesures[Q Bloc 5 en points] = DIVIDE([Q Impact Bloc 5], [Revenu (reconstruit)])
+    MEASURE _Mesures[Q Pct transport facturé] =
+        DIVIDE(
+            CALCULATE([Coût Transport Outbound (Retenu)], fact_transport[source_cout] = "facture_rapprochee"),
+            [Coût Transport Outbound (Retenu)]
+        )
+```
+
 ### R0 — Périmètre des 8,9 M€
 
 ```dax
 EVALUATE
 SUMMARIZECOLUMNS(
-    fact_commandes[canal],
-    FILTER(
-        ALL(dim_date[date]),
-        dim_date[date] >= DATE(2025,1,1) && dim_date[date] <= DATE(2025,12,31)
-    ),
-    "Revenu reconstruit", [Revenu (reconstruit)],
-    "Nb commandes",       [Nb Commandes]
+    dim_type_commande[canal],
+    P2025,
+    "Revenu",               [Revenu (reconstruit)],
+    "Nb commandes",         [Nb Commandes],
+    "Nb commandes sans CA", [Nb commandes sans CA]
 )
-ORDER BY [Revenu reconstruit] DESC
+ORDER BY [Revenu] DESC
 ```
 
-Lire la liste des canaux et leur poids. Déterminer si Arthaud y figure. Somme de la colonne = base de comparaison aux 8,9 M€.
+Lire la liste des canaux et leur poids. Déterminer si Arthaud y figure. Somme de la colonne Revenu = base de comparaison aux 8,9 M€ (hors marketplaces, cf. encadré).
 
 ### R1 — Trio KPI global 2025
 
 ```dax
-DEFINE
-    VAR P2025 =
-        FILTER(
-            ALL(dim_date[date]),
-            dim_date[date] >= DATE(2025,1,1) && dim_date[date] <= DATE(2025,12,31)
-        )
 EVALUATE
 ROW(
-    "Revenu",              CALCULATE([Revenu (reconstruit)], P2025),
-    "Marge Brute",         CALCULATE([Marge Brute (reconstruit)], P2025),
-    "Taux Marge",          CALCULATE([Taux Marge Brute (reconstruit)], P2025),
-    "Revenu natif",        CALCULATE([Revenu], P2025),
-    "% CA reconstruit",    CALCULATE([% CA reconstruit], P2025),
-    "Marge apres Bloc 5",  CALCULATE([Marge Brute (reconstruit, après retours & génériques)], P2025),
-    "Impact Bloc 5",       CALCULATE([Impact Bloc 5 (retours & génériques)], P2025),
-    "Bloc 5 en points",    CALCULATE([Impact Bloc 5 en points de marge], P2025)
+    "Revenu",               CALCULATE([Revenu (reconstruit)], P2025),
+    "Marge Brute",          CALCULATE([Marge Brute (reconstruit)], P2025),
+    "Taux Marge",           CALCULATE([Taux Marge Brute (reconstruit)], P2025),
+    "Marge apres Bloc 5",   CALCULATE([Q Marge après Bloc 5], P2025),
+    "Impact Bloc 5",        CALCULATE([Q Impact Bloc 5], P2025),
+    "Bloc 5 en points",     CALCULATE([Q Bloc 5 en points], P2025),
+    "Nb commandes sans CA", CALCULATE([Nb commandes sans CA], P2025)
 )
 ```
 
-### R2 — Décomposition des 7 postes
+### R2 — Décomposition des postes de la formule
 
 ```dax
-DEFINE
-    VAR P2025 =
-        FILTER(
-            ALL(dim_date[date]),
-            dim_date[date] >= DATE(2025,1,1) && dim_date[date] <= DATE(2025,12,31)
-        )
 EVALUATE
 ROW(
-    "1 CA net annulation", CALCULATE([CA HT Net Annulation (reconstruit)], P2025),
-    "2 Frais port",        CALCULATE(CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED"), P2025),
-    "3 COGS",              CALCULATE([Coût Achat Total], P2025),
-    "4 Transport amont",   CALCULATE([Coût Transport Amont], P2025),
-    "5 Transport outbound",CALCULATE([Coût Transport Outbound (Retenu)], P2025),
-    "6 Douanes taxes",     CALCULATE([Douanes Taxes], P2025),
-    "7 Commissions mkt",   CALCULATE([Commissions Marketplace], P2025),
-    "8 Fournitures",       CALCULATE([Fournitures Expédition], P2025),
-    "  Pct transport facture", CALCULATE([% Coût transport facturé (vs estimé)], P2025)
+    "1 CA net annulation",     CALCULATE([CA HT Net Annulation (reconstruit)], P2025),
+    "2 Frais port",            CALCULATE([Frais Port Net Annulation], P2025),
+    "3 COGS",                  CALCULATE([Coût Achat Total], P2025),
+    "4 Transport amont",       CALCULATE([Coût Transport Amont], P2025),
+    "5 Transport outbound",    CALCULATE([Coût Transport Outbound (Retenu)], P2025),
+    "6 Douanes taxes",         CALCULATE([Douanes Taxes], P2025),
+    "7 Commissions mkt",       CALCULATE([Commissions Marketplace], P2025),
+    "8 Fournitures",           CALCULATE([Fournitures Expédition], P2025),
+    "Pct transport facture",   CALCULATE([Q Pct transport facturé], P2025)
 )
 ```
 
@@ -103,38 +105,19 @@ Contrôle d'identité : `1 + 2 − 3 − 4 − 5 − 6 − 7 − 8` doit égaler
 ```dax
 EVALUATE
 SUMMARIZECOLUMNS(
-    fact_commandes[canal],
-    FILTER(
-        ALL(dim_date[date]),
-        dim_date[date] >= DATE(2025,1,1) && dim_date[date] <= DATE(2025,12,31)
-    ),
-    "Revenu",           [Revenu (reconstruit)],
-    "Marge Brute",      [Marge Brute (reconstruit)],
-    "Taux Marge",       [Taux Marge Brute (reconstruit)],
-    "Pct CA reconstruit", [% CA reconstruit],
-    "Impact Bloc 5",    [Impact Bloc 5 (retours & génériques)]
+    dim_type_commande[canal],
+    P2025,
+    "Revenu",        [Revenu (reconstruit)],
+    "Marge Brute",   [Marge Brute (reconstruit)],
+    "Taux Marge",    [Taux Marge Brute (reconstruit)],
+    "Impact Bloc 5", [Q Impact Bloc 5]
 )
 ORDER BY [Revenu] DESC
 ```
 
-### R4 — Contre-épreuve base native
+### R4 — Contre-épreuve base native (obsolète)
 
-```dax
-EVALUATE
-SUMMARIZECOLUMNS(
-    fact_commandes[canal],
-    FILTER(
-        ALL(dim_date[date]),
-        dim_date[date] >= DATE(2025,1,1) && dim_date[date] <= DATE(2025,12,31)
-    ),
-    "Revenu natif",      [Revenu],
-    "Revenu reconstruit",[Revenu (reconstruit)],
-    "Taux natif",        [Taux Marge Brute],
-    "Taux reconstruit",  [Taux Marge Brute (reconstruit)]
-)
-```
-
-Cette requête n'est pas un contrôle, c'est une **pièce de défense**. Elle documente pourquoi la base native a été écartée : elle doit montrer un taux marketplace natif très négatif, incompatible avec les 10 % déclarés par Marc. À conserver et à présenter si la méthode de reconstruction est contestée.
+Depuis la neutralisation du fallback FX (19/07/2026), `ca_ht_reconstruit` = `order_amount_eur` : base native et base « reconstruite » sont identiques. R4 n'apporte plus d'information et n'est pas à exécuter.
 
 ---
 
@@ -146,11 +129,11 @@ Cette requête n'est pas un contrôle, c'est une **pièce de défense**. Elle do
 | A2 | Revenu site direct 2025 (R3) | 5,6 M€ | ± 3 % | ⬜ |
 | A3 | Taux de marge global (R1) | 17,0 % | ± 150 bps | ⬜ |
 | A4 | Taux de marge site direct (R3) | 20,0 % | ± 200 bps | ⬜ |
-| A5 | Taux de marge marketplace (R3) | 10,0 % | ± 200 bps | ⬜ |
+| A5 | Taux de marge marketplace (R3) | 10,0 % | ± 200 bps | non vérifiable (pas de CA marketplace en base) |
 | A6 | Identité des 7 postes (R2) | écart nul | < 1 € | ⬜ |
 | A7 | Additivité canal (R3) | Σ canaux = total R1 | < 0,1 % | ⬜ |
 | A8 | Impact Bloc 5 (R1) | ≈ 0,9 M€ | ordre de grandeur | ⬜ |
-| A9 | Marge marketplace native (R4) | fortement négative | qualitatif | ⬜ |
+| A9 | Marge marketplace native (R4) | fortement négative | qualitatif | sans objet (R4 obsolète) |
 | A10 | % CA reconstruit global (R1) | à mesurer, pas à cibler | — | ⬜ |
 
 A1 à A5 sont les critères bloquants. A6 et A7 sont des contrôles d'intégrité du modèle : leur échec invalide la lecture de tous les autres. A8, A9 et A10 sont documentaires — ils alimentent le dossier de justification, ils ne conditionnent pas le passage.

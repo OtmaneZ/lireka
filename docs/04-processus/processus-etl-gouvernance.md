@@ -31,64 +31,38 @@ Les colis **Postes Canada** (préfixe suivi `Q013…`) sont intégrés au modèl
 
 ## 2. Source des données
 
-Les CSV sont lus **directement depuis SharePoint** (pas de pipeline Python intermédiaire).
+> Mis à jour le 05/10/2026 : la lecture SharePoint décrite précédemment n'a jamais été activée ; les CSV locaux ont été remplacés par PostgreSQL.
 
-**Paramètre Power Query** : `SharePointSiteURL`  
-(valeur par défaut : `https://lirekacom.sharepoint.com/sites/Lireka`)
+Toutes les données sont lues dans la base PostgreSQL analytique Lireka (`analytics`), via la passerelle **Lireka-Gateway** (VPN COex). Aucun fichier n'est lu par le modèle.
 
-L'arborescence SharePoint doit reproduire l'entrepôt local `Power_BI_Datawarehouse/` :
+**Paramètres Power Query** (*Transformer les données* → *Gérer les paramètres*) : `PgServer`, `PgDatabase`, `PgSchema` (`analytics_views`).
 
-```
-Power_BI_Datawarehouse/
-├── Données_Backend/
-│   ├── customer_order.csv
-│   ├── customer_order_item.csv
-│   ├── package.csv
-│   └── customer_order_item_group.csv
-└── Dashboards_transporteurs/
-    ├── COLISSIMO Dashboard PowerBI/   (*.csv récap)
-    └── CHRONOPOST Dashboard PowerBI/ (*.csv récap)
-```
+| Objet PostgreSQL | Usage |
+|------------------|-------|
+| `public.customer_order` | Commandes (CA, coûts, pays, canal, date) — la vue `analytics_views.customer_order` n'existe plus |
+| `analytics_views.customer_order_item` | Articles, coûts retours / génériques |
+| `analytics_views.customer_order_item_group` | ISBN, prix |
+| `analytics_views.package` | Colis (coût estimé, douanes, fournitures, suivi) |
+| `analytics_views.v_carrier_invoice_lines` | Lignes de factures transporteurs rattachées au colis par le backend |
 
-Les données brutes ne sont **pas versionnées dans Git** (`.gitignore`).
+Les paramètres `SharePointSiteURL`, `SourceMode` et `LocalRootPath` sont dormants (lus par aucune requête).
 
 ---
 
 ## 3. Chargement dans le modèle (Power Query M)
 
-Mode : **Import** (données chargées en mémoire à chaque refresh).
+Mode : **Import**. Les jointures, agrégations et `DISTINCT` sont calculés par PostgreSQL (requêtes SQL natives via `fnRequeteSql`) ; la passerelle ne reçoit que le résultat.
 
-### Backend commandes et colis
+| Table Power BI | Source | Rôle |
+|----------------|--------|------|
+| `fact_commandes` | `public.customer_order` + retours / génériques agrégés depuis `customer_order_item` | Commandes (grain commande) |
+| `fact_transport` | `package` + montants `v_carrier_invoice_lines` agrégés par colis | Colis (coût retenu = facturé si disponible, sinon estimé) |
+| `fact_lignes` | `customer_order_item` ⋈ `customer_order_item_group` ⋈ `customer_order` | Articles (grain article) |
+| `fact_factures_transport` | `v_carrier_invoice_lines` | Lignes de factures |
+| `dim_pays`, `dim_type_commande`, `dim_isbn` | `SELECT DISTINCT` en base | Axes d'analyse |
+| `dim_date` | générée ; bornée par `DateDerniereCommande` (max `origin_created`) | Axe temporel, fenêtre 12 derniers mois |
 
-| Table Power BI | Fichier(s) source | Rôle |
-|----------------|-------------------|------|
-| `fact_commandes` | `customer_order.csv` | Commandes (CA, coûts, pays, type) |
-| `fact_transport` | `package.csv` | Colis (coût, suivi, transporteur inféré) |
-| `fact_lignes` | `customer_order_item.csv` + `customer_order_item_group.csv` | Lignes d'articles (grain : un article physique / `customer_order_item`) |
-| `dim_pays`, `dim_type_commande` | dérivées de `customer_order.csv` | Axes d'analyse |
-| `dim_date` | générée (calendrier) | Axe temporel |
-| `dim_transporteur` | table statique | Référentiel transporteurs |
-
-`customer_order.csv` (~187 Mo) est lu **une seule fois** via la requête partagée  
-`stg_customer_order`, puis réutilisée par `fact_commandes`, `dim_pays` et  
-`dim_type_commande`. Les coûts Bloc 5 (retours, génériques) passent par  
-`stg_couts_bloc5_commande` (agrégation depuis `stg_Commande_Items` /  
-`customer_order_item.csv`). `fact_lignes` merge `customer_order_item.csv` et  
-`customer_order_item_group.csv` pour le grain article.
-
-### Factures transporteurs (La Poste / Colissimo, Chronopost)
-
-| Table Power BI | Fichiers source |
-|----------------|-----------------|
-| `fact_factures_transport` | Récaps Colissimo 2025 + 2026, Chronopost 2025 + V2 2026 |
-
-La logique de unification, typage (`;` + décimale virgule) et résolution  
-facture → colis par proximité de date est centralisée dans  
-`stg_factures_transport_resolu` (`definition/expressions.tmdl`).
-
-Le transporteur sur les colis est **inféré du numéro de suivi**  
-(fonction `fnNormaliserTransporteur`) — il n'existe pas de colonne transporteur  
-dans les CSV backend.
+Le transporteur sur les colis est **inféré du numéro de suivi** (`fnNormaliserTransporteur`).
 
 ### Relations principales
 
@@ -103,33 +77,21 @@ dans les CSV backend.
 
 ## 4. Refresh du modèle
 
-### En développement (Power BI Desktop)
-
-1. Ouvrir `powerbi/Lireka_Profitabilite.pbip`
-2. Vérifier le paramètre **SharePointSiteURL** (*Transformer les données* → *Gérer les paramètres*)
-3. Lancer **Actualiser** (refresh) — toutes les requêtes M se réexécutent
-4. Contrôler visuellement le rapport profitabilité
-
-Le premier refresh sur le volume complet peut prendre plusieurs minutes  
-(`customer_order.csv` + `package.csv` + récaps factures).
-
-### En production (Power BI Service)
-
-Après publication du dataset sur le workspace Lireka :
-
-1. Les **identifiants de la source SharePoint** doivent être configurés dans le Service
-2. Un refresh peut être déclenché manuellement (*Actualiser maintenant*) ou planifié  
-   dans les paramètres du dataset — **la fréquence relève du choix Lireka**,  
-   elle n'est pas fixée par le devis
+- **Power BI Desktop** : ouvrir `powerbi/Lireka_Profitabilite.pbip` sur un poste ayant accès à la base (VPN COex), puis *Actualiser*. Au premier refresh, Desktop demande d'approuver les requêtes SQL natives.
+- **Power BI Service** : le dataset se rafraîchit via la passerelle Lireka-Gateway (source PostgreSQL configurée dans la passerelle). La fréquence relève du choix Lireka.
+- **Période affichée** : la fenêtre « 12 derniers mois » est calée sur la dernière commande en base, pas sur la date du refresh. Si la base n'est plus alimentée, la fenêtre ne bouge plus (au 05/10/2026 : dernière commande le 16/06/2026).
 
 ---
 
 ## 5. Points de vigilance connus
 
-- **Marge brute** : mesure de référence `[Marge Brute]` — formule actée Marc Bordier
-  (Slack, 13/07/2026 16h09), documentée dans `_Mesures.tmdl`.
-  `[Marge Brute (prov.)]` conservée comme contrôle/comparaison historique.
-- **Matching factures** : seules les factures Colissimo/Chronopost alimentent le coût
+- **Marge brute publiée** : `[Marge Brute (reconstruit)]` = formule Marc (Revenue − COGS − transport amont
+  − transport sortant − droits et taxes − commissions marketplace − fournitures). Retours et coûts génériques
+  hors marge brute. `[Marge Brute]` (avec Bloc 5) reste une mesure de contrôle masquée.
+- **Commandes sans CA** : `fact_commandes[ca_disponible] = "Non"` si `order_amount_eur` est vide ou nul
+  (marketplaces depuis 09/2024, toutes sources sept.-nov. 2024). Ces commandes sont exclues du revenu,
+  des coûts et de la marge ; leur nombre est affiché sur General View et Marketplaces.
+- **Matching factures** : les lignes de `v_carrier_invoice_lines` rattachées à un colis alimentent le coût
   rapproché (`source_cout = "facture_rapprochee"`). Les colis sans facture mais avec
   coût backend utilisent `source_cout = "backend_seul"` ; sans les deux :
   `source_cout = "aucun"`. Colis Privé et Postes Canada restent en coût estimé backend.

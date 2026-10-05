@@ -2,6 +2,11 @@
 
 Date : 2026-08-04 · Phase 3 (BIEN AVANCÉ) · Statut : **décidé, en attente de recette**
 
+> **Statut réel au 05/10/2026**
+> - Décision A (base « reconstruite ») : **sans effet**. Depuis le 19/07/2026, `ca_ht_reconstruit` = `order_amount_eur` ; il n'existe aucun CA marketplace en base depuis 09/2024. Remplacée par l'exclusion des commandes sans CA (`fact_commandes[ca_disponible] = "Non"`) du revenu, des coûts et de la marge.
+> - Décision B (marge publiée = postes de la formule Marc, sans retours ni coûts génériques) : **appliquée** (`[Marge Brute (reconstruit)]`, tableaux P&L, profit bridge).
+> - Recette : requêtes corrigées dans `recettes_chiffrées.md`, non exécutées.
+
 ## Contexte
 
 Le client a validé la forme des dashboards mais conteste les chiffres. L'audit de `_Mesures.tmdl` a établi que les cartes KPI publiées mélangent trois périmètres : `KPI Compact — Revenue` affiche le revenu reconstruit, `KPI Compact — Gross Profit` affiche une marge calculée sur CA natif, et `KPI Compact — Gross Margin` divise la marge native par le revenu reconstruit. Un taux dont le numérateur et le dénominateur ne partagent pas le même périmètre n'est pas réconciliable par un contrôleur de gestion.

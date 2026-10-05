@@ -1,5 +1,11 @@
 # Reconstruction du CA marketplace en EUR — option B
 
+> **Statut au 05/10/2026 — reconstruction abandonnée, note historique.**
+> - Le fallback FX est neutralisé depuis le 19/07/2026 : `ca_ht_reconstruit` = `order_amount_eur`, `[% CA reconstruit]` = 0.
+> - Vérifié en base (`public.customer_order`) : `order_amount_eur` vide ou nul sur 100 % des commandes marketplace depuis 09/2024, `order_amount_local` = 0 sur 100 % des commandes marketplace 2025+. Aucune reconstruction par conversion de devises n'est possible.
+> - Traitement actuel : ces commandes sont exclues du revenu, des coûts et de la marge (`fact_commandes[ca_disponible] = "Non"`) et leur nombre est affiché sur General View et Marketplaces. Correction attendue côté backend.
+
+
 > **Statut** : implémenté dans `Lireka_Profitabilite.SemanticModel` le 15/07/2026  
 > **Décision** : ZineInsights — à faire valider par Marc Bordier en fin de mission  
 > **Référence code** : `stg_taux_moyen_mensuel`, colonne `fact_commandes[ca_ht_reconstruit]`, mesure `[CA Total HT (reconstruit)]`

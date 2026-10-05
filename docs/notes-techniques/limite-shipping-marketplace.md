@@ -1,5 +1,8 @@
 # Limite shipping revenue marketplace — `shipping_fee_eur` vide
 
+> **Statut au 05/10/2026.** Source = PostgreSQL `public.customer_order` (plus de CSV). Les commandes marketplace n'ont pas de CA en base depuis 09/2024 et sont exclues du revenu, des coûts et de la marge (`ca_disponible = "Non"`) : leur shipping revenue n'entre plus dans aucun indicateur. Les volumes ci-dessous (export CSV du 14/07/2026) sont historiques.
+
+
 > **Statut** : documenté le 15/07/2026 (audit Bloc 4) — **aucune reconstruction implémentée**  
 > **Décision** : ZineInsights — hors périmètre Bloc 4  
 > **Référence code** : colonne `fact_commandes[frais_port_encaisse]` (rename de `shipping_fee_eur`), mesure `[Frais Port Encaissés]`  
