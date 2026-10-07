@@ -120,20 +120,19 @@ expression DateDerniereCommande =
 expression stg_factures_brutes =
 		let
 			Source = PostgreSQL.Database(PgServer, PgDatabase){[Schema = PgSchema, Item = "v_carrier_invoice_lines"]}[Data],
-			Colonnes = Table.SelectColumns(Source, {"invoice_number", "invoice_date", "tracking_number", "carrier_name", "service_code", "invoice_country_code", "weight_billed_grams", "amount_excl_vat_eur", "order_id", "package_id"}),
+			Colonnes = Table.SelectColumns(Source, {"invoice_date", "carrier_name", "service_code", "invoice_country_code", "weight_billed_grams", "amount_excl_vat_eur", "order_id", "package_id"}),
 			Transformees = Table.TransformColumns(Colonnes, {
 				{"invoice_date", each if _ = null then null else Date.From(_), type nullable date},
-				{"tracking_number", each fnNormaliserSuivi(_), type text},
 				{"carrier_name", each fnCanonTransporteur(_), type text},
 				{"weight_billed_grams", each if _ = null then null else _ / 1000, type nullable number}
 			}),
 			Renommees = Table.RenameColumns(Transformees, {
-				{"invoice_number", "numero_facture"}, {"invoice_date", "date_facture"}, {"tracking_number", "numero_suivi"},
+				{"invoice_date", "date_facture"},
 				{"carrier_name", "transporteur"}, {"service_code", "service"}, {"invoice_country_code", "pays_destination"},
 				{"weight_billed_grams", "poids"}, {"amount_excl_vat_eur", "cout_transport"}, {"package_id", "id_package"}
 			}),
 			Types = Table.TransformColumnTypes(Renommees, {
-				{"numero_facture", type text}, {"service", type text}, {"pays_destination", type text},
+				{"service", type text}, {"pays_destination", type text},
 				{"cout_transport", type number}, {"order_id", Int64.Type}, {"id_package", Int64.Type}
 			})
 		in
@@ -148,7 +147,7 @@ expression stg_factures_transport_resolu =
 			Source = stg_factures_brutes,
 			AvecNb = Table.AddColumn(Source, "nb_candidats_resolution", each if [id_package] = null then 0 else 1, type number),
 			Colonnes = Table.SelectColumns(AvecNb, {
-				"numero_facture", "date_facture", "numero_suivi", "transporteur", "service",
+				"date_facture", "transporteur", "service",
 				"pays_destination", "poids", "cout_transport", "order_id", "id_package",
 				"nb_candidats_resolution"
 			})

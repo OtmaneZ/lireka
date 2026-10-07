@@ -47,31 +47,12 @@ table fact_lignes
 		changedProperty = IsHidden
 
 	/// Dupliqué depuis le groupe (customer_order_item_group) — une valeur par article du même groupe.
-	column list_price_eur
-		dataType: double
-		formatString: #,##0.00 €
-		lineageTag: 1c058ce0-d590-45c5-a549-70fb4896270f
-		summarizeBy: none
-		sourceColumn: list_price_eur
-
-		changedProperty = IsHidden
-
-	/// Dupliqué depuis le groupe (customer_order_item_group) — une valeur par article du même groupe.
 	column customer_price_per_item_eur
 		dataType: double
 		formatString: #,##0.00 €
 		lineageTag: 28528d38-6aa6-4371-b63c-ffd0b98cb809
 		summarizeBy: none
 		sourceColumn: customer_price_per_item_eur
-
-		changedProperty = IsHidden
-
-	/// Dupliqué depuis le groupe (customer_order_item_group) — une valeur par article du même groupe.
-	column group_type
-		dataType: string
-		lineageTag: dd7412c2-c668-46db-ae4a-86436f59146e
-		summarizeBy: none
-		sourceColumn: group_type
 
 		changedProperty = IsHidden
 
@@ -150,7 +131,7 @@ table fact_lignes
 					// Articles ⋈ groupes (ISBN / prix) ⋈ commandes (source) : jointures calculées par PostgreSQL.
 					Source = fnRequeteSql(Text.Combine({
 						"SELECT i.id, i.order_id, i.item_group_id, i.internal_state, i.package_id, i.product_cost_eur,",
-						"g.isbn, g.quantity AS quantity_groupe, g.list_price_eur, g.customer_price_per_item_eur, g.group_type,",
+						"g.isbn, g.quantity AS quantity_groupe, g.customer_price_per_item_eur,",
 						"o.source, COUNT(*) OVER (PARTITION BY i.order_id) AS nb_articles_commande",
 						"FROM " & PgSchema & ".customer_order_item i",
 						"LEFT JOIN " & PgSchema & ".customer_order_item_group g ON g.id = i.item_group_id",
@@ -165,9 +146,7 @@ table fact_lignes
 						{"product_cost_eur", type number},
 						{"isbn", type text},
 						{"quantity_groupe", Int64.Type},
-						{"list_price_eur", type number},
 						{"customer_price_per_item_eur", type number},
-						{"group_type", type text},
 						{"source", type text},
 						{"nb_articles_commande", Int64.Type}
 					}, "en-US"),
@@ -200,8 +179,8 @@ table fact_lignes
 					),
 					#"Canal langue ajoute" = Table.AddColumn(#"Langue livre ajoutee", "canal_langue", each [canal_ligne] & " · " & [langue_livre], type text),
 					#"Colonnes conservees" = Table.SelectColumns(#"Canal langue ajoute", {
-						"id_article", "order_id", "item_group_id", "isbn", "list_price_eur",
-						"customer_price_per_item_eur", "group_type", "quantity_groupe",
+						"id_article", "order_id", "item_group_id", "isbn",
+						"customer_price_per_item_eur", "quantity_groupe",
 						"internal_state", "package_id", "product_cost_eur",
 						"langue_livre", "canal_ligne", "canal_langue", "nb_articles_commande"
 					})

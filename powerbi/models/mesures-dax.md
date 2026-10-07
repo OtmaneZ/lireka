@@ -5,7 +5,7 @@
 > **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
 > Ne pas éditer à la main : régénérer depuis `_Mesures.tmdl` (script one-shot).
 
-> Total : **277 mesures**, dans l'ordre du modèle.
+> Total : **273 mesures**, dans l'ordre du modèle.
 
 ---
 
@@ -1123,93 +1123,12 @@ CA Mois Précédent = CALCULATE([CA Total HT], DATEADD(dim_date[date], -1, MONTH
 
 ---
 
-## Lignes Colis par Facture (hors 1re)
-
-> Chronopost : lignes au-delà de la 1re par numero_facture (grain multi-colis, pas un doublon qualité).  
-
-```dax
-Lignes Colis par Facture (hors 1re) =
-VAR T =
-    ADDCOLUMNS(
-        FILTER(
-            VALUES(fact_factures_transport[numero_facture]),
-            NOT ISBLANK(fact_factures_transport[numero_facture])
-                && fact_factures_transport[numero_facture] <> ""
-        ),
-        "Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-    )
-RETURN
-    SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
-```
-
-*Format* : `#,##0`
-
----
-
-## Vrais Doublons (Facture + Suivi)
-
-> Vrais doublons qualité : même numero_facture ET même numero_suivi sur plusieurs lignes.  
-
-```dax
-Vrais Doublons (Facture + Suivi) =
-VAR T =
-    ADDCOLUMNS(
-        SUMMARIZE(
-            fact_factures_transport,
-            fact_factures_transport[numero_facture],
-            fact_factures_transport[numero_suivi]
-        ),
-        "Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-    )
-RETURN
-    SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
-```
-
-*Format* : `#,##0`
-
----
-
-## Doublons Numero Suivi Factures
-
-> Lignes de facture dont numero_suivi apparaît plus d'une fois (surplus hors 1re occurrence).  
-
-```dax
-Doublons Numero Suivi Factures =
-VAR T =
-    ADDCOLUMNS(
-        VALUES(fact_factures_transport[numero_suivi]),
-        "Cnt", CALCULATE(COUNTROWS(fact_factures_transport))
-    )
-RETURN
-    SUMX(FILTER(T, [Cnt] > 1), [Cnt] - 1)
-```
-
-*Format* : `#,##0`
-
----
-
 ## Colis Order ID Manquant
 
 > Colis sans order_id renseigné.  
 
 ```dax
 Colis Order ID Manquant = CALCULATE([Nb Colis], ISBLANK(fact_transport[order_id]))
-```
-
-*Format* : `#,##0`
-
----
-
-## Colis Numero Suivi Manquant
-
-> Colis sans numero_suivi renseigné.  
-
-```dax
-Colis Numero Suivi Manquant =
-CALCULATE(
-    [Nb Colis],
-    ISBLANK(fact_transport[numero_suivi]) || fact_transport[numero_suivi] = ""
-)
 ```
 
 *Format* : `#,##0`
@@ -3509,10 +3428,25 @@ RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
 
 > TOPN + tie-break id_commande (pattern Top * ISBN) — le IF(Keep) par ligne faisait  
 > passer le total visuel (RANKX sur revenu agrégé → Keep=1 → somme globale).  
+> Classement sur la colonne fact_commandes[revenu_commande] (une requête moteur, pas de mesure  
+> réévaluée par commande). Filtre langue / ISBN actif : classement sur le revenu alloué (mesure).  
 
 ```dax
 Top Unités Commande =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[revenu_commande]),
+            fact_commandes[revenu_commande],
+            DESC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[revenu_commande] > 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3524,7 +3458,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Unités commandées], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Unités commandées], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Unités commandées], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0`
@@ -3535,7 +3474,20 @@ RETURN CALCULATE([Unités commandées], KEEPFILTERS(TopSet))
 
 ```dax
 Top Revenu Commande =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[revenu_commande]),
+            fact_commandes[revenu_commande],
+            DESC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[revenu_commande] > 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3547,7 +3499,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3558,7 +3515,20 @@ RETURN CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSet))
 
 ```dax
 Top Marge Commande =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[revenu_commande]),
+            fact_commandes[revenu_commande],
+            DESC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[revenu_commande] > 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3570,7 +3540,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Marge Brute (reconstruit)], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Marge Brute (reconstruit)], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Marge Brute (reconstruit)], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3667,10 +3642,25 @@ RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
 
 > TOPN + tie-break id_commande (pattern Top * Commande corrigé) — le IF(Keep) par ligne  
 > faisait retomber le total visuel à BLANK (marge agrégée >= 0 hors Top Rank Loss).  
+> Classement sur la colonne fact_commandes[marge_brute_commande] (une requête moteur, pas de  
+> mesure réévaluée par commande). Filtre langue / ISBN actif : classement sur la marge allouée (mesure).  
 
 ```dax
 Top Loss — Unités =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3682,7 +3672,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Unités commandées], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Unités commandées], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Unités commandées], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0`
@@ -3693,7 +3688,20 @@ RETURN CALCULATE([Unités commandées], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Revenue =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3705,7 +3713,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3716,7 +3729,20 @@ RETURN CALCULATE([Revenu (reconstruit)], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — COGS =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3728,7 +3754,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Coût Achat Total], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Coût Achat Total], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Coût Achat Total], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3739,7 +3770,20 @@ RETURN CALCULATE([Coût Achat Total], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Inbound =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3751,7 +3795,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Coût Transport Amont], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Coût Transport Amont], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Coût Transport Amont], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3762,7 +3811,20 @@ RETURN CALCULATE([Coût Transport Amont], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Shipping =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3774,7 +3836,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Coût Transport Outbound (Retenu)], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Coût Transport Outbound (Retenu)], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Coût Transport Outbound (Retenu)], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3785,7 +3852,20 @@ RETURN CALCULATE([Coût Transport Outbound (Retenu)], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Duties =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3797,7 +3877,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Douanes Taxes], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Douanes Taxes], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Douanes Taxes], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3808,7 +3893,20 @@ RETURN CALCULATE([Douanes Taxes], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Marketplace fees =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3820,7 +3918,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Commissions Marketplace], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Commissions Marketplace], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Commissions Marketplace], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3831,7 +3934,20 @@ RETURN CALCULATE([Commissions Marketplace], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Supplies =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3843,7 +3959,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Fournitures Expédition], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Fournitures Expédition], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Fournitures Expédition], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3854,7 +3975,20 @@ RETURN CALCULATE([Fournitures Expédition], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Returns =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3866,7 +4000,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Retours Remboursements], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Retours Remboursements], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Retours Remboursements], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3877,7 +4016,20 @@ RETURN CALCULATE([Retours Remboursements], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Generic =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3889,7 +4041,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Coûts Génériques], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Coûts Génériques], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Coûts Génériques], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`
@@ -3900,7 +4057,20 @@ RETURN CALCULATE([Coûts Génériques], KEEPFILTERS(TopSet))
 
 ```dax
 Top Loss — Gross Profit =
-VAR TopSet =
+VAR TopSetColonne =
+    CALCULATETABLE(
+        TOPN(
+            10,
+            SUMMARIZE(fact_commandes, fact_commandes[id_commande], fact_commandes[marge_brute_commande]),
+            fact_commandes[marge_brute_commande],
+            ASC,
+            fact_commandes[id_commande],
+            ASC
+        ),
+        ALLSELECTED(fact_commandes[id_commande]),
+        KEEPFILTERS(fact_commandes[marge_brute_commande] < 0)
+    )
+VAR TopSetAlloue =
     TOPN(
         10,
         FILTER(
@@ -3912,7 +4082,12 @@ VAR TopSet =
         fact_commandes[id_commande],
         ASC
     )
-RETURN CALCULATE([Marge Brute (reconstruit)], KEEPFILTERS(TopSet))
+RETURN
+    IF(
+        [_Allocation ligne active],
+        CALCULATE([Marge Brute (reconstruit)], KEEPFILTERS(TopSetAlloue)),
+        CALCULATE([Marge Brute (reconstruit)], KEEPFILTERS(TopSetColonne))
+    )
 ```
 
 *Format* : `#,##0.00 €`

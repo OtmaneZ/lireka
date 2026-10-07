@@ -55,7 +55,7 @@ Mode : **Import**. Les jointures, agrégations et `DISTINCT` sont calculés par 
 
 | Table Power BI | Source | Rôle |
 |----------------|--------|------|
-| `fact_commandes` | `customer_order` + retours / génériques agrégés depuis `customer_order_item` | Commandes (grain commande) |
+| `fact_commandes` | `customer_order` + retours / génériques agrégés depuis `customer_order_item` + transport retenu, douanes et fournitures agrégés depuis `package` / `v_carrier_invoice_lines` + médianes par canal (Loss analysis) | Commandes (grain commande) |
 | `fact_transport` | `package` + montants `v_carrier_invoice_lines` agrégés par colis | Colis (coût retenu = facturé si disponible, sinon estimé) |
 | `fact_lignes` | `customer_order_item` ⋈ `customer_order_item_group` ⋈ `customer_order` | Articles (grain article) |
 | `fact_factures_transport` | `v_carrier_invoice_lines` | Lignes de factures |

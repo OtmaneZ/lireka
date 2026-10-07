@@ -26,15 +26,6 @@ table fact_transport
 
 		changedProperty = IsHidden
 
-	/// Numéro de suivi nettoyé (tracking_id) — clé de jointure avec les factures.
-	column numero_suivi
-		dataType: string
-		lineageTag: e3d4aa94-26ca-4d04-9222-63a310117597
-		summarizeBy: none
-		sourceColumn: numero_suivi
-
-		changedProperty = IsHidden
-
 	/// Transporteur normalisé via fnNormaliserTransporteur (inférence par motif).
 	column transporteur
 		dataType: string
@@ -134,8 +125,7 @@ table fact_transport
 						{"duties_taxes_eur", type number},
 						{"cout_transport_facture", type number}
 					}, "en-US"),
-					#"Suivi normalise" = Table.AddColumn(#"Types appliques", "numero_suivi", each fnNormaliserSuivi([tracking_id]), type text),
-					#"Transporteur infere" = Table.AddColumn(#"Suivi normalise", "transporteur", each fnNormaliserTransporteur([tracking_id]), type text),
+					#"Transporteur infere" = Table.AddColumn(#"Types appliques", "transporteur", each fnNormaliserTransporteur([tracking_id]), type text),
 					#"Poids en kg" = Table.AddColumn(#"Transporteur infere", "poids_kg", each [weight] / 1000, type number),
 					#"Colonnes renommees" = Table.RenameColumns(#"Poids en kg", {
 						{"id", "id_package"},
@@ -157,7 +147,7 @@ table fact_transport
 						type text
 					),
 					#"Colonnes conservees" = Table.SelectColumns(#"Source cout", {
-						"id_package", "order_id", "numero_suivi", "transporteur",
+						"id_package", "order_id", "transporteur",
 						"poids_kg", "cout_transport", "cout_transport_facture", "cout_transport_retenu",
 						"shipping_supply_cost_eur", "duties_taxes_eur", "source_cout"
 					})

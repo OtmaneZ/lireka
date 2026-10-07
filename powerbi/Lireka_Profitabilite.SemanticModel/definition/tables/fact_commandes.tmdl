@@ -12,14 +12,6 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: id_commande
 
-	column origin_order_id
-		dataType: string
-		lineageTag: b5efc10c-9a0b-454a-962a-6e58acc360a1
-		summarizeBy: none
-		sourceColumn: origin_order_id
-
-		changedProperty = IsHidden
-
 	column state
 		dataType: string
 		lineageTag: d552aead-fcf3-4c76-852d-52f81f7ea027
@@ -52,14 +44,6 @@ table fact_commandes
 		lineageTag: f7d25057-6a3d-4a16-a18c-9d7405a8190b
 		summarizeBy: none
 		sourceColumn: code_pays
-
-		changedProperty = IsHidden
-
-	column currency
-		dataType: string
-		lineageTag: 49714872-95db-44f0-867a-8ecf6044a06c
-		summarizeBy: none
-		sourceColumn: currency
 
 		changedProperty = IsHidden
 
@@ -184,33 +168,6 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
-	column gross_margin
-		dataType: double
-		formatString: 0.0%
-		lineageTag: 284dce96-d29d-47cc-aa2e-4efe3a4de945
-		summarizeBy: none
-		sourceColumn: gross_margin
-
-		changedProperty = IsHidden
-
-	column contribution_profit_eur
-		dataType: double
-		formatString: #,##0.00 €
-		lineageTag: 3958fe58-b33f-4fae-9e18-9493fc0c905e
-		summarizeBy: sum
-		sourceColumn: contribution_profit_eur
-
-		changedProperty = IsHidden
-
-	column contribution_margin
-		dataType: double
-		formatString: 0.0%
-		lineageTag: 423d5a02-6639-4ac1-bea1-21532a5f4993
-		summarizeBy: none
-		sourceColumn: contribution_margin
-
-		changedProperty = IsHidden
-
 	/// Date de la commande (origin_created tronqué au jour). Clé vers dim_date.
 	column date_commande
 		dataType: dateTime
@@ -260,44 +217,42 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: ca_ht_net
 
-	/// Outbound retenu agrege par commande via rel_transport_commandes (null = 0).
-	column cout_transport_retenu_cmd =
-			IF(
-				ISBLANK(CALCULATE(SUM(fact_transport[cout_transport_retenu]))),
-				0,
-				CALCULATE(SUM(fact_transport[cout_transport_retenu]))
-			)
+	/// Outbound retenu par commande (facturé si rapproché, sinon estimé), somme des colis calculée par PostgreSQL (0 sans colis).
+	column cout_transport_retenu_cmd
 		dataType: double
 		isHidden
 		formatString: #,##0.00 €
 		lineageTag: c011a001-4e11-4a11-8a11-000000000012
 		summarizeBy: sum
+		sourceColumn: cout_transport_retenu_cmd
 
-	/// Douanes agregees par commande via rel_transport_commandes (null = 0).
-	column duties_taxes_cmd =
-			IF(
-				ISBLANK(CALCULATE(SUM(fact_transport[duties_taxes_eur]))),
-				0,
-				CALCULATE(SUM(fact_transport[duties_taxes_eur]))
-			)
+	/// Douanes par commande, somme des colis calculée par PostgreSQL (0 sans colis).
+	column duties_taxes_cmd
 		dataType: double
 		isHidden
 		formatString: #,##0.00 €
 		lineageTag: c011a001-4e11-4a11-8a11-000000000013
 		summarizeBy: sum
+		sourceColumn: duties_taxes_cmd
 
-	/// Fournitures agregees par commande via rel_transport_commandes (null = 0).
-	column fournitures_cmd =
-			IF(
-				ISBLANK(CALCULATE(SUM(fact_transport[shipping_supply_cost_eur]))),
-				0,
-				CALCULATE(SUM(fact_transport[shipping_supply_cost_eur]))
-			)
+	/// Fournitures par commande, somme des colis calculée par PostgreSQL (0 sans colis).
+	column fournitures_cmd
 		dataType: double
 		isHidden
 		formatString: #,##0.00 €
 		lineageTag: c011a001-4e11-4a11-8a11-000000000014
 		summarizeBy: sum
+		sourceColumn: fournitures_cmd
+
+	/// Revenu de la commande (CA net annulation + frais de port hors CANCELLED), vide sans CA.
+	/// Clé de classement des tableaux Top (colonne : classement sans réévaluer une mesure par commande).
+	column revenu_commande
+		dataType: double
+		isHidden
+		formatString: #,##0.00 €
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000501
+		summarizeBy: none
+		sourceColumn: revenu_commande
 
 	/// Page 11 Loss analysis : marge brute au grain commande = formule publiée 7 postes,
 	/// base CA reconstruit (colonne ca_ht_reconstruit, présente par commande).
@@ -510,23 +465,32 @@ table fact_commandes
 					// Commandes (customer_order, schéma PgSchema) + coûts Bloc 5 agrégés par commande (customer_order_item).
 					// Jointure et SUM calculés par PostgreSQL : la passerelle reçoit une ligne par commande.
 					Source = fnRequeteSql(Text.Combine({
-						"SELECT o.id, o.origin_order_id, o.state, o.source, o.destination_country, o.currency, o.origin_created,",
+						"SELECT o.id, o.state, o.source, o.destination_country, o.origin_created,",
 						"o.order_amount_eur, o.shipping_fee_eur, o.marketplace_fees_eur, o.product_cost_eur,",
 						"o.inbound_transportation_cost_eur, o.total_shipping_cost_to_delivery_country_eur,",
-						"o.gross_profit_eur, o.gross_margin, o.contribution_profit_eur, o.contribution_margin,",
-						"b.retours_remboursements, b.couts_generiques",
+						"o.gross_profit_eur,",
+						"b.retours_remboursements, b.couts_generiques,",
+						"COALESCE(t.cout_transport_retenu_cmd, 0) AS cout_transport_retenu_cmd,",
+						"COALESCE(t.duties_taxes_cmd, 0) AS duties_taxes_cmd,",
+						"COALESCE(t.fournitures_cmd, 0) AS fournitures_cmd",
 						"FROM " & PgSchema & ".customer_order o",
 						"LEFT JOIN (SELECT order_id, SUM(returns_and_refunds_cost_eur) AS retours_remboursements,",
 						"SUM(generic_costs_eur) AS couts_generiques",
-						"FROM " & PgSchema & ".customer_order_item GROUP BY order_id) b ON b.order_id = o.id"
+						"FROM " & PgSchema & ".customer_order_item GROUP BY order_id) b ON b.order_id = o.id",
+						"LEFT JOIN (SELECT pk.order_id,",
+						"SUM(CASE WHEN f.facture IS NOT NULL THEN f.facture ELSE pk.shipping_cost_eur END) AS cout_transport_retenu_cmd,",
+						"SUM(pk.duties_taxes_eur) AS duties_taxes_cmd,",
+						"SUM(pk.shipping_supply_cost_eur) AS fournitures_cmd",
+						"FROM " & PgSchema & ".package pk",
+						"LEFT JOIN (SELECT package_id, SUM(amount_excl_vat_eur) AS facture FROM " & PgSchema & ".v_carrier_invoice_lines",
+						"WHERE package_id IS NOT NULL GROUP BY package_id) f ON f.package_id = pk.id",
+						"GROUP BY pk.order_id) t ON t.order_id = o.id"
 					}, " ")),
 					#"Types appliques" = Table.TransformColumnTypes(Source, {
 						{"id", Int64.Type},
-						{"origin_order_id", type text},
 						{"state", type text},
 						{"source", type text},
 						{"destination_country", type text},
-						{"currency", type text},
 						{"order_amount_eur", type number},
 						{"shipping_fee_eur", type number},
 						{"marketplace_fees_eur", type number},
@@ -534,11 +498,11 @@ table fact_commandes
 						{"inbound_transportation_cost_eur", type number},
 						{"total_shipping_cost_to_delivery_country_eur", type number},
 						{"gross_profit_eur", type number},
-						{"gross_margin", type number},
-						{"contribution_profit_eur", type number},
-						{"contribution_margin", type number},
 						{"retours_remboursements", type number},
-						{"couts_generiques", type number}
+						{"couts_generiques", type number},
+						{"cout_transport_retenu_cmd", type number},
+						{"duties_taxes_cmd", type number},
+						{"fournitures_cmd", type number}
 					}, "en-US"),
 					// Date de commande = jour UTC de origin_created (même règle que l'ancienne conversion texte ISO).
 					#"Date commande ajoutee" = Table.AddColumn(
@@ -677,12 +641,21 @@ table fact_commandes
 						each if [ca_disponible] = "Oui" or [state] = "CANCELLED" then "Oui" else "Non",
 						type text
 					),
-					#"Colonnes conservees" = Table.SelectColumns(#"Perimetre volumes", {
-						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
+					// Revenu de la commande (CA net annulation + frais de port hors CANCELLED), vide sans CA :
+					// clé de classement des tableaux Top (même définition que [Revenu (reconstruit)] par commande).
+					#"Revenu commande" = Table.AddColumn(
+						#"Perimetre volumes",
+						"revenu_commande",
+						each if [ca_disponible] = "Oui" then [ca_ht_net] + [frais_port_net] else null,
+						type nullable number
+					),
+					#"Colonnes conservees" = Table.SelectColumns(#"Revenu commande", {
+						"id_commande", "state", "source", "type_commande", "code_pays",
 						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						"cout_transport_amont", "commissions_marketplace",
 						"retours_remboursements", "couts_generiques",
-						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
+						"gross_profit_eur",
+						"cout_transport_retenu_cmd", "duties_taxes_cmd", "fournitures_cmd", "revenu_commande",
 						"date_commande",
 						"canal_bascule", "ca_ht_net", "ca_disponible", "perimetre_volumes",
 						"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures"

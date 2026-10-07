@@ -5,15 +5,6 @@
 table fact_factures_transport
 	lineageTag: 3e48232a-1883-4a3e-bf86-44d0d480d1fa
 
-	/// Numéro de facture (Chronopost uniquement ; vide pour Colissimo).
-	column numero_facture
-		dataType: string
-		lineageTag: 456a2c4f-83b7-417a-a21c-27b78d735243
-		summarizeBy: none
-		sourceColumn: numero_facture
-
-		changedProperty = IsHidden
-
 	/// Date de la facture (clé vers dim_date).
 	column date_facture
 		dataType: dateTime
@@ -25,15 +16,6 @@ table fact_factures_transport
 		changedProperty = IsHidden
 
 		annotation UnderlyingDateTimeDataType = Date
-
-	/// Numéro de suivi nettoyé — clé de jointure vers fact_transport.
-	column numero_suivi
-		dataType: string
-		lineageTag: 038ff088-2d9d-4271-b72a-e91eb4d07ab5
-		summarizeBy: none
-		sourceColumn: numero_suivi
-
-		changedProperty = IsHidden
 
 	/// Transporteur canonique (La Poste pour Colissimo, Chronopost).
 	column transporteur
