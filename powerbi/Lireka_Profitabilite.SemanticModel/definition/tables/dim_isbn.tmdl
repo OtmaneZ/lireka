@@ -1,7 +1,6 @@
 /// Dimension — catalogue ISBN (grain : un ISBN).
-/// Source primaire : export catalogue Marc (`catalogue_isbn.csv`, colonnes isbn · title · author).
-/// Clé = isbn ; lignes distinctes issues de customer_order_item_group (même grain que fact_lignes[isbn]).
-/// Placeholder : title / author null tant que l'export catalogue n'est pas alimenté.
+/// Clé = isbn ; ISBN distincts de customer_order_item_group (PostgreSQL, même grain que fact_lignes[isbn]).
+/// title / author : vides tant qu'aucune vue catalogue n'est disponible en base (stg_catalogue_isbn = table vide).
 table dim_isbn
 	lineageTag: d1m2i3s4-b5n6-7890-abcd-ef1234567890
 

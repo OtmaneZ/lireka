@@ -277,8 +277,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Gross profit bridge, last 12 months vs prior year'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
+                  "Property": "Titre — Profit bridge"
                 }
               }
             },

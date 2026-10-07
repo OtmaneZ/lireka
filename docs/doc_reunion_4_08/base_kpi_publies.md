@@ -2,6 +2,8 @@
 
 Date : 2026-08-04 · Phase 3 (BIEN AVANCÉ) · Statut : **décidé, en attente de recette**
 
+> **07/10/2026** : source passée sur `analytics_views.customer_order` (données jusqu'au 07/10/2026). Selon le contrôle d'Otmane, les montants EUR y sont renseignés (97 % en 2025, sept.-déc. 2024 inclus). Les commandes encore sans montant restent exclues (`ca_disponible = "Non"`).
+>
 > **Statut réel au 05/10/2026**
 > - Décision A (base « reconstruite ») : **sans effet**. Depuis le 19/07/2026, `ca_ht_reconstruit` = `order_amount_eur` ; il n'existe aucun CA marketplace en base depuis 09/2024. Remplacée par l'exclusion des commandes sans CA (`fact_commandes[ca_disponible] = "Non"`) du revenu, des coûts et de la marge.
 > - Décision B (marge publiée = postes de la formule Marc, sans retours ni coûts génériques) : **appliquée** (`[Marge Brute (reconstruit)]`, tableaux P&L, profit bridge).

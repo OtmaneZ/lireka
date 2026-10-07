@@ -134,9 +134,8 @@ Depuis la neutralisation du fallback FX (19/07/2026), `ca_ht_reconstruit` = `ord
 | A7 | Additivité canal (R3) | Σ canaux = total R1 | < 0,1 % | ⬜ |
 | A8 | Impact Bloc 5 (R1) | ≈ 0,9 M€ | ordre de grandeur | ⬜ |
 | A9 | Marge marketplace native (R4) | fortement négative | qualitatif | sans objet (R4 obsolète) |
-| A10 | % CA reconstruit global (R1) | à mesurer, pas à cibler | — | ⬜ |
 
-A1 à A5 sont les critères bloquants. A6 et A7 sont des contrôles d'intégrité du modèle : leur échec invalide la lecture de tous les autres. A8, A9 et A10 sont documentaires — ils alimentent le dossier de justification, ils ne conditionnent pas le passage.
+A1 à A5 sont les critères bloquants. A6 et A7 sont des contrôles d'intégrité du modèle : leur échec invalide la lecture de tous les autres. A8 et A9 sont documentaires — ils alimentent le dossier de justification, ils ne conditionnent pas le passage.
 
 ---
 

@@ -39,13 +39,13 @@ Toutes les données sont lues dans la base PostgreSQL analytique Lireka (`analyt
 
 | Objet PostgreSQL | Usage |
 |------------------|-------|
-| `public.customer_order` | Commandes (CA, coûts, pays, canal, date) — la vue `analytics_views.customer_order` n'existe plus |
+| `analytics_views.customer_order` | Commandes (CA, coûts, pays, canal, date) |
 | `analytics_views.customer_order_item` | Articles, coûts retours / génériques |
 | `analytics_views.customer_order_item_group` | ISBN, prix |
 | `analytics_views.package` | Colis (coût estimé, douanes, fournitures, suivi) |
 | `analytics_views.v_carrier_invoice_lines` | Lignes de factures transporteurs rattachées au colis par le backend |
 
-Les paramètres `SharePointSiteURL`, `SourceMode` et `LocalRootPath` sont dormants (lus par aucune requête).
+Tout le modèle lit le schéma du paramètre `PgSchema` (`analytics_views`).
 
 ---
 
@@ -55,12 +55,12 @@ Mode : **Import**. Les jointures, agrégations et `DISTINCT` sont calculés par 
 
 | Table Power BI | Source | Rôle |
 |----------------|--------|------|
-| `fact_commandes` | `public.customer_order` + retours / génériques agrégés depuis `customer_order_item` | Commandes (grain commande) |
+| `fact_commandes` | `customer_order` + retours / génériques agrégés depuis `customer_order_item` | Commandes (grain commande) |
 | `fact_transport` | `package` + montants `v_carrier_invoice_lines` agrégés par colis | Colis (coût retenu = facturé si disponible, sinon estimé) |
 | `fact_lignes` | `customer_order_item` ⋈ `customer_order_item_group` ⋈ `customer_order` | Articles (grain article) |
 | `fact_factures_transport` | `v_carrier_invoice_lines` | Lignes de factures |
 | `dim_pays`, `dim_type_commande`, `dim_isbn` | `SELECT DISTINCT` en base | Axes d'analyse |
-| `dim_date` | générée ; bornée par `DateDerniereCommande` (max `origin_created`) | Axe temporel, fenêtre 12 derniers mois |
+| `dim_date` | générée ; bornée par `DateDerniereCommande` (max `origin_created` des commandes avec CA) | Axe temporel, fenêtre 12 derniers mois |
 
 Le transporteur sur les colis est **inféré du numéro de suivi** (`fnNormaliserTransporteur`).
 
@@ -79,7 +79,7 @@ Le transporteur sur les colis est **inféré du numéro de suivi** (`fnNormalise
 
 - **Power BI Desktop** : ouvrir `powerbi/Lireka_Profitabilite.pbip` sur un poste ayant accès à la base (VPN COex), puis *Actualiser*. Au premier refresh, Desktop demande d'approuver les requêtes SQL natives.
 - **Power BI Service** : le dataset se rafraîchit via la passerelle Lireka-Gateway (source PostgreSQL configurée dans la passerelle). La fréquence relève du choix Lireka.
-- **Période affichée** : la fenêtre « 12 derniers mois » est calée sur la dernière commande en base, pas sur la date du refresh. Si la base n'est plus alimentée, la fenêtre ne bouge plus (au 05/10/2026 : dernière commande le 16/06/2026).
+- **Période affichée** : la fenêtre « 12 derniers mois » est calée sur la dernière commande avec CA en base, pas sur la date du refresh. La carte « Data through … » de chaque page affiche cette date.
 
 ---
 

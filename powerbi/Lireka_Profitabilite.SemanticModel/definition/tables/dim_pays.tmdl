@@ -50,9 +50,9 @@ table dim_pays
 		mode: import
 		source =
 				let
-					// Codes distincts calculés par PostgreSQL (public.customer_order).
+					// Codes distincts calculés par PostgreSQL (customer_order, schéma PgSchema).
 					#"Codes bruts" = Table.TransformColumnTypes(
-						fnRequeteSql("SELECT DISTINCT destination_country FROM public.customer_order"),
+						fnRequeteSql("SELECT DISTINCT destination_country FROM " & PgSchema & ".customer_order"),
 						{{"destination_country", type text}}
 					),
 					#"Codes normalises" = Table.AddColumn(

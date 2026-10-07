@@ -154,7 +154,7 @@ table fact_lignes
 						"o.source, COUNT(*) OVER (PARTITION BY i.order_id) AS nb_articles_commande",
 						"FROM " & PgSchema & ".customer_order_item i",
 						"LEFT JOIN " & PgSchema & ".customer_order_item_group g ON g.id = i.item_group_id",
-						"LEFT JOIN public.customer_order o ON o.id = i.order_id"
+						"LEFT JOIN " & PgSchema & ".customer_order o ON o.id = i.order_id"
 					}, " ")),
 					#"Types appliques" = Table.TransformColumnTypes(Source, {
 						{"id", Int64.Type},

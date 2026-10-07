@@ -1,5 +1,7 @@
 # Reconstruction du CA marketplace en EUR — option B
 
+> **07/10/2026** : source passée sur `analytics_views.customer_order` (données jusqu'au 07/10/2026). Selon le contrôle d'Otmane, les montants EUR y sont renseignés (97 % en 2025, sept.-déc. 2024 inclus). Les commandes encore sans montant restent exclues (`ca_disponible = "Non"`).
+>
 > **Statut au 05/10/2026 — reconstruction abandonnée, note historique.**
 > - Le fallback FX est neutralisé depuis le 19/07/2026 : `ca_ht_reconstruit` = `order_amount_eur`, `[% CA reconstruit]` = 0.
 > - Vérifié en base (`public.customer_order`) : `order_amount_eur` vide ou nul sur 100 % des commandes marketplace depuis 09/2024, `order_amount_local` = 0 sur 100 % des commandes marketplace 2025+. Aucune reconstruction par conversion de devises n'est possible.

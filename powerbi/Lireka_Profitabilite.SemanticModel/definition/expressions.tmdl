@@ -1,26 +1,3 @@
-/// URL du tenant SharePoint Lireka (dormant).
-/// Lecture actuelle = File.Contents local via LocalRootPath.
-/// Conservé pour réactivation SharePoint ultérieure.
-/// Modifier dans Power BI Desktop : Transformer les données > Gérer les paramètres.
-expression SharePointSiteURL = "https://lirekacom.sharepoint.com/sites/Lireka" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
-	lineageTag: 54fba0a6-374f-4253-8139-bb1310f751e3
-
-	annotation PBI_ResultType = Text
-
-/// Mode de source (dormant). Lecture actuelle = File.Contents local uniquement.
-/// Conservé pour réactivation SharePoint ultérieure.
-expression SourceMode = "Local" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
-	lineageTag: 7c4e9a21-6b8d-4f03-9e5a-2d1c8b0f4a67
-
-	annotation PBI_ResultType = Text
-
-/// Racine des fichiers locaux sur la VM passerelle (récaps transporteurs, catalogue ISBN).
-/// Toutes les lectures CSV utilisent File.Contents(LocalRootPath & "\...").
-expression LocalRootPath = "C:\lireka\Power_BI_Datawarehouse" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
-	lineageTag: b2c3d4e5-f6a7-8901-bcde-f12345678901
-
-	annotation PBI_ResultType = Text
-
 /// Serveur PostgreSQL analytique Lireka (joignable via Lireka-Gateway + VPN COex).
 expression PgServer = "10.111.119.1:5432" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 3f1d2c4b-5a6e-4f70-8a91-b2c3d4e5f601
@@ -113,13 +90,13 @@ expression fnNormaliserSuivi =
 			Text.Upper(sansEspaces)
 	lineageTag: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e
 
-/// Date de la dernière commande en base (jour UTC de max(origin_created), public.customer_order).
+/// Date de la dernière commande avec CA en base (jour UTC de max(origin_created), customer_order, order_amount_eur > 0).
 /// Référence temporelle unique de dim_date : borne Fin du calendrier et fenêtre 12 derniers mois.
 /// Conversion identique à fact_commandes[date_commande] (étape "Date commande ajoutee").
 /// Erreur explicite si la table est vide : un refresh ne doit pas publier une fenêtre vide.
 expression DateDerniereCommande =
 		let
-			Source = fnRequeteSql("SELECT max(origin_created) AS derniere_commande FROM public.customer_order"),
+			Source = fnRequeteSql("SELECT max(origin_created) AS derniere_commande FROM " & PgSchema & ".customer_order WHERE order_amount_eur > 0"),
 			v = Source{0}[derniere_commande],
 			d =
 				if v = null then null
@@ -128,7 +105,7 @@ expression DateDerniereCommande =
 				else if Value.Is(v, type date) then v
 				else try Date.FromText(Text.Start(Text.From(v), 10), [Format = "yyyy-MM-dd"]) otherwise null,
 			Resultat =
-				if d = null then error Error.Record("DateDerniereCommande", "max(origin_created) introuvable dans public.customer_order")
+				if d = null then error Error.Record("DateDerniereCommande", "aucune commande avec order_amount_eur > 0 dans customer_order")
 				else d
 		in
 			Resultat

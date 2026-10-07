@@ -47,15 +47,15 @@ table dim_type_commande
 		mode: import
 		source =
 				let
-					// Sources distinctes calculées par PostgreSQL (public.customer_order).
+					// Sources distinctes calculées par PostgreSQL (customer_order, schéma PgSchema).
 					#"Sources brutes" = Table.TransformColumnTypes(
-						fnRequeteSql("SELECT DISTINCT source FROM public.customer_order"),
+						fnRequeteSql("SELECT DISTINCT source FROM " & PgSchema & ".customer_order"),
 						{{"source", type text}}
 					),
 					#"Types normalises" = Table.AddColumn(
 						#"Sources brutes",
 						"type_commande",
-						each if [source] = null or Text.Trim([source]) = "" then "INCONNU" else Text.Trim([source]),
+						each if [source] = null or Text.Trim([source]) = "" then "INCONNU" else Text.Upper(Text.Trim([source])),
 						type text
 					),
 					#"Valeurs distinctes" = Table.Distinct(Table.SelectColumns(#"Types normalises", {"type_commande"})),

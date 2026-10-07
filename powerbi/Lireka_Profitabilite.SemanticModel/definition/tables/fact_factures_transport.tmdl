@@ -1,10 +1,7 @@
-/// Faits — factures transporteurs unifiées (récaps Colissimo + Chronopost).
-/// Sources locales (format français, séparateur ";", décimale virgule) :
-/// Dashboards_transporteurs/COLISSIMO Dashboard PowerBI/2025 & 2026 *.csv
-/// Dashboards_transporteurs/CHRONOPOST Dashboard PowerBI/2025 *.csv
-/// Colissimo est un service La Poste (suivi 6A...). Sert au rapprochement
-/// factures <-> colis via numero_suivi (contrôle du coût réel backend).
-/// Alimenté par stg_factures_transport_resolu (matching ensembliste F-11).
+/// Faits — lignes de factures transporteurs (PostgreSQL analytics_views.v_carrier_invoice_lines).
+/// Le backend rattache chaque ligne au colis (package_id) et à la commande (order_id) :
+/// aucun rapprochement par numéro de suivi ni par date côté Power BI.
+/// Alimenté par stg_factures_transport_resolu.
 table fact_factures_transport
 	lineageTag: 3e48232a-1883-4a3e-bf86-44d0d480d1fa
 
@@ -91,7 +88,7 @@ table fact_factures_transport
 
 		changedProperty = IsHidden
 
-	/// Commande rattachée (résolue par proximité de date, cf. partition).
+	/// Commande rattachée (order_id fourni par le backend).
 	column order_id
 		dataType: int64
 		isHidden
@@ -99,7 +96,7 @@ table fact_factures_transport
 		summarizeBy: none
 		sourceColumn: order_id
 
-	/// Colis rattaché (clé vers fact_transport, résolu par proximité de date).
+	/// Colis rattaché (clé vers fact_transport, package_id fourni par le backend).
 	column id_package
 		dataType: int64
 		isHidden
