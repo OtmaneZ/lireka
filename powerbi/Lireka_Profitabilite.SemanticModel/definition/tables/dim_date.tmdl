@@ -158,20 +158,12 @@ table dim_date
 
 		changedProperty = IsHidden
 
-	/// "Oui" si date > (dernière commande - 12 mois) et date <= dernière commande, sinon "Non". Texte (pas booleen) : forme Categorical PBIR verifiable (Literal "'Oui'"). Filtre page 12 mois glissants. 2026-08-29.
-	column fenetre_12_mois
-		dataType: string
-		lineageTag: f4a5b6c7-d8e9-0123-efab-567890123457
-		summarizeBy: none
-		sourceColumn: fenetre_12_mois
-
-		changedProperty = IsHidden
 
 	partition dim_date = m
 		mode: import
 		source =
 				let
-					// Date de la dernière commande en base (DateDerniereCommande) — unique source temporelle (borne Fin + indicateur 12 mois)
+					// Date de la dernière commande avec CA (DateDerniereCommande) — borne Fin du calendrier
 					DerniereCommande = DateDerniereCommande,
 					// Bornes du calendrier (historique backend dès 2020 — requis pour YoY)
 					Debut = #date(2020, 1, 1),
@@ -219,16 +211,7 @@ table dim_date
 						"mois_annee_court_en",
 						each Date.ToText([date], [Format = "MMM yy", Culture = "en-US"]),
 						type text
-					),
-					// Fenetre 12 derniers mois glissants (filtre page, 2026-08-29) :
-					// "Oui" si [date] > DerniereCommande-12 mois et [date] <= DerniereCommande (haute incluse, basse exclusive), sinon "Non".
-					#"12 derniers mois" = Table.AddColumn(
-						#"Mois annee court EN",
-						"fenetre_12_mois",
-						each if [date] > Date.AddMonths(DerniereCommande, -12) and [date] <= DerniereCommande
-						     then "Oui" else "Non",
-						type text
 					)
 				in
-					#"12 derniers mois"
+					#"Mois annee court EN"
 

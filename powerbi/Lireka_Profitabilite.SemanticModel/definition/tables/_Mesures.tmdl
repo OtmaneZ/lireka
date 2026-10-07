@@ -2,12 +2,13 @@
 table _Mesures
 	lineageTag: a2e58751-5502-46c6-95f8-1dc665aa31ec
 
-	/// Nombre de commandes (grain fact_commandes).
+	/// Nombre de commandes (grain fact_commandes), périmètre perimetre_volumes = "Oui" :
+	/// commandes avec CA + commandes annulées (les commandes actives sans montant de vente sont exclues).
 	measure 'Nb Commandes' =
 			IF(
 				[_Allocation ligne active],
-				DISTINCTCOUNT(fact_lignes[order_id]),
-				COUNTROWS(fact_commandes)
+				CALCULATE(DISTINCTCOUNT(fact_lignes[order_id]), KEEPFILTERS(fact_commandes[perimetre_volumes] = "Oui")),
+				CALCULATE(COUNTROWS(fact_commandes), KEEPFILTERS(fact_commandes[perimetre_volumes] = "Oui"))
 			)
 		formatString: #,##0
 		displayFolder: 01 KPI publiés
@@ -75,6 +76,29 @@ table _Mesures
 		displayFolder: 12 Périmètre
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000003
 
+	/// Vrai si plus de 5 % des commandes non annulées de la période N-1 n'ont pas de montant de vente
+	/// (ca_disponible = "Non"). Rend vides les PY / YoY de revenu et de marge : une comparaison
+	/// à une période N-1 incomplète surestimerait la croissance.
+	measure '_PY incomplet' =
+			VAR seuil = 0.05
+			VAR total =
+				CALCULATE(
+					COUNTROWS(fact_commandes),
+					SAMEPERIODLASTYEAR(dim_date[date]),
+					KEEPFILTERS(fact_commandes[state] <> "CANCELLED")
+				)
+			VAR sansCA =
+				CALCULATE(
+					COUNTROWS(fact_commandes),
+					SAMEPERIODLASTYEAR(dim_date[date]),
+					KEEPFILTERS(fact_commandes[state] <> "CANCELLED"),
+					KEEPFILTERS(fact_commandes[ca_disponible] = "Non")
+				)
+			RETURN DIVIDE(sansCA, total) > seuil
+		isHidden
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000401
+
 	/// Bandeau Marketplaces : commandes exclues faute de montant de vente en base ("" si aucune).
 	measure 'Avertissement — commandes sans CA' =
 			VAR n = [Nb commandes sans CA]
@@ -87,14 +111,30 @@ table _Mesures
 		displayFolder: 12 Périmètre
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000004
 
-	/// Bandeau General View : commandes sans CA + commandes de canal non mappé ("" si aucune).
+	/// Bandeau General View : commandes sans CA + canal non mappé + filtre langue ("" si rien à signaler).
 	measure 'Avertissement — données' =
 			VAR a = [Avertissement — commandes sans CA]
 			VAR m = [Nb commandes canal non mappé]
 			VAR b = IF(m > 0, FORMAT(m, "#,##0") & " orders from unmapped sales channels are excluded from all pages", "")
-			RETURN a & IF(a <> "" && b <> "", "  |  ", "") & b
+			VAR c = [Avertissement — langue]
+			VAR ab = a & IF(a <> "" && b <> "", "  |  ", "") & b
+			RETURN ab & IF(ab <> "" && c <> "", "  |  ", "") & c
 		displayFolder: 12 Périmètre
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000005
+
+	/// Texte affiché quand la langue du livre est filtrée : les montants commande sont alors répartis
+	/// à parts égales entre les livres de chaque commande ([_Allocation ligne active]).
+	measure 'Avertissement — langue' = IF(ISFILTERED(fact_lignes[langue_livre]), "Language filter: amounts split per book", "")
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000402
+
+	/// Bandeau Marketplaces : commandes sans CA + filtre langue ("" si rien à signaler).
+	measure 'Avertissement — Marketplaces' =
+			VAR a = [Avertissement — commandes sans CA]
+			VAR c = [Avertissement — langue]
+			RETURN a & IF(a <> "" && c <> "", "  |  ", "") & c
+		displayFolder: 12 Périmètre
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000403
 
 	/// Date de la dernière commande avec CA dans le modèle (ignore tous les filtres).
 	measure 'Dernière date de données' =
@@ -184,9 +224,11 @@ table _Mesures
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000012
 
 	/// Fix Bloc2 — grain passé de groupe/titre à article physique le 15/07/2026.
+	/// Périmètre perimetre_volumes = "Oui" (même périmètre que [Nb Commandes]).
 	/// Ancienne mesure basée sur SUM(quantity_groupe) déduplicable en contrôle si besoin,
 	/// voir [Nb Articles (contrôle grain groupe)].
-	measure 'Nb Articles' = COUNTROWS(fact_lignes)
+	measure 'Nb Articles' =
+			CALCULATE(COUNTROWS(fact_lignes), KEEPFILTERS(fact_commandes[perimetre_volumes] = "Oui"))
 		formatString: #,##0
 		displayFolder: 03 Coûts
 		lineageTag: 58c14c19-db5c-4284-aecc-b00079f4d9b6
@@ -1079,12 +1121,14 @@ table _Mesures
 		displayFolder: 02 Revenus
 		lineageTag: 11112222-3333-4444-5555-666677778888
 
-	measure 'Revenu (reconstruit) PY' = CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Revenu (reconstruit) PY' =
+			IF([_PY incomplet], BLANK(), CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 22223333-4444-5555-6666-777788889999
 
-	measure 'Revenu (reconstruit) YoY Δ' = [Revenu (reconstruit)] - [Revenu (reconstruit) PY]
+	measure 'Revenu (reconstruit) YoY Δ' =
+			IF([_PY incomplet], BLANK(), [Revenu (reconstruit)] - [Revenu (reconstruit) PY])
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 33334444-5555-6666-7777-888899990000
@@ -1113,12 +1157,14 @@ table _Mesures
 		displayFolder: 04 Marge
 		lineageTag: 55556666-7777-8888-9999-000011112222
 
-	measure 'Marge Brute (reconstruit) PY' = CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Marge Brute (reconstruit) PY' =
+			IF([_PY incomplet], BLANK(), CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 66667777-8888-9999-0000-111122223333
 
-	measure 'Marge Brute (reconstruit) YoY Δ' = [Marge Brute (reconstruit)] - [Marge Brute (reconstruit) PY]
+	measure 'Marge Brute (reconstruit) YoY Δ' =
+			IF([_PY incomplet], BLANK(), [Marge Brute (reconstruit)] - [Marge Brute (reconstruit) PY])
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 77778888-9999-0000-1111-222233334444
@@ -1135,7 +1181,8 @@ table _Mesures
 		displayFolder: 04 Marge
 		lineageTag: 99990000-1111-2222-3333-444455556666
 
-	measure 'Taux Marge Brute (reconstruit) PY' = CALCULATE([Taux Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Taux Marge Brute (reconstruit) PY' =
+			IF([_PY incomplet], BLANK(), CALCULATE([Taux Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: 0.0%
 		displayFolder: 05 YoY
 		lineageTag: aaaabb00-1111-2222-3333-444455556666
@@ -2103,87 +2150,95 @@ table _Mesures
 	/// Ce Top 15 (refresh) differe volontairement de celui du tableau P&L (dynamique, via [B2C Rank]).
 	/// =====================================================================
 	measure 'B2C Bridge — Revenue' =
-			VAR k = SELECTEDVALUE(_BridgePaysYoY[Kind])
-			VAR label = SELECTEDVALUE(_BridgePaysYoY[Label])
-			RETURN
-				SWITCH(
-					TRUE(),
-					k = "Start",
-						CALCULATE([Revenu (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
-					k = "Rest",
-						CALCULATE(
-							VAR TotalCY = [Revenu (reconstruit)]
-							VAR TotalPY = [Revenu (reconstruit) PY]
-							VAR AxisCY =
-								SUMX(
-									FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
-									CALCULATE(
-										[Revenu (reconstruit)],
-										TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
-									)
-								)
-							VAR AxisPY =
-								SUMX(
-									FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
-									CALCULATE(
-										[Revenu (reconstruit) PY],
-										TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
-									)
-								)
-							RETURN (TotalCY - AxisCY) - (TotalPY - AxisPY),
-							REMOVEFILTERS(_BridgePaysYoY)
-						),
-					k = "Country",
-						CALCULATE(
-							[Revenu (reconstruit) YoY Δ],
-							TREATAS({ label }, dim_pays[nom_pays_en]),
-							REMOVEFILTERS(_BridgePaysYoY)
-						),
-					BLANK()
-				)
+			IF(
+				[_PY incomplet],
+				BLANK(),
+					VAR k = SELECTEDVALUE(_BridgePaysYoY[Kind])
+					VAR label = SELECTEDVALUE(_BridgePaysYoY[Label])
+					RETURN
+						SWITCH(
+							TRUE(),
+							k = "Start",
+								CALCULATE([Revenu (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
+							k = "Rest",
+								CALCULATE(
+									VAR TotalCY = [Revenu (reconstruit)]
+									VAR TotalPY = [Revenu (reconstruit) PY]
+									VAR AxisCY =
+										SUMX(
+											FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
+											CALCULATE(
+												[Revenu (reconstruit)],
+												TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
+											)
+										)
+									VAR AxisPY =
+										SUMX(
+											FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
+											CALCULATE(
+												[Revenu (reconstruit) PY],
+												TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
+											)
+										)
+									RETURN (TotalCY - AxisCY) - (TotalPY - AxisPY),
+									REMOVEFILTERS(_BridgePaysYoY)
+								),
+							k = "Country",
+								CALCULATE(
+									[Revenu (reconstruit) YoY Δ],
+									TREATAS({ label }, dim_pays[nom_pays_en]),
+									REMOVEFILTERS(_BridgePaysYoY)
+								),
+							BLANK()
+						)
+			)
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: b2c0b711-1111-2222-3333-444455550001
 
 	measure 'B2C Bridge — Gross Profit' =
-			VAR k = SELECTEDVALUE(_BridgePaysYoY[Kind])
-			VAR label = SELECTEDVALUE(_BridgePaysYoY[Label])
-			RETURN
-				SWITCH(
-					TRUE(),
-					k = "Start",
-						CALCULATE([Marge Brute (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
-					k = "Rest",
-						CALCULATE(
-							VAR TotalCY = [Marge Brute (reconstruit)]
-							VAR TotalPY = [Marge Brute (reconstruit) PY]
-							VAR AxisCY =
-								SUMX(
-									FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
-									CALCULATE(
-										[Marge Brute (reconstruit)],
-										TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
-									)
-								)
-							VAR AxisPY =
-								SUMX(
-									FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
-									CALCULATE(
-										[Marge Brute (reconstruit) PY],
-										TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
-									)
-								)
-							RETURN (TotalCY - AxisCY) - (TotalPY - AxisPY),
-							REMOVEFILTERS(_BridgePaysYoY)
-						),
-					k = "Country",
-						CALCULATE(
-							[Marge Brute (reconstruit) YoY Δ],
-							TREATAS({ label }, dim_pays[nom_pays_en]),
-							REMOVEFILTERS(_BridgePaysYoY)
-						),
-					BLANK()
-				)
+			IF(
+				[_PY incomplet],
+				BLANK(),
+					VAR k = SELECTEDVALUE(_BridgePaysYoY[Kind])
+					VAR label = SELECTEDVALUE(_BridgePaysYoY[Label])
+					RETURN
+						SWITCH(
+							TRUE(),
+							k = "Start",
+								CALCULATE([Marge Brute (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
+							k = "Rest",
+								CALCULATE(
+									VAR TotalCY = [Marge Brute (reconstruit)]
+									VAR TotalPY = [Marge Brute (reconstruit) PY]
+									VAR AxisCY =
+										SUMX(
+											FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
+											CALCULATE(
+												[Marge Brute (reconstruit)],
+												TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
+											)
+										)
+									VAR AxisPY =
+										SUMX(
+											FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
+											CALCULATE(
+												[Marge Brute (reconstruit) PY],
+												TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
+											)
+										)
+									RETURN (TotalCY - AxisCY) - (TotalPY - AxisPY),
+									REMOVEFILTERS(_BridgePaysYoY)
+								),
+							k = "Country",
+								CALCULATE(
+									[Marge Brute (reconstruit) YoY Δ],
+									TREATAS({ label }, dim_pays[nom_pays_en]),
+									REMOVEFILTERS(_BridgePaysYoY)
+								),
+							BLANK()
+						)
+			)
 		formatString: #,##0.00 €
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: b2c0b711-1111-2222-3333-444455550002
@@ -2689,22 +2744,26 @@ table _Mesures
 	/// MB_PY = [Marge Brute (reconstruit) PY]. CA = YoY du CA reconstruit net annulation.
 	/// Total waterfall = [Marge Brute (reconstruit)] (retours / génériques hors marge brute, hors axe).
 	measure 'Bridge PnL YoY' =
-			VAR poste = SELECTEDVALUE(BridgePnL[Poste])
-			VAR signe = SELECTEDVALUE(BridgePnL[Signe])
-			RETURN
-				SWITCH(
-					poste,
-					"MB_PY", [Marge Brute (reconstruit) PY],
-					"CA", ([Revenu (reconstruit) YoY Δ] - [Frais Port Net Annulation YoY Δ]) * signe,
-					"PORT", [Frais Port Net Annulation YoY Δ] * signe,
-					"ACHAT", [Coût Achat Total YoY Δ] * signe,
-					"AMONT", [Coût Transport Amont YoY Δ] * signe,
-					"OUTBOUND", [Coût Transport Outbound (Retenu) YoY Δ] * signe,
-					"DOUANES", [Douanes Taxes YoY Δ] * signe,
-					"COMMISSIONS", [Commissions Marketplace YoY Δ] * signe,
-					"FOURNITURES", [Fournitures Expédition YoY Δ] * signe,
-					BLANK()
-				)
+			IF(
+				[_PY incomplet],
+				BLANK(),
+					VAR poste = SELECTEDVALUE(BridgePnL[Poste])
+					VAR signe = SELECTEDVALUE(BridgePnL[Signe])
+					RETURN
+						SWITCH(
+							poste,
+							"MB_PY", [Marge Brute (reconstruit) PY],
+							"CA", ([Revenu (reconstruit) YoY Δ] - [Frais Port Net Annulation YoY Δ]) * signe,
+							"PORT", [Frais Port Net Annulation YoY Δ] * signe,
+							"ACHAT", [Coût Achat Total YoY Δ] * signe,
+							"AMONT", [Coût Transport Amont YoY Δ] * signe,
+							"OUTBOUND", [Coût Transport Outbound (Retenu) YoY Δ] * signe,
+							"DOUANES", [Douanes Taxes YoY Δ] * signe,
+							"COMMISSIONS", [Commissions Marketplace YoY Δ] * signe,
+							"FOURNITURES", [Fournitures Expédition YoY Δ] * signe,
+							BLANK()
+						)
+			)
 		formatString: #,##0.00 €
 		displayFolder: 10 Bridge
 		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0004
@@ -2867,7 +2926,7 @@ table _Mesures
 				"€" & FORMAT(py, "0.00")
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)
@@ -2882,7 +2941,7 @@ table _Mesures
 			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
 				)
@@ -2899,7 +2958,7 @@ table _Mesures
 				"€" & FORMAT(py, "0.00")
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)
@@ -2916,7 +2975,7 @@ table _Mesures
 				"€" & FORMAT(py, "0.00")
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)
@@ -2938,7 +2997,7 @@ table _Mesures
 				)
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)
@@ -2955,7 +3014,7 @@ table _Mesures
 				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)
@@ -2970,7 +3029,7 @@ table _Mesures
 			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
 				)
@@ -2985,7 +3044,7 @@ table _Mesures
 			VAR arrow = IF(bps >= 0, UNICHAR(9650), UNICHAR(9660))
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
 				)
@@ -3002,7 +3061,7 @@ table _Mesures
 				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)
@@ -3017,7 +3076,7 @@ table _Mesures
 				IF(
 					ISBLANK(r),
 					BLANK(),
-					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy), "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
+					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000210
@@ -3030,7 +3089,7 @@ table _Mesures
 				IF(
 					ISBLANK(r),
 					BLANK(),
-					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy), "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
+					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000211
@@ -3050,7 +3109,7 @@ table _Mesures
 				)
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))),
+					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)

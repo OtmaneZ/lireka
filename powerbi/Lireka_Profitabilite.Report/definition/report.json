@@ -80,7 +80,7 @@
   "filterConfig": {
     "filters": [
       {
-        "name": "periodeDouzeMois",
+        "name": "periodeRelative",
         "field": {
           "Column": {
             "Expression": {
@@ -88,10 +88,10 @@
                 "Entity": "dim_date"
               }
             },
-            "Property": "fenetre_12_mois"
+            "Property": "date"
           }
         },
-        "type": "Categorical",
+        "type": "RelativeDate",
         "filter": {
           "Version": 2,
           "From": [
@@ -104,49 +104,51 @@
           "Where": [
             {
               "Condition": {
-                "In": {
-                  "Expressions": [
-                    {
-                      "Column": {
-                        "Expression": {
-                          "SourceRef": {
-                            "Source": "d"
-                          }
-                        },
-                        "Property": "fenetre_12_mois"
-                      }
-                    }
-                  ],
-                  "Values": [
-                    [
-                      {
-                        "Literal": {
-                          "Value": "'Oui'"
+                "Between": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Source": "d"
                         }
-                      }
-                    ]
-                  ]
+                      },
+                      "Property": "date"
+                    }
+                  },
+                  "LowerBound": {
+                    "DateSpan": {
+                      "Expression": {
+                        "DateAdd": {
+                          "Expression": {
+                            "DateAdd": {
+                              "Expression": {
+                                "Now": {}
+                              },
+                              "Amount": 1,
+                              "TimeUnit": 0
+                            }
+                          },
+                          "Amount": -12,
+                          "TimeUnit": 2
+                        }
+                      },
+                      "TimeUnit": 0
+                    }
+                  },
+                  "UpperBound": {
+                    "DateSpan": {
+                      "Expression": {
+                        "Now": {}
+                      },
+                      "TimeUnit": 0
+                    }
+                  }
                 }
               }
             }
           ]
         },
-        "displayName": "Last 12 months of data"
-      },
-      {
-        "name": "periodeAnneeCivile",
-        "displayName": "Calendar year",
-        "field": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "dim_date"
-              }
-            },
-            "Property": "annee"
-          }
-        },
-        "type": "Categorical"
+        "displayName": "Period"
       }
     ]
   },

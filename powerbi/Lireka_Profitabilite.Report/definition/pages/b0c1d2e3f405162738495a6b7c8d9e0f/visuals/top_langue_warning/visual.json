@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
-  "name": "mkt_dq_warning",
+  "name": "top_langue_warning",
   "position": {
-    "x": 237,
-    "y": 676,
-    "z": 23500,
-    "height": 20,
-    "width": 1035,
-    "tabOrder": 23500
+    "x": 14,
+    "y": 658,
+    "z": 2600,
+    "height": 22,
+    "width": 192,
+    "tabOrder": 2600
   },
   "visual": {
     "visualType": "card",
@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Avertissement — Marketplaces"
+                  "Property": "Avertissement — langue"
                 }
               },
-              "queryRef": "_Mesures.Avertissement — Marketplaces",
-              "nativeQueryRef": "Avertissement — Marketplaces"
+              "queryRef": "_Mesures.Avertissement — langue",
+              "nativeQueryRef": "Avertissement — langue"
             }
           ]
         }
@@ -51,7 +51,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "8D"
                 }
               }
             }

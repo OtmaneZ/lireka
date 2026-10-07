@@ -60,7 +60,7 @@ Mode : **Import**. Les jointures, agrégations et `DISTINCT` sont calculés par 
 | `fact_lignes` | `customer_order_item` ⋈ `customer_order_item_group` ⋈ `customer_order` | Articles (grain article) |
 | `fact_factures_transport` | `v_carrier_invoice_lines` | Lignes de factures |
 | `dim_pays`, `dim_type_commande`, `dim_isbn` | `SELECT DISTINCT` en base | Axes d'analyse |
-| `dim_date` | générée ; bornée par `DateDerniereCommande` (max `origin_created` des commandes avec CA) | Axe temporel, fenêtre 12 derniers mois |
+| `dim_date` | générée ; bornée par `DateDerniereCommande` (max `origin_created` des commandes avec CA) | Axe temporel |
 
 Le transporteur sur les colis est **inféré du numéro de suivi** (`fnNormaliserTransporteur`).
 
@@ -79,7 +79,8 @@ Le transporteur sur les colis est **inféré du numéro de suivi** (`fnNormalise
 
 - **Power BI Desktop** : ouvrir `powerbi/Lireka_Profitabilite.pbip` sur un poste ayant accès à la base (VPN COex), puis *Actualiser*. Au premier refresh, Desktop demande d'approuver les requêtes SQL natives.
 - **Power BI Service** : le dataset se rafraîchit via la passerelle Lireka-Gateway (source PostgreSQL configurée dans la passerelle). La fréquence relève du choix Lireka.
-- **Période affichée** : la fenêtre « 12 derniers mois » est calée sur la dernière commande avec CA en base, pas sur la date du refresh. La carte « Data through … » de chaque page affiche cette date.
+- **Période affichée** : un seul filtre de rapport « Period » (date relative, 12 derniers mois par défaut, modifiable dans le volet Filtres, par exemple « année civile précédente »). La base étant alimentée chaque jour, la période est calée sur la date du jour ; la carte « Data through … » de chaque page affiche la date de la dernière commande avec CA.
+- **Comparaisons N-1** : si plus de 5 % des commandes non annulées de la période N-1 n'ont pas de montant de vente, les PY et variations de revenu et de marge sont vides (mesure `[_PY incomplet]`).
 
 ---
 

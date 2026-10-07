@@ -241,6 +241,16 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: ca_disponible
 
+	/// "Oui" si la commande a un CA (ca_disponible = "Oui") ou est annulée (une annulation n'a pas de CA
+	/// par nature). Périmètre des volumes : commandes, unités, taux d'annulation. Les commandes
+	/// actives sans montant de vente sont exclues, comme du revenu et de la marge.
+	column perimetre_volumes
+		dataType: string
+		isHidden
+		lineageTag: b42022d5-240e-47a9-9cd0-4e173c71cdcf
+		summarizeBy: none
+		sourceColumn: perimetre_volumes
+
 	/// CA HT net annulation, base reconstruite (0 si CANCELLED) — ratios médiane et poste basculant.
 	column ca_ht_net
 		dataType: double
@@ -312,17 +322,27 @@ table fact_commandes
 		lineageTag: c011a001-4e11-4a11-8a11-000000000001
 		summarizeBy: sum
 
-	/// Mediane canal du ratio cout_achat / ca_ht_net (non-deficitaires, ca_ht_net > 0).
+	/// Mediane canal du ratio cout_achat / ca_ht_net (non-deficitaires, ca_ht_net > 0),
+	/// sur les 12 derniers mois de données (référence fixe calculée au refresh, comme les 5 suivantes).
 	column med_r_achat =
-			CALCULATE(
-				MEDIANX(
-					fact_commandes,
-					DIVIDE(fact_commandes[cout_achat_net], fact_commandes[ca_ht_net])
-				),
-				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-				fact_commandes[marge_brute_commande] >= 0,
-				fact_commandes[ca_ht_net] > 0
-			)
+			VAR dmax =
+				CALCULATE(
+					MAX(fact_commandes[date_commande]),
+					REMOVEFILTERS(fact_commandes),
+					fact_commandes[ca_disponible] = "Oui"
+				)
+			VAR d0 = EDATE(dmax, -12)
+			RETURN
+				CALCULATE(
+					MEDIANX(
+						fact_commandes,
+						DIVIDE(fact_commandes[cout_achat_net], fact_commandes[ca_ht_net])
+					),
+					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+					fact_commandes[marge_brute_commande] >= 0,
+					fact_commandes[ca_ht_net] > 0,
+					fact_commandes[date_commande] > d0
+				)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000020
@@ -330,15 +350,24 @@ table fact_commandes
 
 	/// Mediane canal du ratio cout_transport_amont / ca_ht_net.
 	column med_r_amont =
-			CALCULATE(
-				MEDIANX(
-					fact_commandes,
-					DIVIDE(IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont]), fact_commandes[ca_ht_net])
-				),
-				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-				fact_commandes[marge_brute_commande] >= 0,
-				fact_commandes[ca_ht_net] > 0
-			)
+			VAR dmax =
+				CALCULATE(
+					MAX(fact_commandes[date_commande]),
+					REMOVEFILTERS(fact_commandes),
+					fact_commandes[ca_disponible] = "Oui"
+				)
+			VAR d0 = EDATE(dmax, -12)
+			RETURN
+				CALCULATE(
+					MEDIANX(
+						fact_commandes,
+						DIVIDE(IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont]), fact_commandes[ca_ht_net])
+					),
+					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+					fact_commandes[marge_brute_commande] >= 0,
+					fact_commandes[ca_ht_net] > 0,
+					fact_commandes[date_commande] > d0
+				)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000021
@@ -346,15 +375,24 @@ table fact_commandes
 
 	/// Mediane canal du ratio cout_transport_retenu_cmd / ca_ht_net.
 	column med_r_outbound =
-			CALCULATE(
-				MEDIANX(
-					fact_commandes,
-					DIVIDE(IF(ISBLANK(fact_commandes[cout_transport_retenu_cmd]), 0, fact_commandes[cout_transport_retenu_cmd]), fact_commandes[ca_ht_net])
-				),
-				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-				fact_commandes[marge_brute_commande] >= 0,
-				fact_commandes[ca_ht_net] > 0
-			)
+			VAR dmax =
+				CALCULATE(
+					MAX(fact_commandes[date_commande]),
+					REMOVEFILTERS(fact_commandes),
+					fact_commandes[ca_disponible] = "Oui"
+				)
+			VAR d0 = EDATE(dmax, -12)
+			RETURN
+				CALCULATE(
+					MEDIANX(
+						fact_commandes,
+						DIVIDE(IF(ISBLANK(fact_commandes[cout_transport_retenu_cmd]), 0, fact_commandes[cout_transport_retenu_cmd]), fact_commandes[ca_ht_net])
+					),
+					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+					fact_commandes[marge_brute_commande] >= 0,
+					fact_commandes[ca_ht_net] > 0,
+					fact_commandes[date_commande] > d0
+				)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000022
@@ -362,15 +400,24 @@ table fact_commandes
 
 	/// Mediane canal du ratio duties_taxes_cmd / ca_ht_net.
 	column med_r_duties =
-			CALCULATE(
-				MEDIANX(
-					fact_commandes,
-					DIVIDE(IF(ISBLANK(fact_commandes[duties_taxes_cmd]), 0, fact_commandes[duties_taxes_cmd]), fact_commandes[ca_ht_net])
-				),
-				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-				fact_commandes[marge_brute_commande] >= 0,
-				fact_commandes[ca_ht_net] > 0
-			)
+			VAR dmax =
+				CALCULATE(
+					MAX(fact_commandes[date_commande]),
+					REMOVEFILTERS(fact_commandes),
+					fact_commandes[ca_disponible] = "Oui"
+				)
+			VAR d0 = EDATE(dmax, -12)
+			RETURN
+				CALCULATE(
+					MEDIANX(
+						fact_commandes,
+						DIVIDE(IF(ISBLANK(fact_commandes[duties_taxes_cmd]), 0, fact_commandes[duties_taxes_cmd]), fact_commandes[ca_ht_net])
+					),
+					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+					fact_commandes[marge_brute_commande] >= 0,
+					fact_commandes[ca_ht_net] > 0,
+					fact_commandes[date_commande] > d0
+				)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000023
@@ -378,15 +425,24 @@ table fact_commandes
 
 	/// Mediane canal du ratio commissions_marketplace / ca_ht_net.
 	column med_r_commissions =
-			CALCULATE(
-				MEDIANX(
-					fact_commandes,
-					DIVIDE(IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace]), fact_commandes[ca_ht_net])
-				),
-				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-				fact_commandes[marge_brute_commande] >= 0,
-				fact_commandes[ca_ht_net] > 0
-			)
+			VAR dmax =
+				CALCULATE(
+					MAX(fact_commandes[date_commande]),
+					REMOVEFILTERS(fact_commandes),
+					fact_commandes[ca_disponible] = "Oui"
+				)
+			VAR d0 = EDATE(dmax, -12)
+			RETURN
+				CALCULATE(
+					MEDIANX(
+						fact_commandes,
+						DIVIDE(IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace]), fact_commandes[ca_ht_net])
+					),
+					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+					fact_commandes[marge_brute_commande] >= 0,
+					fact_commandes[ca_ht_net] > 0,
+					fact_commandes[date_commande] > d0
+				)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000024
@@ -394,15 +450,24 @@ table fact_commandes
 
 	/// Mediane canal du ratio fournitures_cmd / ca_ht_net.
 	column med_r_fournitures =
-			CALCULATE(
-				MEDIANX(
-					fact_commandes,
-					DIVIDE(IF(ISBLANK(fact_commandes[fournitures_cmd]), 0, fact_commandes[fournitures_cmd]), fact_commandes[ca_ht_net])
-				),
-				ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-				fact_commandes[marge_brute_commande] >= 0,
-				fact_commandes[ca_ht_net] > 0
-			)
+			VAR dmax =
+				CALCULATE(
+					MAX(fact_commandes[date_commande]),
+					REMOVEFILTERS(fact_commandes),
+					fact_commandes[ca_disponible] = "Oui"
+				)
+			VAR d0 = EDATE(dmax, -12)
+			RETURN
+				CALCULATE(
+					MEDIANX(
+						fact_commandes,
+						DIVIDE(IF(ISBLANK(fact_commandes[fournitures_cmd]), 0, fact_commandes[fournitures_cmd]), fact_commandes[ca_ht_net])
+					),
+					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
+					fact_commandes[marge_brute_commande] >= 0,
+					fact_commandes[ca_ht_net] > 0,
+					fact_commandes[date_commande] > d0
+				)
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000025
@@ -650,14 +715,20 @@ table fact_commandes
 						each if [ca_ht] <> null and [ca_ht] > 0 then "Oui" else "Non",
 						type text
 					),
-					#"Colonnes conservees" = Table.SelectColumns(#"CA disponible", {
+					#"Perimetre volumes" = Table.AddColumn(
+						#"CA disponible",
+						"perimetre_volumes",
+						each if [ca_disponible] = "Oui" or [state] = "CANCELLED" then "Oui" else "Non",
+						type text
+					),
+					#"Colonnes conservees" = Table.SelectColumns(#"Perimetre volumes", {
 						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays", "currency",
 						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						"cout_transport_amont", "commissions_marketplace",
 						"retours_remboursements", "couts_generiques",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande",
-						"canal_bascule", "ca_ht_net", "ca_disponible"
+						"canal_bascule", "ca_ht_net", "ca_disponible", "perimetre_volumes"
 					})
 				in
 					#"Colonnes conservees"
