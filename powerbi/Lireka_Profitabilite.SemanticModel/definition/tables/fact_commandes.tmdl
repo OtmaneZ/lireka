@@ -322,156 +322,57 @@ table fact_commandes
 		lineageTag: c011a001-4e11-4a11-8a11-000000000001
 		summarizeBy: sum
 
-	/// Mediane canal du ratio cout_achat / ca_ht_net (non-deficitaires, ca_ht_net > 0),
-	/// sur les 12 derniers mois de données (référence fixe calculée au refresh, comme les 5 suivantes).
-	column med_r_achat =
-			VAR dmax =
-				CALCULATE(
-					MAX(fact_commandes[date_commande]),
-					REMOVEFILTERS(fact_commandes),
-					fact_commandes[ca_disponible] = "Oui"
-				)
-			VAR d0 = EDATE(dmax, -12)
-			RETURN
-				CALCULATE(
-					MEDIANX(
-						fact_commandes,
-						DIVIDE(fact_commandes[cout_achat_net], fact_commandes[ca_ht_net])
-					),
-					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-					fact_commandes[marge_brute_commande] >= 0,
-					fact_commandes[ca_ht_net] > 0,
-					fact_commandes[date_commande] > d0
-				)
+	/// Médianes par canal des ratios coût / CA (commandes non déficitaires, CA > 0, 12 derniers mois
+	/// de données) : calculées par PostgreSQL (étape "Medianes canal" de la partition), une ligne par
+	/// canal_bascule, puis jointes à chaque commande. Remplace 6 colonnes calculées DAX (médiane par
+	/// ligne sur tout le canal) qui faisaient échouer le chargement.
+	/// Mediane canal du ratio cout_achat / ca_ht_net.
+	column med_r_achat
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000020
 		summarizeBy: none
+		sourceColumn: med_r_achat
 
 	/// Mediane canal du ratio cout_transport_amont / ca_ht_net.
-	column med_r_amont =
-			VAR dmax =
-				CALCULATE(
-					MAX(fact_commandes[date_commande]),
-					REMOVEFILTERS(fact_commandes),
-					fact_commandes[ca_disponible] = "Oui"
-				)
-			VAR d0 = EDATE(dmax, -12)
-			RETURN
-				CALCULATE(
-					MEDIANX(
-						fact_commandes,
-						DIVIDE(IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont]), fact_commandes[ca_ht_net])
-					),
-					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-					fact_commandes[marge_brute_commande] >= 0,
-					fact_commandes[ca_ht_net] > 0,
-					fact_commandes[date_commande] > d0
-				)
+	column med_r_amont
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000021
 		summarizeBy: none
+		sourceColumn: med_r_amont
 
 	/// Mediane canal du ratio cout_transport_retenu_cmd / ca_ht_net.
-	column med_r_outbound =
-			VAR dmax =
-				CALCULATE(
-					MAX(fact_commandes[date_commande]),
-					REMOVEFILTERS(fact_commandes),
-					fact_commandes[ca_disponible] = "Oui"
-				)
-			VAR d0 = EDATE(dmax, -12)
-			RETURN
-				CALCULATE(
-					MEDIANX(
-						fact_commandes,
-						DIVIDE(IF(ISBLANK(fact_commandes[cout_transport_retenu_cmd]), 0, fact_commandes[cout_transport_retenu_cmd]), fact_commandes[ca_ht_net])
-					),
-					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-					fact_commandes[marge_brute_commande] >= 0,
-					fact_commandes[ca_ht_net] > 0,
-					fact_commandes[date_commande] > d0
-				)
+	column med_r_outbound
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000022
 		summarizeBy: none
+		sourceColumn: med_r_outbound
 
 	/// Mediane canal du ratio duties_taxes_cmd / ca_ht_net.
-	column med_r_duties =
-			VAR dmax =
-				CALCULATE(
-					MAX(fact_commandes[date_commande]),
-					REMOVEFILTERS(fact_commandes),
-					fact_commandes[ca_disponible] = "Oui"
-				)
-			VAR d0 = EDATE(dmax, -12)
-			RETURN
-				CALCULATE(
-					MEDIANX(
-						fact_commandes,
-						DIVIDE(IF(ISBLANK(fact_commandes[duties_taxes_cmd]), 0, fact_commandes[duties_taxes_cmd]), fact_commandes[ca_ht_net])
-					),
-					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-					fact_commandes[marge_brute_commande] >= 0,
-					fact_commandes[ca_ht_net] > 0,
-					fact_commandes[date_commande] > d0
-				)
+	column med_r_duties
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000023
 		summarizeBy: none
+		sourceColumn: med_r_duties
 
 	/// Mediane canal du ratio commissions_marketplace / ca_ht_net.
-	column med_r_commissions =
-			VAR dmax =
-				CALCULATE(
-					MAX(fact_commandes[date_commande]),
-					REMOVEFILTERS(fact_commandes),
-					fact_commandes[ca_disponible] = "Oui"
-				)
-			VAR d0 = EDATE(dmax, -12)
-			RETURN
-				CALCULATE(
-					MEDIANX(
-						fact_commandes,
-						DIVIDE(IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace]), fact_commandes[ca_ht_net])
-					),
-					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-					fact_commandes[marge_brute_commande] >= 0,
-					fact_commandes[ca_ht_net] > 0,
-					fact_commandes[date_commande] > d0
-				)
+	column med_r_commissions
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000024
 		summarizeBy: none
+		sourceColumn: med_r_commissions
 
 	/// Mediane canal du ratio fournitures_cmd / ca_ht_net.
-	column med_r_fournitures =
-			VAR dmax =
-				CALCULATE(
-					MAX(fact_commandes[date_commande]),
-					REMOVEFILTERS(fact_commandes),
-					fact_commandes[ca_disponible] = "Oui"
-				)
-			VAR d0 = EDATE(dmax, -12)
-			RETURN
-				CALCULATE(
-					MEDIANX(
-						fact_commandes,
-						DIVIDE(IF(ISBLANK(fact_commandes[fournitures_cmd]), 0, fact_commandes[fournitures_cmd]), fact_commandes[ca_ht_net])
-					),
-					ALLEXCEPT(fact_commandes, fact_commandes[canal_bascule]),
-					fact_commandes[marge_brute_commande] >= 0,
-					fact_commandes[ca_ht_net] > 0,
-					fact_commandes[date_commande] > d0
-				)
+	column med_r_fournitures
 		dataType: double
 		isHidden
 		lineageTag: c011a001-4e11-4a11-8a11-000000000025
 		summarizeBy: none
+		sourceColumn: med_r_fournitures
 
 	/// Page 11 Loss analysis : tranche de panier (order_amount_eur / ca_ht), bornes 0/15/20/30/40/70/90/200.
 	/// "No sales amount" (ordre 0) si ca_disponible = "Non".
@@ -696,8 +597,63 @@ table fact_commandes
 							else "AUTRES",
 						type text
 					),
+					// Médianes par canal pour poste_basculant (page Loss analysis), calculées par PostgreSQL :
+					// ratios coût / CA des commandes non déficitaires avec CA, 12 derniers mois de données.
+					// Même formule à 7 postes que marge_brute_commande (outbound = facturé si rapproché, sinon estimé).
+					#"Medianes canal" = Table.TransformColumnTypes(
+						fnRequeteSql(Text.Combine({
+						"WITH co AS (",
+						"SELECT o.id,",
+						"CASE WHEN trim(o.source) LIKE 'AMAZON%' THEN 'AMAZON'",
+						"WHEN trim(o.source) IN ('WEBSITE', 'PRO_WEBSITE', 'CULTURA', 'RAKUTEN', 'FNAC') THEN trim(o.source)",
+						"ELSE 'AUTRES' END AS canal_bascule,",
+						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE o.order_amount_eur END AS ca,",
+						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE COALESCE(o.shipping_fee_eur, 0) END AS port,",
+						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE COALESCE(o.product_cost_eur, 0) END AS achat,",
+						"COALESCE(o.inbound_transportation_cost_eur, 0) AS amont,",
+						"COALESCE(o.marketplace_fees_eur, 0) AS commissions",
+						"FROM " & PgSchema & ".customer_order o",
+						"WHERE o.order_amount_eur > 0",
+						"AND o.origin_created > (SELECT max(origin_created) FROM " & PgSchema & ".customer_order WHERE order_amount_eur > 0) - interval '12 months'",
+						"), f AS (",
+						"SELECT package_id, SUM(amount_excl_vat_eur) AS facture FROM " & PgSchema & ".v_carrier_invoice_lines",
+						"WHERE package_id IS NOT NULL GROUP BY package_id",
+						"), p AS (",
+						"SELECT pk.order_id,",
+						"SUM(CASE WHEN f.facture IS NOT NULL THEN f.facture ELSE COALESCE(pk.shipping_cost_eur, 0) END) AS outbound,",
+						"SUM(COALESCE(pk.duties_taxes_eur, 0)) AS duties,",
+						"SUM(COALESCE(pk.shipping_supply_cost_eur, 0)) AS fournitures",
+						"FROM " & PgSchema & ".package pk LEFT JOIN f ON f.package_id = pk.id",
+						"GROUP BY pk.order_id",
+						"), m AS (",
+						"SELECT co.*, COALESCE(p.outbound, 0) AS outbound, COALESCE(p.duties, 0) AS duties, COALESCE(p.fournitures, 0) AS fournitures",
+						"FROM co LEFT JOIN p ON p.order_id = co.id",
+						")",
+						"SELECT canal_bascule,",
+						"percentile_cont(0.5) WITHIN GROUP (ORDER BY (achat / ca)::float8) AS med_r_achat,",
+						"percentile_cont(0.5) WITHIN GROUP (ORDER BY (amont / ca)::float8) AS med_r_amont,",
+						"percentile_cont(0.5) WITHIN GROUP (ORDER BY (outbound / ca)::float8) AS med_r_outbound,",
+						"percentile_cont(0.5) WITHIN GROUP (ORDER BY (duties / ca)::float8) AS med_r_duties,",
+						"percentile_cont(0.5) WITHIN GROUP (ORDER BY (commissions / ca)::float8) AS med_r_commissions,",
+						"percentile_cont(0.5) WITHIN GROUP (ORDER BY (fournitures / ca)::float8) AS med_r_fournitures",
+						"FROM m",
+						"WHERE ca > 0 AND ca + port - achat - amont - outbound - duties - commissions - fournitures >= 0",
+						"GROUP BY canal_bascule"
+						}, " ")),
+						{
+							{"canal_bascule", type text}, {"med_r_achat", type number}, {"med_r_amont", type number},
+							{"med_r_outbound", type number}, {"med_r_duties", type number},
+							{"med_r_commissions", type number}, {"med_r_fournitures", type number}
+						}
+					),
+					#"Medianes jointes" = Table.ExpandTableColumn(
+						Table.NestedJoin(#"Canal bascule", {"canal_bascule"}, #"Medianes canal", {"canal_bascule"}, "med", JoinKind.LeftOuter),
+						"med",
+						{"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures"},
+						{"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures"}
+					),
 					#"CA HT net" = Table.AddColumn(
-						#"Canal bascule",
+						#"Medianes jointes",
 						"ca_ht_net",
 						each if [state] = "CANCELLED" then 0 else if [ca_ht_reconstruit] = null then 0 else [ca_ht_reconstruit],
 						type number
@@ -728,7 +684,8 @@ table fact_commandes
 						"retours_remboursements", "couts_generiques",
 						"gross_profit_eur", "gross_margin", "contribution_profit_eur", "contribution_margin",
 						"date_commande",
-						"canal_bascule", "ca_ht_net", "ca_disponible", "perimetre_volumes"
+						"canal_bascule", "ca_ht_net", "ca_disponible", "perimetre_volumes",
+						"med_r_achat", "med_r_amont", "med_r_outbound", "med_r_duties", "med_r_commissions", "med_r_fournitures"
 					})
 				in
 					#"Colonnes conservees"
