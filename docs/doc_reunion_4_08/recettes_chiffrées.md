@@ -31,11 +31,11 @@ Année civile 2025, sur `date_commande`. Découpage par canal : site direct d'un
 
 ## 3. Requêtes DAX Studio
 
-Ouvrir `powerbi/Lireka_Profitabilite.pbip` dans Power BI Desktop, refresh complet, puis connecter DAX Studio au modèle en mémoire.
+Ouvrir `powerbi/Lireka_Profitabilite.pbip` dans Power BI Desktop (poste avec VPN et au moins 16 Go de RAM : la VM à 8 Go ne tient pas l'affichage), refresh complet, puis exécuter les requêtes dans la vue « Requête DAX » de Desktop ou dans DAX Studio connecté au modèle en mémoire.
 
 Requêtes alignées sur le modèle du 05/10/2026 (source PostgreSQL) : le canal est `dim_type_commande[canal]` ; les mesures de contrôle Bloc 5 et transport sont définies dans la requête (`DEFINE MEASURE`), rien n'est ajouté au modèle. Coller le bloc `DEFINE` en tête de chaque requête.
 
-> **Marketplaces** : `order_amount_eur` est vide en base sur 100 % des commandes marketplace depuis 09/2024 (vérifié le 05/10/2026). Ces commandes sont exclues du revenu, des coûts et de la marge (`fact_commandes[ca_disponible] = "Non"`). Les résultats 2025 sont donc **hors marketplaces** : A1, A3 et A5 ne sont pas vérifiables tant que le backend n'alimente pas ce champ. Seuls A2 et A4 (site direct) sont exploitables.
+> **Marketplaces** : depuis le passage à `analytics_views` (07/10/2026), `order_amount_eur` est renseigné pour les marketplaces. Les commandes restant sans montant sont exclues du revenu, des coûts et de la marge (`fact_commandes[ca_disponible] = "Non"`) et comptées par canal dans R0 (colonne « Nb commandes sans CA »). A1 à A5 sont vérifiables ; si R0 montre une part significative de commandes sans CA sur un canal, l'écart correspondant est expliqué par la source, pas par le modèle.
 
 ```dax
 DEFINE
@@ -129,7 +129,7 @@ Depuis la neutralisation du fallback FX (19/07/2026), `ca_ht_reconstruit` = `ord
 | A2 | Revenu site direct 2025 (R3) | 5,6 M€ | ± 3 % | ⬜ |
 | A3 | Taux de marge global (R1) | 17,0 % | ± 150 bps | ⬜ |
 | A4 | Taux de marge site direct (R3) | 20,0 % | ± 200 bps | ⬜ |
-| A5 | Taux de marge marketplace (R3) | 10,0 % | ± 200 bps | non vérifiable (pas de CA marketplace en base) |
+| A5 | Taux de marge marketplace (R3) | 10,0 % | ± 200 bps | ⬜ |
 | A6 | Identité des 7 postes (R2) | écart nul | < 1 € | ⬜ |
 | A7 | Additivité canal (R3) | Σ canaux = total R1 | < 0,1 % | ⬜ |
 | A8 | Impact Bloc 5 (R1) | ≈ 0,9 M€ | ordre de grandeur | ⬜ |

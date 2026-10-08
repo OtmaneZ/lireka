@@ -2729,14 +2729,20 @@ RETURN
 
 ```dax
 B2C Rest Sales =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Revenu (reconstruit)]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Revenu (reconstruit)], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Revenu (reconstruit)], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2750,14 +2756,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Sales PY =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Revenu (reconstruit) PY]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Revenu (reconstruit) PY], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Revenu (reconstruit) PY], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2771,14 +2783,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest COGS =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Coût Achat Total]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Coût Achat Total], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Coût Achat Total], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2792,14 +2810,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Product profit =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Profit Produit Pur]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Profit Produit Pur], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Profit Produit Pur], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2813,14 +2837,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Returns =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Retours Remboursements]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Retours Remboursements], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Retours Remboursements], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2834,14 +2864,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Inbound =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Coût Transport Amont]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Coût Transport Amont], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Coût Transport Amont], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2855,14 +2891,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Shipping =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Coût Transport Outbound (Retenu)]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Coût Transport Outbound (Retenu)], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Coût Transport Outbound (Retenu)], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2876,14 +2918,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Duties =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Douanes Taxes]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Douanes Taxes], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Douanes Taxes], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2897,14 +2945,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Supplies =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Fournitures Expédition]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Fournitures Expédition], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Fournitures Expédition], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2918,14 +2972,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Commissions =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Commissions Marketplace]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Commissions Marketplace], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Commissions Marketplace], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2939,14 +2999,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Generic =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Coûts Génériques]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Coûts Génériques], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Coûts Génériques], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2960,14 +3026,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Gross profit =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Marge Brute]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Marge Brute], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Marge Brute], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -2981,14 +3053,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest Gross profit PY =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Marge Brute PY]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Marge Brute PY], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Marge Brute PY], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -3002,14 +3080,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest GP reconstruit =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Marge Brute (reconstruit)]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Marge Brute (reconstruit)], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Marge Brute (reconstruit)], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
@@ -3023,14 +3107,20 @@ RETURN Total - TopPart
 
 ```dax
 B2C Rest GP reconstruit PY =
-VAR TopPart =
-    SUMX(
+VAR TopSet =
+    TOPN(
+        15,
         FILTER(
             ALLSELECTED(dim_pays[nom_pays_en]),
-            NOT ISBLANK([B2C Rank])
+            dim_pays[nom_pays_en] <> "Rest of the world"
         ),
-        [Marge Brute (reconstruit) PY]
+        [Revenu (reconstruit)],
+        DESC,
+        dim_pays[nom_pays_en],
+        ASC
     )
+VAR TopPart =
+    CALCULATE([Marge Brute (reconstruit) PY], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
 VAR Total =
     CALCULATE([Marge Brute (reconstruit) PY], ALLSELECTED(dim_pays[nom_pays_en]))
 RETURN Total - TopPart
