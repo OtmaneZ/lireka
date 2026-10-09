@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "la_slicer_periode",
   "position": {
-    "x": 3.185840707964602,
-    "y": 438.0531,
+    "x": 6,
+    "y": 436,
     "z": 6000,
-    "height": 93.98230088495575,
-    "width": 207.0796460176991,
+    "height": 92,
+    "width": 207,
     "tabOrder": 6000
   },
   "visual": {

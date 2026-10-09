@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "tr_slicer_canal",
   "position": {
-    "x": 3.1858407079646018,
-    "y": 395.04424778761063,
+    "x": 6,
+    "y": 357,
     "z": 4000,
-    "height": 65.309734513274336,
-    "width": 207.0796460176991,
+    "height": 65,
+    "width": 207,
     "tabOrder": 4000
   },
   "visual": {
