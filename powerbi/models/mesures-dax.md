@@ -2300,8 +2300,11 @@ RETURN IF(ISBLANK(r), "n/a", FORMAT(r, "0.0%", "en-US"))
 > General View — tableau KPI, formats compacts (texte).  
 
 ```dax
-GV Display — Ordered units = [KPI Compact — Ordered units]
+GV Display — Ordered units =
+[Unités commandées]
 ```
+
+*Format dynamique* : `SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "#,##0,.0K", "#,##0")`
 
 ---
 
@@ -2309,8 +2312,10 @@ GV Display — Ordered units = [KPI Compact — Ordered units]
 
 ```dax
 GV Display — Revenue =
-IF(ISBLANK([Revenu (reconstruit)]), BLANK(), [KPI Compact — Revenue])
+[Revenu (reconstruit)]
 ```
+
+*Format dynamique* : `SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")`
 
 ---
 
@@ -2318,8 +2323,10 @@ IF(ISBLANK([Revenu (reconstruit)]), BLANK(), [KPI Compact — Revenue])
 
 ```dax
 GV Display — Gross Profit =
-IF(ISBLANK([Marge Brute (reconstruit)]), BLANK(), [KPI Compact — Gross Profit])
+[Marge Brute (reconstruit)]
 ```
+
+*Format dynamique* : `SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")`
 
 ---
 
@@ -2327,20 +2334,10 @@ IF(ISBLANK([Marge Brute (reconstruit)]), BLANK(), [KPI Compact — Gross Profit]
 
 ```dax
 GV Display — YoY€ =
-VAR v = [Revenu (reconstruit) YoY Δ]
-VAR a = ABS(v)
-RETURN
-    IF(
-        ISBLANK(v),
-        BLANK(),
-        SWITCH(
-            TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
-            "€" & FORMAT(v, "#,##0", "en-US")
-        )
-    )
+[Revenu (reconstruit) YoY Δ]
 ```
+
+*Format dynamique* : `SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")`
 
 ---
 
@@ -2372,8 +2369,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -2393,23 +2392,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Achat Total], BLANK())
         )
     )
-VAR sales =
-    IF(
-        ISBLANK(Country),
-        [Revenu (reconstruit)],
-        IF(
-            Country = "Rest of the world",
-            [B2C Rest Sales],
-            IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
-        )
-    )
-RETURN
-    IF(
-        ISBLANK(v),
-        BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-    )
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""`
 
 ---
 
@@ -2429,23 +2415,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Profit Produit Pur], BLANK())
         )
     )
-VAR sales =
-    IF(
-        ISBLANK(Country),
-        [Revenu (reconstruit)],
-        IF(
-            Country = "Rest of the world",
-            [B2C Rest Sales],
-            IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
-        )
-    )
-RETURN
-    IF(
-        ISBLANK(v),
-        BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-    )
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""`
 
 ---
 
@@ -2465,23 +2438,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute (reconstruit)], BLANK())
         )
     )
-VAR sales =
-    IF(
-        ISBLANK(Country),
-        [Revenu (reconstruit)],
-        IF(
-            Country = "Rest of the world",
-            [B2C Rest Sales],
-            IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
-        )
-    )
-RETURN
-    IF(
-        ISBLANK(v),
-        BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-    )
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""`
 
 ---
 
@@ -2501,8 +2461,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Retours Remboursements], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -2522,8 +2484,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Amont], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -2543,8 +2507,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Outbound (Retenu)], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -2564,8 +2530,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Douanes Taxes], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -2585,8 +2553,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Fournitures Expédition], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -2606,8 +2576,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Commissions Marketplace], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -2627,8 +2599,10 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coûts Génériques], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+RETURN v
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -2636,9 +2610,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 B2C Display - Revenue YoY % =
-VAR y = [B2C YoY - Revenue %]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
+[B2C YoY - Revenue %]
 ```
+
+*Format dynamique* : `"+0.0%;-0.0%"`
 
 ---
 
@@ -2646,9 +2621,10 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 
 ```dax
 B2C Display - GP YoY % =
-VAR y = [B2C YoY - GP %]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
+[B2C YoY - GP %]
 ```
+
+*Format dynamique* : `"+0.0%;-0.0%"`
 
 ---
 
@@ -2656,9 +2632,10 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 
 ```dax
 B2C Display - GM YoY bps =
-VAR y = [B2C YoY - GM bps]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0", "en-US") & " bps")
+[B2C YoY - GM bps]
 ```
+
+*Format dynamique* : `"+0"" bps"";-0"" bps"""`
 
 ---
 
@@ -3436,9 +3413,10 @@ RETURN
 
 ```dax
 Mkt Display - Sales =
-VAR v = [Revenu (reconstruit)]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+[Revenu (reconstruit)]
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -3446,15 +3424,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 Mkt Display - COGS =
-VAR v = [Coût Achat Total]
-VAR sales = [Revenu (reconstruit)]
-RETURN
-    IF(
-        ISBLANK(v),
-        BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-    )
+[Coût Achat Total]
 ```
+
+*Format dynamique* : `"€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""`
 
 ---
 
@@ -3462,15 +3435,10 @@ RETURN
 
 ```dax
 Mkt Display - Product profit =
-VAR v = [Profit Produit Pur]
-VAR sales = [Revenu (reconstruit)]
-RETURN
-    IF(
-        ISBLANK(v),
-        BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-    )
+[Profit Produit Pur]
 ```
+
+*Format dynamique* : `"€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""`
 
 ---
 
@@ -3478,9 +3446,10 @@ RETURN
 
 ```dax
 Mkt Display - Returns and refunds =
-VAR v = [Retours Remboursements]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+[Retours Remboursements]
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -3488,9 +3457,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 Mkt Display - Inbound freight =
-VAR v = [Coût Transport Amont]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+[Coût Transport Amont]
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -3498,9 +3468,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 Mkt Display - Shipping =
-VAR v = [Coût Transport Outbound (Retenu)]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+[Coût Transport Outbound (Retenu)]
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -3508,9 +3479,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 Mkt Display - Duties and taxes =
-VAR v = [Douanes Taxes]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+[Douanes Taxes]
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -3518,9 +3490,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 Mkt Display - Shipping supplies =
-VAR v = [Fournitures Expédition]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+[Fournitures Expédition]
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -3528,9 +3501,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 Mkt Display - Marketplace fees =
-VAR v = [Commissions Marketplace]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+[Commissions Marketplace]
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -3538,9 +3512,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 Mkt Display - Generic costs =
-VAR v = [Coûts Génériques]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+[Coûts Génériques]
 ```
+
+*Format dynamique* : `"€#,##0"`
 
 ---
 
@@ -3548,15 +3523,10 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 
 ```dax
 Mkt Display - Gross profit =
-VAR v = [Marge Brute (reconstruit)]
-VAR sales = [Revenu (reconstruit)]
-RETURN
-    IF(
-        ISBLANK(v),
-        BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-    )
+[Marge Brute (reconstruit)]
 ```
+
+*Format dynamique* : `"€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""`
 
 ---
 
@@ -3564,9 +3534,10 @@ RETURN
 
 ```dax
 Mkt Display - Revenue YoY % =
-VAR y = [Revenu (reconstruit) YoY %]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
+[Revenu (reconstruit) YoY %]
 ```
+
+*Format dynamique* : `"+0.0%;-0.0%"`
 
 ---
 
@@ -3574,9 +3545,10 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 
 ```dax
 Mkt Display - GP YoY % =
-VAR y = [Marge Brute (reconstruit) YoY %]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
+[Marge Brute (reconstruit) YoY %]
 ```
+
+*Format dynamique* : `"+0.0%;-0.0%"`
 
 ---
 
@@ -3584,9 +3556,10 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 
 ```dax
 Mkt Display - GM YoY bps =
-VAR y = [Taux Marge Brute (reconstruit) YoY bps]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0", "en-US") & " bps")
+[Taux Marge Brute (reconstruit) YoY bps]
 ```
+
+*Format dynamique* : `"+0"" bps"";-0"" bps"""`
 
 ---
 

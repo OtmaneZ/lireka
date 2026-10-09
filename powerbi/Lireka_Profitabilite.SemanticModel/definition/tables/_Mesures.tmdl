@@ -1490,36 +1490,33 @@ table _Mesures
 		lineageTag: bb000004-1111-2222-3333-444455550004
 
 	/// General View — tableau KPI, formats compacts (texte).
-	measure 'GV Display — Ordered units' = [KPI Compact — Ordered units]
+	measure 'GV Display — Ordered units' =
+			[Unités commandées]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000011-1111-2222-3333-444455550011
 
+		formatStringDefinition = SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "#,##0,.0K", "#,##0")
+
 	measure 'GV Display — Revenue' =
-			IF(ISBLANK([Revenu (reconstruit)]), BLANK(), [KPI Compact — Revenue])
+			[Revenu (reconstruit)]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000012-1111-2222-3333-444455550012
 
+		formatStringDefinition = SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")
+
 	measure 'GV Display — Gross Profit' =
-			IF(ISBLANK([Marge Brute (reconstruit)]), BLANK(), [KPI Compact — Gross Profit])
+			[Marge Brute (reconstruit)]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000013-1111-2222-3333-444455550013
 
+		formatStringDefinition = SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")
+
 	measure 'GV Display — YoY€' =
-			VAR v = [Revenu (reconstruit) YoY Δ]
-			VAR a = ABS(v)
-			RETURN
-				IF(
-					ISBLANK(v),
-					BLANK(),
-					SWITCH(
-						TRUE(),
-						a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
-						"€" & FORMAT(v, "#,##0", "en-US")
-					)
-				)
+			[Revenu (reconstruit) YoY Δ]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000014-1111-2222-3333-444455550014
+
+		formatStringDefinition = SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")
 
 	/// =====================================================================
 	/// Bloc 10 — Website B2C (stable) : Display ASCII + Rest via code_pays
@@ -1542,9 +1539,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000010-1111-2222-3333-444455550010
+
+		formatStringDefinition = "€#,##0"
 
 	measure 'B2C Display - COGS' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1559,24 +1558,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Achat Total], BLANK())
 					)
 				)
-			VAR sales =
-				IF(
-					ISBLANK(Country),
-					[Revenu (reconstruit)],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Sales],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
-					)
-				)
-			RETURN
-				IF(
-					ISBLANK(v),
-					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-				)
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000011-1111-2222-3333-444455550011
+
+		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""
 
 	measure 'B2C Display - Product profit' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1591,24 +1577,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Profit Produit Pur], BLANK())
 					)
 				)
-			VAR sales =
-				IF(
-					ISBLANK(Country),
-					[Revenu (reconstruit)],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Sales],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
-					)
-				)
-			RETURN
-				IF(
-					ISBLANK(v),
-					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-				)
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000012-1111-2222-3333-444455550012
+
+		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""
 
 	measure 'B2C Display - Gross profit' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1623,24 +1596,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute (reconstruit)], BLANK())
 					)
 				)
-			VAR sales =
-				IF(
-					ISBLANK(Country),
-					[Revenu (reconstruit)],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Sales],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
-					)
-				)
-			RETURN
-				IF(
-					ISBLANK(v),
-					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-				)
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000019-1111-2222-3333-444455550019
+
+		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""
 
 	measure 'B2C Display - Returns and refunds' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1655,9 +1615,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Retours Remboursements], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000013-1111-2222-3333-444455550013
+
+		formatStringDefinition = "€#,##0"
 
 	measure 'B2C Display - Inbound freight' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1672,9 +1634,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Amont], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000014-1111-2222-3333-444455550014
+
+		formatStringDefinition = "€#,##0"
 
 	measure 'B2C Display - Shipping' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1689,9 +1653,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Outbound (Retenu)], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000015-1111-2222-3333-444455550015
+
+		formatStringDefinition = "€#,##0"
 
 	measure 'B2C Display - Duties and taxes' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1706,9 +1672,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Douanes Taxes], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000016-1111-2222-3333-444455550016
+
+		formatStringDefinition = "€#,##0"
 
 	measure 'B2C Display - Shipping supplies' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1723,9 +1691,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Fournitures Expédition], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000017-1111-2222-3333-444455550017
+
+		formatStringDefinition = "€#,##0"
 
 	measure 'B2C Display - Marketplace fees' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1740,9 +1710,11 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Commissions Marketplace], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000103
+
+		formatStringDefinition = "€#,##0"
 
 	measure 'B2C Display - Generic costs' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1757,27 +1729,32 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coûts Génériques], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000018-1111-2222-3333-444455550018
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'B2C Display - Revenue YoY %' =
-			VAR y = [B2C YoY - Revenue %]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
+			[B2C YoY - Revenue %]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000020-1111-2222-3333-444455550020
 
+		formatStringDefinition = "+0.0%;-0.0%"
+
 	measure 'B2C Display - GP YoY %' =
-			VAR y = [B2C YoY - GP %]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
+			[B2C YoY - GP %]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000021-1111-2222-3333-444455550021
 
+		formatStringDefinition = "+0.0%;-0.0%"
+
 	measure 'B2C Display - GM YoY bps' =
-			VAR y = [B2C YoY - GM bps]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0", "en-US") & " bps")
+			[B2C YoY - GM bps]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000022-1111-2222-3333-444455550022
+
+		formatStringDefinition = "+0"" bps"";-0"" bps"""
 
 	/// Valeur numérique de [B2C Display - Revenue YoY %] (Top 15 + Rest of the world) : base des couleurs.
 	measure 'B2C YoY - Revenue %' =
@@ -2403,106 +2380,102 @@ table _Mesures
 	/// Axe table = dim_type_commande[libelle] ; filtre page canal = Marketplaces.
 	/// =====================================================================
 	measure 'Mkt Display - Sales' =
-			VAR v = [Revenu (reconstruit)]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			[Revenu (reconstruit)]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00010-1111-2222-3333-444455550010
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'Mkt Display - COGS' =
-			VAR v = [Coût Achat Total]
-			VAR sales = [Revenu (reconstruit)]
-			RETURN
-				IF(
-					ISBLANK(v),
-					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-				)
+			[Coût Achat Total]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00011-1111-2222-3333-444455550011
 
+		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""
+
 	measure 'Mkt Display - Product profit' =
-			VAR v = [Profit Produit Pur]
-			VAR sales = [Revenu (reconstruit)]
-			RETURN
-				IF(
-					ISBLANK(v),
-					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-				)
+			[Profit Produit Pur]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00012-1111-2222-3333-444455550012
 
+		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""
+
 	measure 'Mkt Display - Returns and refunds' =
-			VAR v = [Retours Remboursements]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			[Retours Remboursements]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00013-1111-2222-3333-444455550013
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'Mkt Display - Inbound freight' =
-			VAR v = [Coût Transport Amont]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			[Coût Transport Amont]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00014-1111-2222-3333-444455550014
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'Mkt Display - Shipping' =
-			VAR v = [Coût Transport Outbound (Retenu)]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			[Coût Transport Outbound (Retenu)]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00015-1111-2222-3333-444455550015
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'Mkt Display - Duties and taxes' =
-			VAR v = [Douanes Taxes]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			[Douanes Taxes]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00016-1111-2222-3333-444455550016
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'Mkt Display - Shipping supplies' =
-			VAR v = [Fournitures Expédition]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			[Fournitures Expédition]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00017-1111-2222-3333-444455550017
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'Mkt Display - Marketplace fees' =
-			VAR v = [Commissions Marketplace]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			[Commissions Marketplace]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000101
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'Mkt Display - Generic costs' =
-			VAR v = [Coûts Génériques]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
+			[Coûts Génériques]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00018-1111-2222-3333-444455550018
 
+		formatStringDefinition = "€#,##0"
+
 	measure 'Mkt Display - Gross profit' =
-			VAR v = [Marge Brute (reconstruit)]
-			VAR sales = [Revenu (reconstruit)]
-			RETURN
-				IF(
-					ISBLANK(v),
-					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
-				)
+			[Marge Brute (reconstruit)]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00019-1111-2222-3333-444455550019
 
+		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""
+
 	measure 'Mkt Display - Revenue YoY %' =
-			VAR y = [Revenu (reconstruit) YoY %]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
+			[Revenu (reconstruit) YoY %]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00020-1111-2222-3333-444455550020
 
+		formatStringDefinition = "+0.0%;-0.0%"
+
 	measure 'Mkt Display - GP YoY %' =
-			VAR y = [Marge Brute (reconstruit) YoY %]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
+			[Marge Brute (reconstruit) YoY %]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00021-1111-2222-3333-444455550021
 
+		formatStringDefinition = "+0.0%;-0.0%"
+
 	measure 'Mkt Display - GM YoY bps' =
-			VAR y = [Taux Marge Brute (reconstruit) YoY bps]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0", "en-US") & " bps")
+			[Taux Marge Brute (reconstruit) YoY bps]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00022-1111-2222-3333-444455550022
+
+		formatStringDefinition = "+0"" bps"";-0"" bps"""
 
 	/// TOPN + tie-break id_commande (pattern Top * ISBN) — le IF(Keep) par ligne faisait
 	/// passer le total visuel (RANKX sur revenu agrégé → Keep=1 → somme globale).
