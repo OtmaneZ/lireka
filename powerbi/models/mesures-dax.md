@@ -265,7 +265,7 @@ VAR d2 = MIN(MAX(dim_date[date]), dmax)
 RETURN
     IF(
         ISBLANK(d1) || d1 > d2,
-        "no data",
+        "No data",
         FORMAT(d1, "dd mmm yyyy", "en-US") & " – " & FORMAT(d2, "dd mmm yyyy", "en-US")
     )
 ```
@@ -277,7 +277,7 @@ RETURN
 > Titre dynamique du waterfall Profit bridge.  
 
 ```dax
-Titre — Profit bridge = "Gross profit bridge, " & [Libellé période] & " vs same period prior year"
+Titre — Profit bridge = "Gross Profit bridge, " & [Libellé période] & " vs same period prior year"
 ```
 
 ---

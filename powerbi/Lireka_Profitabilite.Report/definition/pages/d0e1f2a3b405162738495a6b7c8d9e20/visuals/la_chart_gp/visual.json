@@ -434,6 +434,47 @@
                 "color": {
                   "expr": {
                     "Literal": {
+                      "Value": "'#2E7DA6'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "scopeId": {
+                  "Comparison": {
+                    "ComparisonKind": 0,
+                    "Left": {
+                      "Column": {
+                        "Expression": {
+                          "SourceRef": {
+                            "Entity": "dim_type_commande"
+                          }
+                        },
+                        "Property": "canal"
+                      }
+                    },
+                    "Right": {
+                      "Literal": {
+                        "Value": "'Librairie Arthaud'"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
                       "Value": "'#7F8C99'"
                     }
                   }
