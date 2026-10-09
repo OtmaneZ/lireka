@@ -3,9 +3,9 @@
   "name": "gv_dq_warning",
   "position": {
     "x": 237,
-    "y": 368,
+    "y": 363,
     "z": 27500,
-    "height": 20,
+    "height": 28,
     "width": 1035,
     "tabOrder": 27500
   },
@@ -42,7 +42,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#C0504D'"
+                      "Value": "'#6B7785'"
                     }
                   }
                 }

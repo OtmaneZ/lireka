@@ -167,7 +167,9 @@ VAR n = [Nb commandes sans CA]
 RETURN
     IF(
         n > 0,
-        FORMAT(n, "#,##0", "en-US") & " orders have no sales amount in the source data and are excluded from volumes, revenue, costs and margin",
+        "Excluded from all figures: " & FORMAT(n, "#,##0", "en-US") & " orders ("
+            & FORMAT(DIVIDE(n, CALCULATE(COUNTROWS(fact_commandes), KEEPFILTERS(fact_commandes[state] <> "CANCELLED"))), "0.0%", "en-US")
+            & ") with no sales amount in the source data",
         ""
     )
 ```
@@ -182,7 +184,7 @@ RETURN
 Avertissement — données =
 VAR a = [Avertissement — commandes sans CA]
 VAR m = [Nb commandes canal non mappé]
-VAR b = IF(m > 0, FORMAT(m, "#,##0", "en-US") & " orders from unmapped sales channels are excluded from all pages", "")
+VAR b = IF(m > 0, FORMAT(m, "#,##0", "en-US") & " orders from unmapped sales channels excluded from all pages", "")
 VAR c = [Avertissement — langue]
 VAR ab = a & IF(a <> "" && b <> "", "  |  ", "") & b
 RETURN ab & IF(ab <> "" && c <> "", "  |  ", "") & c
@@ -1908,7 +1910,7 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 1000000, FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        a >= 100000, FORMAT(py / 1000, "#,##0", "en-US") & "k",
         a >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k",
         FORMAT(py, "#,##0", "en-US")
     )
@@ -1935,7 +1937,7 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        a >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
         a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
         "€" & FORMAT(py, "#,##0", "en-US")
     )
@@ -1962,7 +1964,7 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        a >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
         a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
         "€" & FORMAT(py, "#,##0", "en-US")
     )
@@ -2096,7 +2098,7 @@ RETURN
 
 ## KPI Compact — Ordered units
 
-> General View — KPI card valeur compacte (k adaptatif : 0.0k sous 1M, # ##0k au-delà).  
+> General View — KPI card valeur compacte (k adaptatif : 0.0k sous 100k, #,##0k au-delà).  
 > formatString DAX (,,M / ,"k") ne s'applique pas aux cartes en locale FR.  
 
 ```dax
@@ -2109,7 +2111,7 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "k",
             FORMAT(v, "#,##0", "en-US")
         )
@@ -2132,7 +2134,7 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
@@ -2153,7 +2155,7 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
@@ -2174,7 +2176,7 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
@@ -2195,7 +2197,7 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "k",
             FORMAT(v, "#,##0", "en-US")
         )
@@ -2216,7 +2218,7 @@ RETURN
         "€0",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
@@ -2237,7 +2239,7 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
@@ -2258,7 +2260,7 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
@@ -2317,7 +2319,7 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
@@ -4610,7 +4612,7 @@ VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
     SWITCH(
         TRUE(),
-        ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        ABS(py) >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
         ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
         "€" & FORMAT(py, "#,##0", "en-US")
     )
@@ -4757,7 +4759,7 @@ VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
     SWITCH(
         TRUE(),
-        ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        ABS(py) >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
         ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
         "€" & FORMAT(py, "#,##0", "en-US")
     )
@@ -4804,7 +4806,7 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
@@ -4825,7 +4827,7 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
             a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
