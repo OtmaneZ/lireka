@@ -105,7 +105,7 @@ table _Mesures
 			RETURN
 				IF(
 					n > 0,
-					FORMAT(n, "#,##0") & " orders have no sales amount in the source data and are excluded from volumes, revenue, costs and margin",
+					FORMAT(n, "#,##0", "en-US") & " orders have no sales amount in the source data and are excluded from volumes, revenue, costs and margin",
 					""
 				)
 		displayFolder: 12 Périmètre
@@ -115,7 +115,7 @@ table _Mesures
 	measure 'Avertissement — données' =
 			VAR a = [Avertissement — commandes sans CA]
 			VAR m = [Nb commandes canal non mappé]
-			VAR b = IF(m > 0, FORMAT(m, "#,##0") & " orders from unmapped sales channels are excluded from all pages", "")
+			VAR b = IF(m > 0, FORMAT(m, "#,##0", "en-US") & " orders from unmapped sales channels are excluded from all pages", "")
 			VAR c = [Avertissement — langue]
 			VAR ab = a & IF(a <> "" && b <> "", "  |  ", "") & b
 			RETURN ab & IF(ab <> "" && c <> "", "  |  ", "") & c
@@ -1195,15 +1195,15 @@ table _Mesures
 			VAR pytxt =
 				SWITCH(
 					TRUE(),
-					a >= 1000000, FORMAT(py / 1000, "#,##0") & "k",
-					a >= 1000, FORMAT(py / 1000, "0.0") & "k",
-					FORMAT(py, "#,##0")
+					a >= 1000000, FORMAT(py / 1000, "#,##0", "en-US") & "k",
+					a >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k",
+					FORMAT(py, "#,##0", "en-US")
 				)
 			RETURN
 				IF(
 					ISBLANK(py),
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: aa000001-1111-2222-3333-444455550001
@@ -1217,15 +1217,15 @@ table _Mesures
 			VAR pytxt =
 				SWITCH(
 					TRUE(),
-					a >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
-					a >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
-					"€" & FORMAT(py, "#,##0")
+					a >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+					a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+					"€" & FORMAT(py, "#,##0", "en-US")
 				)
 			RETURN
 				IF(
 					ISBLANK(py),
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: aa000002-1111-2222-3333-444455550002
@@ -1239,15 +1239,15 @@ table _Mesures
 			VAR pytxt =
 				SWITCH(
 					TRUE(),
-					a >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
-					a >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
-					"€" & FORMAT(py, "#,##0")
+					a >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+					a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+					"€" & FORMAT(py, "#,##0", "en-US")
 				)
 			RETURN
 				IF(
 					ISBLANK(py),
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: aa000003-1111-2222-3333-444455550003
@@ -1261,7 +1261,7 @@ table _Mesures
 				IF(
 					ISBLANK(py),
 					"PY: n/a",
-					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(bps), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+					"PY: " & FORMAT(py, "0.0%", "en-US") & IF(ISBLANK(bps), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0", "en-US") & " bps YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: aa000004-1111-2222-3333-444455550004
@@ -1313,7 +1313,7 @@ table _Mesures
 				IF(
 					NOT ISNUMBER(y) || ISBLANK([Revenu (reconstruit) PY]),
 					BLANK(),
-					FORMAT(y, "+0%;-0%") & " YoY"
+					FORMAT(y, "+0%;-0%", "en-US") & " YoY"
 				)
 		displayFolder: 05 YoY
 		lineageTag: aa000010-1111-2222-3333-444455550010
@@ -1325,7 +1325,7 @@ table _Mesures
 				IF(
 					NOT ISNUMBER(y) || ISBLANK([Marge Brute (reconstruit) PY]),
 					BLANK(),
-					FORMAT(y, "+0%;-0%") & " YoY"
+					FORMAT(y, "+0%;-0%", "en-US") & " YoY"
 				)
 		displayFolder: 05 YoY
 		lineageTag: aa000011-1111-2222-3333-444455550011
@@ -1341,9 +1341,9 @@ table _Mesures
 					"n/a",
 					SWITCH(
 						TRUE(),
-						a >= 1000000, FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, FORMAT(v / 1000, "0.0") & "k",
-						FORMAT(v, "#,##0")
+						a >= 1000000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "k",
+						FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 01 KPI publiés
@@ -1359,9 +1359,9 @@ table _Mesures
 					"n/a",
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 01 KPI publiés
@@ -1376,9 +1376,9 @@ table _Mesures
 					"n/a",
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 01 KPI publiés
@@ -1393,9 +1393,9 @@ table _Mesures
 					"n/a",
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 01 KPI publiés
@@ -1410,9 +1410,9 @@ table _Mesures
 					"n/a",
 					SWITCH(
 						TRUE(),
-						a >= 1000000, FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, FORMAT(v / 1000, "0.0") & "k",
-						FORMAT(v, "#,##0")
+						a >= 1000000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "k",
+						FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 01 KPI publiés
@@ -1427,9 +1427,9 @@ table _Mesures
 					"€0",
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 01 KPI publiés
@@ -1444,9 +1444,9 @@ table _Mesures
 					"n/a",
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 01 KPI publiés
@@ -1461,9 +1461,9 @@ table _Mesures
 					"n/a",
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 01 KPI publiés
@@ -1471,7 +1471,7 @@ table _Mesures
 
 	measure 'KPI Compact — Gross Margin' =
 			VAR r = [Taux Marge Brute (reconstruit)]
-			RETURN IF(ISBLANK(r), "n/a", FORMAT(r, "0.0%"))
+			RETURN IF(ISBLANK(r), "n/a", FORMAT(r, "0.0%", "en-US"))
 		displayFolder: 01 KPI publiés
 		lineageTag: bb000004-1111-2222-3333-444455550004
 
@@ -1499,9 +1499,9 @@ table _Mesures
 					BLANK(),
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -1528,7 +1528,7 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000010-1111-2222-3333-444455550010
 
@@ -1559,7 +1559,7 @@ table _Mesures
 				IF(
 					ISBLANK(v),
 					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000011-1111-2222-3333-444455550011
@@ -1591,7 +1591,7 @@ table _Mesures
 				IF(
 					ISBLANK(v),
 					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000012-1111-2222-3333-444455550012
@@ -1623,7 +1623,7 @@ table _Mesures
 				IF(
 					ISBLANK(v),
 					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000019-1111-2222-3333-444455550019
@@ -1641,7 +1641,7 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Retours Remboursements], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000013-1111-2222-3333-444455550013
 
@@ -1658,7 +1658,7 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Amont], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000014-1111-2222-3333-444455550014
 
@@ -1675,7 +1675,7 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Outbound (Retenu)], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000015-1111-2222-3333-444455550015
 
@@ -1692,7 +1692,7 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Douanes Taxes], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000016-1111-2222-3333-444455550016
 
@@ -1709,7 +1709,7 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Fournitures Expédition], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000017-1111-2222-3333-444455550017
 
@@ -1726,7 +1726,7 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Commissions Marketplace], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000103
 
@@ -1743,25 +1743,25 @@ table _Mesures
 						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coûts Génériques], BLANK())
 					)
 				)
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000018-1111-2222-3333-444455550018
 
 	measure 'B2C Display - Revenue YoY %' =
 			VAR y = [B2C YoY - Revenue %]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000020-1111-2222-3333-444455550020
 
 	measure 'B2C Display - GP YoY %' =
 			VAR y = [B2C YoY - GP %]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000021-1111-2222-3333-444455550021
 
 	measure 'B2C Display - GM YoY bps' =
 			VAR y = [B2C YoY - GM bps]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0", "en-US") & " bps")
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000022-1111-2222-3333-444455550022
 
@@ -2390,7 +2390,7 @@ table _Mesures
 	/// =====================================================================
 	measure 'Mkt Display - Sales' =
 			VAR v = [Revenu (reconstruit)]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00010-1111-2222-3333-444455550010
 
@@ -2401,7 +2401,7 @@ table _Mesures
 				IF(
 					ISBLANK(v),
 					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00011-1111-2222-3333-444455550011
@@ -2413,50 +2413,50 @@ table _Mesures
 				IF(
 					ISBLANK(v),
 					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00012-1111-2222-3333-444455550012
 
 	measure 'Mkt Display - Returns and refunds' =
 			VAR v = [Retours Remboursements]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00013-1111-2222-3333-444455550013
 
 	measure 'Mkt Display - Inbound freight' =
 			VAR v = [Coût Transport Amont]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00014-1111-2222-3333-444455550014
 
 	measure 'Mkt Display - Shipping' =
 			VAR v = [Coût Transport Outbound (Retenu)]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00015-1111-2222-3333-444455550015
 
 	measure 'Mkt Display - Duties and taxes' =
 			VAR v = [Douanes Taxes]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00016-1111-2222-3333-444455550016
 
 	measure 'Mkt Display - Shipping supplies' =
 			VAR v = [Fournitures Expédition]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00017-1111-2222-3333-444455550017
 
 	measure 'Mkt Display - Marketplace fees' =
 			VAR v = [Commissions Marketplace]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000101
 
 	measure 'Mkt Display - Generic costs' =
 			VAR v = [Coûts Génériques]
-			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+			RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00018-1111-2222-3333-444455550018
 
@@ -2467,26 +2467,26 @@ table _Mesures
 				IF(
 					ISBLANK(v),
 					BLANK(),
-					FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+					FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00019-1111-2222-3333-444455550019
 
 	measure 'Mkt Display - Revenue YoY %' =
 			VAR y = [Revenu (reconstruit) YoY %]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00020-1111-2222-3333-444455550020
 
 	measure 'Mkt Display - GP YoY %' =
 			VAR y = [Marge Brute (reconstruit) YoY %]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00021-1111-2222-3333-444455550021
 
 	measure 'Mkt Display - GM YoY bps' =
 			VAR y = [Taux Marge Brute (reconstruit) YoY bps]
-			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0", "en-US") & " bps")
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00022-1111-2222-3333-444455550022
 
@@ -3235,12 +3235,12 @@ table _Mesures
 			VAR yoy = DIVIDE(cy - py, ABS(py))
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 			VAR pytxt =
-				"€" & FORMAT(py, "0.00")
+				"€" & FORMAT(py, "0.00", "en-US")
 			RETURN
 				IF(
 					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000201
@@ -3255,7 +3255,7 @@ table _Mesures
 				IF(
 					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
-					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+					"PY: " & FORMAT(py, "0.0%", "en-US") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0", "en-US") & " bps YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000202
@@ -3267,12 +3267,12 @@ table _Mesures
 			VAR yoy = DIVIDE(cy - py, ABS(py))
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 			VAR pytxt =
-				"€" & FORMAT(py, "0.00")
+				"€" & FORMAT(py, "0.00", "en-US")
 			RETURN
 				IF(
 					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000203
@@ -3284,12 +3284,12 @@ table _Mesures
 			VAR yoy = DIVIDE(cy - py, ABS(py))
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 			VAR pytxt =
-				"€" & FORMAT(py, "0.00")
+				"€" & FORMAT(py, "0.00", "en-US")
 			RETURN
 				IF(
 					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000204
@@ -3303,15 +3303,15 @@ table _Mesures
 			VAR pytxt =
 				SWITCH(
 					TRUE(),
-					ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
-					ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
-					"€" & FORMAT(py, "#,##0")
+					ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+					ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+					"€" & FORMAT(py, "#,##0", "en-US")
 				)
 			RETURN
 				IF(
 					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000205
@@ -3323,12 +3323,12 @@ table _Mesures
 			VAR yoy = DIVIDE(cy - py, ABS(py))
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 			VAR pytxt =
-				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
+				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k", FORMAT(py, "#,##0", "en-US"))
 			RETURN
 				IF(
 					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000206
@@ -3343,7 +3343,7 @@ table _Mesures
 				IF(
 					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
-					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+					"PY: " & FORMAT(py, "0.0%", "en-US") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0", "en-US") & " bps YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000207
@@ -3358,7 +3358,7 @@ table _Mesures
 				IF(
 					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
 					"PY: n/a",
-					"PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+					"PY: " & FORMAT(py, "0.0%", "en-US") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0", "en-US") & " bps YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000208
@@ -3370,12 +3370,12 @@ table _Mesures
 			VAR yoy = DIVIDE(cy - py, ABS(py))
 			VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 			VAR pytxt =
-				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
+				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k", FORMAT(py, "#,##0", "en-US"))
 			RETURN
 				IF(
 					ISBLANK(py),
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000209
@@ -3388,7 +3388,7 @@ table _Mesures
 				IF(
 					ISBLANK(r),
 					"n/a",
-					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
+					FORMAT(r, "0.0%", "en-US") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%", "en-US") & ")")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000210
@@ -3401,7 +3401,7 @@ table _Mesures
 				IF(
 					ISBLANK(r),
 					"n/a",
-					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
+					FORMAT(r, "0.0%", "en-US") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%", "en-US") & ")")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000211
@@ -3415,15 +3415,15 @@ table _Mesures
 			VAR pytxt =
 				SWITCH(
 					TRUE(),
-					ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
-					ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
-					"€" & FORMAT(py, "#,##0")
+					ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+					ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+					"€" & FORMAT(py, "#,##0", "en-US")
 				)
 			RETURN
 				IF(
 					ISBLANK(py),
 					"PY: n/a",
-					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
 				)
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000212
@@ -3449,9 +3449,9 @@ table _Mesures
 					BLANK(),
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
@@ -3466,9 +3466,9 @@ table _Mesures
 					BLANK(),
 					SWITCH(
 						TRUE(),
-						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-						a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-						"€" & FORMAT(v, "#,##0")
+						a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+						a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+						"€" & FORMAT(v, "#,##0", "en-US")
 					)
 				)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)

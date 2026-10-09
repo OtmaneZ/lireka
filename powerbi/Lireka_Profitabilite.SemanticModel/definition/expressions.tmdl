@@ -27,9 +27,9 @@ expression fnRequeteSql =
 /// Normalise un transporteur à partir du numéro de suivi (tracking_id).
 /// Méthode : inférence par motif, alignée sur l'analyse backend du 12/07/2026
 /// (rapport_backend.txt). Sorties canoniques : UPS, La Poste, Postes Canada,
-/// Chronopost, FedEx, DHL, Colis Privé, INCONNU.
+/// Chronopost, FedEx, DHL, Colis Privé, Unknown.
 /// Limite connue : les identifiants purement numériques à 10 chiffres restent
-/// ambigus (DHL minoritaire vs INCONNU) et sont classés INCONNU — à valider.
+/// ambigus (DHL minoritaire vs Unknown) et sont classés Unknown — à valider.
 expression fnNormaliserTransporteur =
 		(tracking as nullable text) as text =>
 		let
@@ -40,7 +40,7 @@ expression fnNormaliserTransporteur =
 			estNumerique = #"Suivi nettoye" <> "" and Text.Select(#"Suivi nettoye", {"0".."9"}) = #"Suivi nettoye",
 			// Application des motifs identifiés lors de l'audit backend
 			#"Transporteur infere" =
-				if #"Suivi nettoye" = "" then "INCONNU"
+				if #"Suivi nettoye" = "" then "Unknown"
 				else if Text.StartsWith(#"Suivi nettoye", "1Z") then "UPS"
 				else if longueur = 13 and Text.StartsWith(#"Suivi nettoye", "6A") then "La Poste"
 				else if Text.StartsWith(#"Suivi nettoye", "Q013") then "Postes Canada"
@@ -50,7 +50,7 @@ expression fnNormaliserTransporteur =
 				else if Text.StartsWith(#"Suivi nettoye", "Z8") then "Colis Privé"
 				else if Text.StartsWith(#"Suivi nettoye", "1C") then "Colis Privé"
 				else if estNumerique and (longueur = 8 or longueur = 9) then "Colis Privé"
-				else "INCONNU"
+				else "Unknown"
 		in
 			#"Transporteur infere"
 	lineageTag: f6ad5b17-1ad0-46b8-9616-eba1433a28c5
@@ -71,7 +71,7 @@ expression fnCanonTransporteur =
 				else if List.Contains({"COLIS PRIVE", "COLIS PRIVÉ"}, #"Libelle nettoye") then "Colis Privé"
 				else if List.Contains({"CHRONOPOST"}, #"Libelle nettoye") then "Chronopost"
 				else if List.Contains({"POSTES CANADA", "CANADA POST"}, #"Libelle nettoye") then "Postes Canada"
-				else "INCONNU"
+				else "Unknown"
 		in
 			#"Transporteur canon"
 	lineageTag: 9274de39-62a4-4130-b72f-27746931dc50

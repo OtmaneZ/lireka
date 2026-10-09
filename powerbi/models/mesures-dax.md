@@ -167,7 +167,7 @@ VAR n = [Nb commandes sans CA]
 RETURN
     IF(
         n > 0,
-        FORMAT(n, "#,##0") & " orders have no sales amount in the source data and are excluded from volumes, revenue, costs and margin",
+        FORMAT(n, "#,##0", "en-US") & " orders have no sales amount in the source data and are excluded from volumes, revenue, costs and margin",
         ""
     )
 ```
@@ -182,7 +182,7 @@ RETURN
 Avertissement — données =
 VAR a = [Avertissement — commandes sans CA]
 VAR m = [Nb commandes canal non mappé]
-VAR b = IF(m > 0, FORMAT(m, "#,##0") & " orders from unmapped sales channels are excluded from all pages", "")
+VAR b = IF(m > 0, FORMAT(m, "#,##0", "en-US") & " orders from unmapped sales channels are excluded from all pages", "")
 VAR c = [Avertissement — langue]
 VAR ab = a & IF(a <> "" && b <> "", "  |  ", "") & b
 RETURN ab & IF(ab <> "" && c <> "", "  |  ", "") & c
@@ -1908,15 +1908,15 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 1000000, FORMAT(py / 1000, "#,##0") & "k",
-        a >= 1000, FORMAT(py / 1000, "0.0") & "k",
-        FORMAT(py, "#,##0")
+        a >= 1000000, FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        a >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k",
+        FORMAT(py, "#,##0", "en-US")
     )
 RETURN
     IF(
         ISBLANK(py),
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -1935,15 +1935,15 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
-        a >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
-        "€" & FORMAT(py, "#,##0")
+        a >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+        "€" & FORMAT(py, "#,##0", "en-US")
     )
 RETURN
     IF(
         ISBLANK(py),
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -1962,15 +1962,15 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
-        a >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
-        "€" & FORMAT(py, "#,##0")
+        a >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+        "€" & FORMAT(py, "#,##0", "en-US")
     )
 RETURN
     IF(
         ISBLANK(py),
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -1989,7 +1989,7 @@ RETURN
     IF(
         ISBLANK(py),
         "PY: n/a",
-        "PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(bps), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+        "PY: " & FORMAT(py, "0.0%", "en-US") & IF(ISBLANK(bps), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0", "en-US") & " bps YoY)")
     )
 ```
 
@@ -2071,7 +2071,7 @@ RETURN
     IF(
         NOT ISNUMBER(y) || ISBLANK([Revenu (reconstruit) PY]),
         BLANK(),
-        FORMAT(y, "+0%;-0%") & " YoY"
+        FORMAT(y, "+0%;-0%", "en-US") & " YoY"
     )
 ```
 
@@ -2088,7 +2088,7 @@ RETURN
     IF(
         NOT ISNUMBER(y) || ISBLANK([Marge Brute (reconstruit) PY]),
         BLANK(),
-        FORMAT(y, "+0%;-0%") & " YoY"
+        FORMAT(y, "+0%;-0%", "en-US") & " YoY"
     )
 ```
 
@@ -2109,9 +2109,9 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, FORMAT(v / 1000, "0.0") & "k",
-            FORMAT(v, "#,##0")
+            a >= 1000000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "k",
+            FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2132,9 +2132,9 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2153,9 +2153,9 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2174,9 +2174,9 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2195,9 +2195,9 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, FORMAT(v / 1000, "0.0") & "k",
-            FORMAT(v, "#,##0")
+            a >= 1000000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "k",
+            FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2216,9 +2216,9 @@ RETURN
         "€0",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2237,9 +2237,9 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2258,9 +2258,9 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2272,7 +2272,7 @@ RETURN
 ```dax
 KPI Compact — Gross Margin =
 VAR r = [Taux Marge Brute (reconstruit)]
-RETURN IF(ISBLANK(r), "n/a", FORMAT(r, "0.0%"))
+RETURN IF(ISBLANK(r), "n/a", FORMAT(r, "0.0%", "en-US"))
 ```
 
 ---
@@ -2317,9 +2317,9 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -2354,7 +2354,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -2389,7 +2389,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
     )
 ```
 
@@ -2425,7 +2425,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
     )
 ```
 
@@ -2461,7 +2461,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
     )
 ```
 
@@ -2483,7 +2483,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Retours Remboursements], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -2504,7 +2504,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Amont], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -2525,7 +2525,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Outbound (Retenu)], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -2546,7 +2546,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Douanes Taxes], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -2567,7 +2567,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Fournitures Expédition], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -2588,7 +2588,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Commissions Marketplace], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -2609,7 +2609,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coûts Génériques], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -2619,7 +2619,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```dax
 B2C Display - Revenue YoY % =
 VAR y = [B2C YoY - Revenue %]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 ```
 
 ---
@@ -2629,7 +2629,7 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
 ```dax
 B2C Display - GP YoY % =
 VAR y = [B2C YoY - GP %]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 ```
 
 ---
@@ -2639,7 +2639,7 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
 ```dax
 B2C Display - GM YoY bps =
 VAR y = [B2C YoY - GM bps]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0", "en-US") & " bps")
 ```
 
 ---
@@ -3419,7 +3419,7 @@ RETURN
 ```dax
 Mkt Display - Sales =
 VAR v = [Revenu (reconstruit)]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -3434,7 +3434,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
     )
 ```
 
@@ -3450,7 +3450,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
     )
 ```
 
@@ -3461,7 +3461,7 @@ RETURN
 ```dax
 Mkt Display - Returns and refunds =
 VAR v = [Retours Remboursements]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -3471,7 +3471,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```dax
 Mkt Display - Inbound freight =
 VAR v = [Coût Transport Amont]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -3481,7 +3481,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```dax
 Mkt Display - Shipping =
 VAR v = [Coût Transport Outbound (Retenu)]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -3491,7 +3491,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```dax
 Mkt Display - Duties and taxes =
 VAR v = [Douanes Taxes]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -3501,7 +3501,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```dax
 Mkt Display - Shipping supplies =
 VAR v = [Fournitures Expédition]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -3511,7 +3511,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```dax
 Mkt Display - Marketplace fees =
 VAR v = [Commissions Marketplace]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -3521,7 +3521,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```dax
 Mkt Display - Generic costs =
 VAR v = [Coûts Génériques]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0", "en-US"))
 ```
 
 ---
@@ -3536,7 +3536,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0", "en-US") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%", "en-US") & ")"
     )
 ```
 
@@ -3547,7 +3547,7 @@ RETURN
 ```dax
 Mkt Display - Revenue YoY % =
 VAR y = [Revenu (reconstruit) YoY %]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 ```
 
 ---
@@ -3557,7 +3557,7 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
 ```dax
 Mkt Display - GP YoY % =
 VAR y = [Marge Brute (reconstruit) YoY %]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
+RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%", "en-US"))
 ```
 
 ---
@@ -3567,7 +3567,7 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0.0%;-0.0%"))
 ```dax
 Mkt Display - GM YoY bps =
 VAR y = [Taux Marge Brute (reconstruit) YoY bps]
-RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
+RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0", "en-US") & " bps")
 ```
 
 ---
@@ -4522,12 +4522,12 @@ VAR py = CALCULATE([Marge Brute par unité], SAMEPERIODLASTYEAR(dim_date[date]))
 VAR yoy = DIVIDE(cy - py, ABS(py))
 VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
-    "€" & FORMAT(py, "0.00")
+    "€" & FORMAT(py, "0.00", "en-US")
 RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -4547,7 +4547,7 @@ RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
         "PY: n/a",
-        "PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+        "PY: " & FORMAT(py, "0.0%", "en-US") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0", "en-US") & " bps YoY)")
     )
 ```
 
@@ -4564,12 +4564,12 @@ VAR py = CALCULATE([Transport sortant par unité], SAMEPERIODLASTYEAR(dim_date[d
 VAR yoy = DIVIDE(cy - py, ABS(py))
 VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
-    "€" & FORMAT(py, "0.00")
+    "€" & FORMAT(py, "0.00", "en-US")
 RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -4586,12 +4586,12 @@ VAR py = CALCULATE([Douanes Taxes par unité], SAMEPERIODLASTYEAR(dim_date[date]
 VAR yoy = DIVIDE(cy - py, ABS(py))
 VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
-    "€" & FORMAT(py, "0.00")
+    "€" & FORMAT(py, "0.00", "en-US")
 RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -4610,15 +4610,15 @@ VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
     SWITCH(
         TRUE(),
-        ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
-        ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
-        "€" & FORMAT(py, "#,##0")
+        ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+        "€" & FORMAT(py, "#,##0", "en-US")
     )
 RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -4635,12 +4635,12 @@ VAR py = CALCULATE([Nb Commandes Deficitaires], SAMEPERIODLASTYEAR(dim_date[date
 VAR yoy = DIVIDE(cy - py, ABS(py))
 VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
-    IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
+    IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k", FORMAT(py, "#,##0", "en-US"))
 RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -4660,7 +4660,7 @@ RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
         "PY: n/a",
-        "PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+        "PY: " & FORMAT(py, "0.0%", "en-US") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0", "en-US") & " bps YoY)")
     )
 ```
 
@@ -4680,7 +4680,7 @@ RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
         "PY: n/a",
-        "PY: " & FORMAT(py, "0.0%") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0") & " bps YoY)")
+        "PY: " & FORMAT(py, "0.0%", "en-US") & IF(ISBLANK(cy), "", "   (" & arrow & " " & FORMAT(bps, "+0;-0", "en-US") & " bps YoY)")
     )
 ```
 
@@ -4697,12 +4697,12 @@ VAR py = CALCULATE([Nb Colis], SAMEPERIODLASTYEAR(dim_date[date]))
 VAR yoy = DIVIDE(cy - py, ABS(py))
 VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
-    IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
+    IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k", FORMAT(py, "#,##0", "en-US"))
 RETURN
     IF(
         ISBLANK(py),
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -4720,7 +4720,7 @@ RETURN
     IF(
         ISBLANK(r),
         "n/a",
-        FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
+        FORMAT(r, "0.0%", "en-US") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%", "en-US") & ")")
     )
 ```
 
@@ -4738,7 +4738,7 @@ RETURN
     IF(
         ISBLANK(r),
         "n/a",
-        FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
+        FORMAT(r, "0.0%", "en-US") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%", "en-US") & ")")
     )
 ```
 
@@ -4757,15 +4757,15 @@ VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
     SWITCH(
         TRUE(),
-        ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0") & "k",
-        ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0") & "k",
-        "€" & FORMAT(py, "#,##0")
+        ABS(py) >= 1000000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
+        ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+        "€" & FORMAT(py, "#,##0", "en-US")
     )
 RETURN
     IF(
         ISBLANK(py),
         "PY: n/a",
-        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
+        "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%", "en-US") & " YoY)")
     )
 ```
 
@@ -4804,9 +4804,9 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```
@@ -4825,9 +4825,9 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
-            "€" & FORMAT(v, "#,##0")
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
 ```

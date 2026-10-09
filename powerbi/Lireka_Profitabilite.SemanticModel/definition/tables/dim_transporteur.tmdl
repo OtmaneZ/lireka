@@ -54,7 +54,7 @@ table dim_transporteur
 							{"FedEx", "Express", "Existant (référence)", true},
 							{"UPS", "Express", "Existant (référence)", true},
 							{"Postes Canada", "Standard", "Nouveau (intégré)", true},
-							{"INCONNU", "-", "Non identifié", false}
+							{"Unknown", "-", "Non identifié", false}
 						})
 				in
 					Source
