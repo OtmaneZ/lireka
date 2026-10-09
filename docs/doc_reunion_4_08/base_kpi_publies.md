@@ -5,9 +5,10 @@ Date : 2026-08-04 · Phase 3 (BIEN AVANCÉ) · Statut : **décidé, en attente d
 > **07/10/2026** : source passée sur `analytics_views.customer_order` (données jusqu'au 07/10/2026). Selon le contrôle d'Otmane, les montants EUR y sont renseignés (97 % en 2025, sept.-déc. 2024 inclus). Les commandes encore sans montant restent exclues (`ca_disponible = "Non"`).
 >
 > **Statut réel au 05/10/2026**
-> - Décision A (base « reconstruite ») : **sans effet**. Depuis le 19/07/2026, `ca_ht_reconstruit` = `order_amount_eur` ; il n'existe aucun CA marketplace en base depuis 09/2024. Remplacée par l'exclusion des commandes sans CA (`fact_commandes[ca_disponible] = "Non"`) du revenu, des coûts et de la marge.
+> - Décision A (base « reconstruite ») : **sans effet**. Depuis le 19/07/2026, `ca_ht_reconstruit` = `order_amount_eur` (au 05/10, l'ancienne source n'avait aucun CA marketplace depuis 09/2024 ; corrigé par `analytics_views` le 07/10). Remplacée par l'exclusion des commandes sans CA (`fact_commandes[ca_disponible] = "Non"`) du revenu, des coûts et de la marge.
 > - Décision B (marge publiée = postes de la formule Marc, sans retours ni coûts génériques) : **appliquée** (`[Marge Brute (reconstruit)]`, tableaux P&L, profit bridge).
 > - Recette : requêtes corrigées dans `recettes_chiffrées.md`, non exécutées.
+> - Les mesures citées plus bas (`% CA reconstruit`, `Marge Brute (reconstruit, après retours & génériques)`, `Impact Bloc 5`) ne sont plus dans le modèle : texte conservé comme trace de la décision.
 
 ## Contexte
 
@@ -35,4 +36,4 @@ La décision est validée ou infirmée par la recette chiffrée 2025, dont les c
 
 ## Documents liés
 
-`patch-mesures-tmdl.md` (modifications à appliquer), `recette-chiffree-kpi.md` (protocole de validation), `docs/audit_complet.md` (audit du 2026-07-18), doc projet « Here is the formula to calculate Gross Margin » (référentiel formule).
+`powerbi/models/mesures-dax.md` (mesures appliquées), `recettes_chiffrées.md` (protocole de validation), `docs/audit_complet.md` (audit du 2026-07-18), doc projet « Here is the formula to calculate Gross Margin » (référentiel formule).

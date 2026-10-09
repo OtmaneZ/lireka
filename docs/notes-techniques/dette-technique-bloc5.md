@@ -1,5 +1,7 @@
 # Dette technique — Bloc 5 (retours/remboursements + coûts génériques)
 
+> **Document historique** (juillet 2026) : décrit l'état du projet à cette date (sources CSV). État actuel : [`processus-etl-gouvernance.md`](../04-processus/processus-etl-gouvernance.md) et [`mesures-dax.md`](../../powerbi/models/mesures-dax.md).
+
 > **Statut** : implémenté dans `Lireka_Profitabilite.SemanticModel` le 15/07/2026  
 > **Décision** : ZineInsights — postes inclus dans `[Marge Brute]` en **dette technique**  
 > **Validation Marc** : périmètre `returns_and_refunds_cost_eur` et `total_generic_costs_eur` à revoir côté backend

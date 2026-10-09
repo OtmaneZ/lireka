@@ -1,4 +1,7 @@
 # Audit complet — Lireka_Profitabilite
+
+> **Document historique** (audit du 18/07/2026) : décrit l'état du projet à cette date (sources CSV). État actuel : [`processus-etl-gouvernance.md`](04-processus/processus-etl-gouvernance.md) et [`mesures-dax.md`](../powerbi/models/mesures-dax.md).
+
 Date : 2026-07-18 · Auditeur : Cursor · Périmètre : repo complet sur disque
 
 > Méthode : chaque constat est tagué `[CONFIRMÉ]` (preuve fichier/CSV) ou `[HYPOTHÈSE]` (runtime Desktop / DAX Studio / VertiPaq requis). Aucune correction n’a été appliquée pendant cet audit.

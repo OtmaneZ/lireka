@@ -19,12 +19,12 @@
 
 | ID | Livrable | Jour cible | Statut | Validé par |
 |----|----------|------------|--------|------------|
-| L01 | Intégration La Poste, Colis Privé, Chronopost dans Power BI *(Colis Privé : colis backend + coût estimé si pas de factures)* | J2 | ⬜ | Marc Bordier |
-| L02 | CSV commandes importé et structuré dans Power BI | J2 | ⬜ | Marc Bordier |
-| L03 | Jointure factures ↔ commandes par numéro de suivi *(résolution opérationnelle via `id_package` / proximité de date — voir L06)* | J3 | ⬜ | Marc Bordier |
-| L04 | Dashboard profitabilité — marge brute par pays et par type de commande *(1 rapport, 2 axes ; mesure `[Marge Brute]` dans `_Mesures.tmdl`)* | J3 | ⬜ | Marc Bordier |
+| L01 | Intégration La Poste, Colis Privé, Chronopost dans Power BI *(Colis Privé : colis backend + coût estimé si pas de factures)* | J2 | Livré — validation en attente | Marc Bordier |
+| L02 | Commandes backend (PostgreSQL `analytics_views`) importées et structurées dans Power BI | J2 | Livré — validation en attente | Marc Bordier |
+| L03 | Jointure factures ↔ commandes *(rattachement facture → colis → commande fait par le backend, `v_carrier_invoice_lines` — voir L06)* | J3 | Livré — validation en attente | Marc Bordier |
+| L04 | Dashboard profitabilité — marge brute par pays et par type de commande *(1 rapport, 2 axes ; mesure `[Marge Brute (reconstruit)]` dans `_Mesures.tmdl`)* | J3 | Livré, publié — validation en attente | Marc Bordier |
 | L05 | Formation utilisateurs *(selon disponibilité)* | J4 | ⬜ | Participants |
-| L06 | Documentation du processus | J4 | ⬜ | Marc Bordier |
+| L06 | Documentation du processus | J4 | Livré — validation en attente | Marc Bordier |
 
 ---
 
@@ -73,4 +73,4 @@
 
 ---
 
-*Mis à jour le 18 juillet 2026*
+*Mis à jour le 9 octobre 2026*

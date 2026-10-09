@@ -100,7 +100,8 @@
                 }
               },
               "queryRef": "_Mesures.Marge Brute (reconstruit)",
-              "nativeQueryRef": "Marge Brute (reconstruit)"
+              "nativeQueryRef": "Marge Brute (reconstruit)",
+              "displayName": "Gross Profit"
             }
           ]
         },
@@ -528,7 +529,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Gross Profit by sales channel'"
+                  "Value": "'Gross Profit, Librairie Arthaud'"
                 }
               }
             },

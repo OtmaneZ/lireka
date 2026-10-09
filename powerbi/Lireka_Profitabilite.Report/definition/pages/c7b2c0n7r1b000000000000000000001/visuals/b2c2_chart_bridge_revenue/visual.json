@@ -28,7 +28,8 @@
               },
               "queryRef": "_BridgePaysYoY.Label",
               "nativeQueryRef": "Label",
-              "active": true
+              "active": true,
+              "displayName": "Country"
             }
           ]
         },
@@ -46,7 +47,8 @@
                 }
               },
               "queryRef": "_Mesures.B2C Bridge — Revenue",
-              "nativeQueryRef": "B2C Bridge — Revenue"
+              "nativeQueryRef": "B2C Bridge — Revenue",
+              "displayName": "Revenue change"
             }
           ]
         }

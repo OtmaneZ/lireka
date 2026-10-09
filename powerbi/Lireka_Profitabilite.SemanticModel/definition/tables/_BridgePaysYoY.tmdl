@@ -1,5 +1,5 @@
 /// Axe waterfall B2C contribution (slide 7).
-/// Structure : Prior year | Top 15 pays (CA reconstruit) | Rest of the world.
+/// Structure : Prior year | Top 15 pays (CA reconstruit Website B2C, tout l'historique, départage par nom) | Rest of the world.
 /// Top 15 figé au refresh (simple + robuste) : le visuel n'affiche QUE ces lignes,
 /// aucun filtre de mesure nécessaire. Total auto waterfall = Current year (PY + ΣΔ).
 table _BridgePaysYoY
@@ -38,9 +38,9 @@ table _BridgePaysYoY
 							NOT ISBLANK(dim_pays[nom_pays_en])
 								&& dim_pays[nom_pays_en] <> "Rest of the world"
 						),
-						"@Rev", CALCULATE([Revenu (reconstruit)])
+						"@Rev", CALCULATE([Revenu (reconstruit)], dim_type_commande[canal] = "Website B2C")
 					)
-				VAR Top15 = TOPN(15, CountryRev, [@Rev], DESC)
+				VAR Top15 = TOPN(15, CountryRev, [@Rev], DESC, dim_pays[nom_pays_en], ASC)
 				VAR Countries =
 					SELECTCOLUMNS(
 						Top15,

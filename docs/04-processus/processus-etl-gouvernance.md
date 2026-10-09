@@ -2,7 +2,7 @@
 
 > **Livrable contractuel** : L06 — Documentation du processus  
 > **Référence** : [`../01-cadrage/devis.md`](../01-cadrage/devis.md)  
-> **Date** : 14 juillet 2026
+> **Date** : 14 juillet 2026 — mis à jour le 09/10/2026 (source PostgreSQL, refresh planifié)
 
 Ce document décrit **comment le modèle livré se recharge**, tel qu'implémenté dans  
 `powerbi/Lireka_Profitabilite.pbip`. Il ne définit pas de processus récurrent, de SLA  
@@ -18,14 +18,14 @@ du processus. Concrètement :
 
 | Livrable devis | Implémentation |
 |----------------|----------------|
-| 3 transporteurs intégrés (La Poste, Colis Privé, Chronopost) | Récaps Colissimo + Chronopost → `fact_factures_transport` ; Colis Privé via backend (`fnNormaliserTransporteur`), coût estimé |
+| 3 transporteurs intégrés (La Poste, Colis Privé, Chronopost) | Factures Colissimo + Chronopost (`v_carrier_invoice_lines`) → `fact_factures_transport` ; Colis Privé via backend (`fnNormaliserTransporteur`), coût estimé |
 | Dataset commandes structuré | `fact_commandes`, `fact_transport`, `fact_lignes` depuis le backend |
-| Jointure factures ↔ commandes | Clé métier = n° de suivi ; rapprochement opérationnel facture → colis par `id_package` (proximité de date en Power Query) |
+| Jointure factures ↔ commandes | Rattachement facture → colis (`package_id`) et commande (`order_id`) fait par le backend dans `v_carrier_invoice_lines` ; aucun rapprochement côté Power BI |
 | Dashboard profitabilité | Rapport `Lireka_Profitabilite.Report` |
 | Documentation du processus | Ce fichier |
 
 Les colis **Postes Canada** (préfixe suivi `Q013…`) sont intégrés au modèle via  
-`package.csv` ; ils n'ont pas de factures transporteur dans les récaps actuels.
+`analytics_views.package` ; ils n'ont pas de factures transporteur en base.
 
 ---
 
@@ -33,7 +33,7 @@ Les colis **Postes Canada** (préfixe suivi `Q013…`) sont intégrés au modèl
 
 > Mis à jour le 05/10/2026 : la lecture SharePoint décrite précédemment n'a jamais été activée ; les CSV locaux ont été remplacés par PostgreSQL.
 
-Toutes les données sont lues dans la base PostgreSQL analytique Lireka (`analytics`), via la passerelle **Lireka-Gateway** (VPN COex). Aucun fichier n'est lu par le modèle.
+Toutes les données sont lues dans la base PostgreSQL analytique Lireka (`analytics`), via la passerelle **Lireka-Gateway** (passerelle on-premises installée sur une VM Azure, reliée au réseau COex par un tunnel WireGuard). Aucun fichier n'est lu par le modèle.
 
 **Paramètres Power Query** (*Transformer les données* → *Gérer les paramètres*) : `PgServer`, `PgDatabase`, `PgSchema` (`analytics_views`).
 
@@ -77,9 +77,11 @@ Le transporteur sur les colis est **inféré du numéro de suivi** (`fnNormalise
 
 ## 4. Refresh du modèle
 
-- **Power BI Desktop** : ouvrir `powerbi/Lireka_Profitabilite.pbip` sur un poste ayant accès à la base (VPN COex), puis *Actualiser*. Au premier refresh, Desktop demande d'approuver les requêtes SQL natives.
-- **Power BI Service** : le dataset se rafraîchit via la passerelle Lireka-Gateway (source PostgreSQL configurée dans la passerelle). La fréquence relève du choix Lireka.
+- **Power BI Desktop** : ouvrir `powerbi/Lireka_Profitabilite.pbip` sur un poste ayant accès à la base (tunnel WireGuard actif, au moins 16 Go de RAM), puis *Actualiser*. Au premier refresh, Desktop demande d'approuver les requêtes SQL natives. Si le poste utilise la configuration WireGuard de la VM, couper le tunnel de la VM pendant ce temps et le relancer ensuite (une clé WireGuard ne peut être active que sur une machine).
+- **Power BI Service** : le dataset se rafraîchit via la passerelle Lireka-Gateway (source PostgreSQL configurée dans la passerelle). Actualisation planifiée quotidienne à 6:00 (Europe/Paris) ; le tunnel WireGuard de la VM doit être actif. Contrôle : historique d'actualisation du modèle sémantique dans le Service.
 - **Période affichée** : un seul filtre de rapport « Period » (date relative, 12 derniers mois par défaut, modifiable dans le volet Filtres, par exemple « année civile précédente »). La base étant alimentée chaque jour, la période est calée sur la date du jour ; la carte « Data through … » de chaque page affiche la date de la dernière commande avec CA.
+- **Slicers Date** : chaque page porte un slicer Date synchronisé (groupe `DateSync`) qui affine la période à l'intérieur du filtre « Period ».
+- **Langue / ISBN** : quand un filtre porte sur la langue du livre ou l'ISBN, les montants au grain commande sont répartis à parts égales entre les articles de la commande (`[_Allocation ligne active]`, `fact_lignes[nb_articles_commande]`).
 - **Comparaisons N-1** : si plus de 5 % des commandes non annulées de la période N-1 n'ont pas de montant de vente, les PY et variations de revenu et de marge sont vides (mesure `[_PY incomplet]`).
 
 ---
@@ -90,15 +92,15 @@ Le transporteur sur les colis est **inféré du numéro de suivi** (`fnNormalise
   − transport sortant − droits et taxes − commissions marketplace − fournitures). Retours et coûts génériques
   hors marge brute. `[Marge Brute]` (avec Bloc 5) reste une mesure de contrôle masquée.
 - **Commandes sans CA** : `fact_commandes[ca_disponible] = "Non"` si `order_amount_eur` est vide ou nul
-  (marketplaces depuis 09/2024, toutes sources sept.-nov. 2024). Ces commandes sont exclues du revenu,
+  en base. Ces commandes sont exclues du revenu,
   des coûts et de la marge ; leur nombre est affiché sur General View et Marketplaces.
 - **Matching factures** : les lignes de `v_carrier_invoice_lines` rattachées à un colis alimentent le coût
   rapproché (`source_cout = "facture_rapprochee"`). Les colis sans facture mais avec
   coût backend utilisent `source_cout = "backend_seul"` ; sans les deux :
   `source_cout = "aucun"`. Colis Privé et Postes Canada restent en coût estimé backend.
-- **Statut CANCELLED** : règle actée (CA=0 et frais de port exclus dans les mesures
-  `[CA HT Net Annulation]` / `[Marge Brute]` ; coûts conservés). Les commandes annulées
-  restent dans `fact_commandes` — pas de filtre partition.
+- **Statut CANCELLED** : règle actée (décision Marc 25/08/2026) : CA, frais de port et coût d'achat à 0 ;
+  transport amont conservé ; transport sortant, droits et fournitures portés par les colis (0 si jamais expédiée).
+  Les commandes annulées restent dans `fact_commandes` — pas de filtre partition.
 
 ---
 
@@ -106,7 +108,7 @@ Le transporteur sur les colis est **inféré du numéro de suivi** (`fnNormalise
 
 | Fichier | Contenu |
 |---------|---------|
-| `powerbi/Lireka_Profitabilite.SemanticModel/definition/expressions.tmdl` | Requêtes M partagées, fonctions SharePoint |
+| `powerbi/Lireka_Profitabilite.SemanticModel/definition/expressions.tmdl` | Paramètres `PgServer` / `PgDatabase` / `PgSchema`, `fnRequeteSql`, `DateDerniereCommande`, fonctions de normalisation, requêtes intermédiaires des factures |
 | `powerbi/Lireka_Profitabilite.SemanticModel/definition/relationships.tmdl` | Relations du modèle |
 | `powerbi/models/mesures-dax.md` | Référentiel des mesures DAX |
 

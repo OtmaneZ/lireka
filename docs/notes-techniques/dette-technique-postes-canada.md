@@ -1,5 +1,7 @@
 # Dette technique — Postes Canada (coût estimé backend)
 
+> **Document historique** (juillet 2026) : décrit l'état du projet à cette date (sources CSV). État actuel : [`processus-etl-gouvernance.md`](../04-processus/processus-etl-gouvernance.md) et [`mesures-dax.md`](../../powerbi/models/mesures-dax.md).
+
 > **Statut** : intégré au modèle profitabilité le 15/07/2026 (Bloc 6)  
 > **Décision** : confirmé Marc — colis backend dans le périmètre, pas de dashboard transporteur dédié  
 > **Pattern** : identique à Colis Privé (fallback `shipping_cost_eur`, pas de facture transporteur)

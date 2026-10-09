@@ -26,8 +26,9 @@ table dim_isbn
 		mode: import
 		source =
 				let
-					// ISBN distincts calculés par PostgreSQL.
-					#"Groupes source" = fnRequeteSql("SELECT DISTINCT isbn FROM " & PgSchema & ".customer_order_item_group"),
+					// ISBN distincts calculés par PostgreSQL (majuscules + trim : clé insensible à la casse comme VertiPaq,
+					// même normalisation que fact_lignes[isbn]).
+					#"Groupes source" = fnRequeteSql("SELECT DISTINCT upper(trim(isbn)) AS isbn FROM " & PgSchema & ".customer_order_item_group"),
 					#"Isbns types" = Table.TransformColumnTypes(
 						Table.SelectColumns(#"Groupes source", {"isbn"}),
 						{{"isbn", type text}},

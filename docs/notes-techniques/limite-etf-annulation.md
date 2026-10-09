@@ -1,5 +1,7 @@
 # Limite ETF — proxy package_id pour l'annulation avant/après expédition
 
+> **Document historique** (juillet 2026) : décrit l'état du projet à cette date (sources CSV). État actuel : [`processus-etl-gouvernance.md`](../04-processus/processus-etl-gouvernance.md) et [`mesures-dax.md`](../../powerbi/models/mesures-dax.md).
+
 > **Statut** : implémenté dans `Lireka_Profitabilite.SemanticModel` le 15/07/2026 ; **COGS sur CANCELLED mis à jour le 25/08/2026** (décision Marc : neutraliser le coût d'achat, conserver l'inbound).  
 > **Décision** : Marc Bordier (Slack) — logique avant/après expédition ; proxy technique ZineInsights  
 > **Référence code** : colonne `fact_lignes[statut_annulation_ligne]`, `fact_commandes[cout_achat_net]`, mesures Bloc 3 dans `_Mesures.tmdl`

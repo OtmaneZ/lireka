@@ -47,7 +47,8 @@
                 }
               },
               "queryRef": "_Mesures.Nb Colis",
-              "nativeQueryRef": "Nb Colis"
+              "nativeQueryRef": "Nb Colis",
+              "displayName": "Packages"
             }
           ]
         },

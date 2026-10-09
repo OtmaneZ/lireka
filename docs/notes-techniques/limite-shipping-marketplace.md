@@ -1,5 +1,7 @@
 # Limite shipping revenue marketplace — `shipping_fee_eur` vide
 
+> **07/10/2026** : source passée sur `analytics_views.customer_order` ; les montants marketplace y sont renseignés. Vérifier `shipping_fee_eur` sur cette source avant de réutiliser la note ci-dessous.
+>
 > **Statut au 05/10/2026.** Source = PostgreSQL `public.customer_order` (plus de CSV). Les commandes marketplace n'ont pas de CA en base depuis 09/2024 et sont exclues du revenu, des coûts et de la marge (`ca_disponible = "Non"`) : leur shipping revenue n'entre plus dans aucun indicateur. Les volumes ci-dessous (export CSV du 14/07/2026) sont historiques.
 
 

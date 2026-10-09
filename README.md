@@ -5,7 +5,7 @@ Mission 4 jours (1 800 € HT) : intégration transporteurs et commandes, jointu
 ## Périmètre contractuel (devis)
 
 1. Intégration **La Poste**, **Colis Privé**, **Chronopost**
-2. Import et structuration du **CSV commandes** backend
+2. Import et structuration des **commandes** backend (PostgreSQL)
 3. **Jointure** factures ↔ commandes par numéro de suivi
 4. **Dashboards de profitabilité** — marge brute par pays, par type de commande
 5. **Formation** des utilisateurs
@@ -18,26 +18,26 @@ Mission 4 jours (1 800 € HT) : intégration transporteurs et commandes, jointu
 ```
 lireka/
 ├── docs/
-│   ├── 01-cadrage/       devis.md, livrables.md, cadrage
-│   ├── 04-processus/     processus-etl-gouvernance.md (L06)
-│   └── 05-formation/     programme-formation.md, session-01-bases.md (L05)
-├── powerbi/              modèle PBIP + rapport profitabilité L04
-├── scripts/validation/   scripts de contrôle (usage interne) — source unique
-└── tools/audit-interne/  README de périmètre (scripts déplacés vers scripts/validation/)
+│   ├── 01-cadrage/         devis, livrables, cadrage, maquettes (historique)
+│   ├── 04-processus/       processus-etl-gouvernance.md — référence du chargement et du refresh (L06)
+│   ├── 05-formation/       programme et supports de formation (L05)
+│   ├── doc_reunion_4_08/   recette chiffrée des KPI, décision sur les KPI publiés
+│   └── notes-techniques/   limites et dettes connues des données source
+├── powerbi/                modèle PBIP (SemanticModel + Report) ; models/mesures-dax.md = référentiel des mesures
+├── scripts/validation/     scripts de contrôle (usage interne)
+└── tools/audit-interne/    README de périmètre
 ```
 
 ## Setup local (data analyst)
 
-1. **Données** — copier `Power_BI_Datawarehouse/` depuis SharePoint/Drive à la racine du repo (non versionné).
-2. **Power BI** — ouvrir `powerbi/Lireka_Profitabilite.pbip` ; vérifier le paramètre `LocalRootPath` (*Transformer les données* → *Gérer les paramètres*).
-3. **Chronopost 2026** — le modèle attend `Dashboards_transporteurs/CHRONOPOST Dashboard PowerBI/2026_CHRONOPOST_V2.csv`.
-4. **Python** (scripts de contrôle) :
+1. **Accès à la base** — le modèle lit PostgreSQL (`analytics`, schéma `analytics_views`) sur le réseau COex : tunnel WireGuard actif sur le poste (ou travail sur la VM de la passerelle).
+2. **Power BI Desktop** (Windows, 16 Go de RAM conseillés) — ouvrir `powerbi/Lireka_Profitabilite.pbip`. Paramètres (*Transformer les données* → *Gérer les paramètres*) : `PgServer`, `PgDatabase`, `PgSchema`. Au premier *Actualiser*, saisir les identifiants PostgreSQL et approuver les requêtes SQL natives.
+3. **Publication** — *Accueil* → *Publier* vers l'espace de travail « Lireka Profitabilité », en remplaçant le modèle existant. Le refresh quotidien (6:00, Europe/Paris) passe par la passerelle Lireka-Gateway (VM Azure, tunnel WireGuard). Détails : [`docs/04-processus/processus-etl-gouvernance.md`](docs/04-processus/processus-etl-gouvernance.md).
+4. **Python** (scripts de contrôle) — depuis la racine du dépôt :
 
 ```powershell
-cd c:\dev\projets\lireka
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+$env:PGHOST = "<hôte PostgreSQL>"; $env:PGUSER = "<utilisateur>"; $env:PGPASSWORD = "<mot de passe>"
 ```
-
-Override optionnel de l'entrepôt : `$env:LIREKA_DWH = "chemin\vers\Power_BI_Datawarehouse"`.

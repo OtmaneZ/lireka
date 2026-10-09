@@ -25,7 +25,7 @@ Marc a donné en call de démarrage les valeurs de référence de son propre P&L
 
 ## 2. Périmètre de la recette
 
-Année civile 2025, sur `date_commande`. Découpage par canal : site direct d'un côté, marketplaces de l'autre, Arthaud isolé s'il est présent dans le modèle. Toutes les mesures sont prises **après application du patch** `patch-mesures-tmdl.md` §3.1, §3.2 et §4, et avant le repointage des cartes — l'objectif est de valider les mesures, pas les visuels.
+Année civile 2025, sur `date_commande`. Découpage par canal : site direct d'un côté, marketplaces de l'autre, Arthaud isolé s'il est présent dans le modèle. Les mesures testées sont celles du modèle publié (référentiel : `powerbi/models/mesures-dax.md`) — l'objectif est de valider les mesures, pas les visuels.
 
 ---
 
@@ -64,7 +64,7 @@ SUMMARIZECOLUMNS(
 ORDER BY [Revenu] DESC
 ```
 
-Lire la liste des canaux et leur poids. Déterminer si Arthaud y figure. Somme de la colonne Revenu = base de comparaison aux 8,9 M€ (hors marketplaces, cf. encadré).
+Lire la liste des canaux et leur poids. Déterminer si Arthaud y figure. Somme de la colonne Revenu = base de comparaison aux 8,9 M€ (commandes sans montant exclues, cf. colonne « Nb commandes sans CA »).
 
 ### R1 — Trio KPI global 2025
 
@@ -141,11 +141,11 @@ A1 à A5 sont les critères bloquants. A6 et A7 sont des contrôles d'intégrit�
 
 ## 5. Lecture des résultats
 
-**A3 passe, A4 et A5 passent.** Le diagnostic était complet et la correction suffit. Le stack peut être repointé (patch §3.3 à §3.6) et le call client devient une présentation, pas une justification.
+**A3 passe, A4 et A5 passent.** Le diagnostic était complet et la correction suffit. Les KPI publiés sont validés et le call client devient une présentation, pas une justification.
 
-**A3 passe mais A5 échoue.** La reconstruction du CA marketplace est mal calibrée. Le taux de change moyen mensuel n'est pas le bon estimateur, ou la couverture de reconstruction est partielle. Point technique à traiter avant le call, hors périmètre de ce patch.
+**A3 passe mais A5 échoue.** Le CA ou les coûts marketplace sont incomplets en base (part de commandes sans montant dans R0, commissions non captées). Point à traiter avec le backend avant le call.
 
-**A3 échoue par le bas après retrait du Bloc 5.** Le problème n'est plus le câblage. Deux causes probables à départager : les coûts de transport outbound estimés par le backend sont surévalués par rapport aux factures réelles — le contrôle `% Coût transport facturé` de R2 le montrera —, ou des coûts sont conservés sur des commandes annulées. Dans ce cas la responsabilité bascule côté données backend, ce qui est documenté et hors forfait.
+**A3 échoue par le bas après retrait du Bloc 5.** Le problème n'est plus le câblage. Deux causes probables à départager : les coûts de transport outbound estimés par le backend sont surévalués par rapport aux factures réelles — le contrôle `[Q Pct transport facturé]` de R2 le montrera —, ou des coûts sont conservés sur des commandes annulées. Dans ce cas la responsabilité bascule côté données backend, ce qui est documenté et hors forfait.
 
 **A3 échoue par le haut.** Le CA reconstruit est surévalué, ou des coûts manquent. Vérifier en priorité que les commissions marketplace sont bien captées sur l'ensemble des canaux.
 

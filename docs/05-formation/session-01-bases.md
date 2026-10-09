@@ -103,17 +103,19 @@ Chaque dashboard transporteur contient :
 
 | KPI | Formule | Interprétation |
 |-----|---------|----------------|
-| **Marge brute** | CA HT − Coût achat − Coût transport réel | Ce que Lireka gagne réellement |
-| **Taux de marge** | Marge brute / CA HT | Rentabilité en % |
-| **Écart coût transport** | Coût réel − Coût estimé | Sur/sous-estimation backend |
-| **Taux de matching** | % commandes liées à une facture | Qualité de la liaison suivi |
+| **Revenue** | CA HT (hors commandes annulées) + frais de port encaissés | Chiffre d'affaires publié |
+| **Gross Profit** | Revenue − coût d'achat − transport amont − transport sortant − droits et taxes − commissions marketplace − fournitures d'expédition | Marge brute (retours et coûts génériques hors marge) |
+| **Gross Margin** | Gross Profit / Revenue | Rentabilité en % |
+| **YoY** | Écart avec la même période un an plus tôt (vide si la N-1 est incomplète) | Évolution |
 
 ### Filtres disponibles
 
-- **Période** : mois, trimestre, année
-- **Pays** : par pays de livraison
-- **Type de commande** : B2C, B2B, etc.
-- **Transporteur** : DHL, FedEx, UPS, La Poste, etc.
+- **Period** (volet Filtres) : 12 derniers mois par défaut, modifiable (ex. année civile précédente)
+- **Date** : slicer sur chaque page, synchronisé entre les pages
+- **Channel** : Website B2C, Website B2B, Marketplaces
+- **Language** : langue du livre (montants répartis par article)
+- **Pays** : tableaux par pays de livraison (pages Website B2C)
+- **Transporteur** : page Transport and carriers
 
 ### Exercice guidé — Axes pays et type de commande
 
@@ -121,7 +123,7 @@ Chaque dashboard transporteur contient :
 2. Filtrer sur le **T2 2026**
 3. Identifier le **pays le plus rentable** (marge brute la plus élevée)
 4. Identifier le **pays le moins rentable**
-5. Comparer le coût transport **estimé** vs **réel** pour ce pays
+5. Sur la page **Transport and carriers**, comparer le coût transport facturé et estimé
 6. Changer l'angle d'analyse vers le **type de commande** (B2C, B2B, etc.) et comparer les marges
 
 ---
@@ -130,15 +132,15 @@ Chaque dashboard transporteur contient :
 
 ### Énoncé
 
-> Quelle est la **marge brute totale** de Lireka en **juin 2026** pour les commandes livrées en **France** via **DHL** ?
+> Quelle est la **marge brute** de Lireka en **juin 2026** sur le **site B2C** pour les commandes livrées en **France** ?
 
 ### Étapes
 
 1. Ouvrir le dashboard Profitabilité
 2. Filtrer : Date = Juin 2026
-3. Filtrer : Pays = France
-4. Filtrer : Transporteur = DHL
-5. Lire le KPI "Marge brute"
+3. Page **Website B2C** (Channel = Website B2C)
+4. Lire la ligne **France** du tableau par pays, colonne Gross profit
+5. Vérifier la cohérence avec le profit bridge
 6. Noter le résultat : __________ €
 
 ---

@@ -17,7 +17,7 @@ table fact_factures_transport
 
 		annotation UnderlyingDateTimeDataType = Date
 
-	/// Transporteur canonique (La Poste pour Colissimo, Chronopost).
+	/// Transporteur canonique (carrier_name normalisé par fnCanonTransporteur).
 	column transporteur
 		dataType: string
 		lineageTag: 4550186f-ae1e-4003-8ca0-6fe6f9300d5e
@@ -34,7 +34,7 @@ table fact_factures_transport
 
 		changedProperty = IsHidden
 
-	/// Pays de destination (Colissimo : préfixe de la colonne Destination).
+	/// Pays de destination (invoice_country_code).
 	column pays_destination
 		dataType: string
 		lineageTag: 899d1dc8-28bb-492c-be09-bb1be241d2c9
@@ -52,7 +52,7 @@ table fact_factures_transport
 
 		changedProperty = IsHidden
 
-	/// Coût transport facturé HT en EUR (colonne TOTAL HT du récap).
+	/// Coût transport facturé HT en EUR (amount_excl_vat_eur).
 	column cout_transport
 		dataType: double
 		formatString: #,##0.00 €

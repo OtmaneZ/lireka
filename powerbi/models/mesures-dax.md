@@ -5,7 +5,7 @@
 > **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
 > Ne pas éditer à la main : régénérer depuis `_Mesures.tmdl` (script one-shot).
 
-> Total : **273 mesures**, dans l'ordre du modèle.
+> Total : **267 mesures**, dans l'ordre du modèle.
 
 ---
 
@@ -133,8 +133,8 @@ CALCULATE(
 ## _PY incomplet
 
 > Vrai si plus de 5 % des commandes non annulées de la période N-1 n'ont pas de montant de vente  
-> (ca_disponible = "Non"). Rend vides les PY / YoY de revenu et de marge : une comparaison  
-> à une période N-1 incomplète surestimerait la croissance.  
+> (ca_disponible = "Non"). Rend vides les PY / YoY de revenu, de marge, de coûts et de volumes :  
+> une comparaison à une période N-1 incomplète surestimerait la croissance.  
 
 ```dax
 _PY incomplet =
@@ -167,7 +167,7 @@ VAR n = [Nb commandes sans CA]
 RETURN
     IF(
         n > 0,
-        FORMAT(n, "#,##0") & " orders have no sales amount in the source data and are excluded from revenue, costs and margin",
+        FORMAT(n, "#,##0") & " orders have no sales amount in the source data and are excluded from volumes, revenue, costs and margin",
         ""
     )
 ```
@@ -548,7 +548,6 @@ CA HT Net Annulation = CALCULATE([CA Total HT], fact_commandes[state] <> "CANCEL
 ## CA HT Net Annulation (reconstruit)
 
 > Bloc3 (grain commande) — CA HT reconstruit hors commandes annulées.  
-> Variante marketplace (Bloc 1) de [CA HT Net Annulation].  
 
 ```dax
 CA HT Net Annulation (reconstruit) = CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
@@ -627,7 +626,7 @@ Coût Transport Estimé = SUM(fact_commandes[cout_transport_estime])
 
 ## Coût Transport Réel
 
-> Coût transport réel, issu des colis backend (package.shipping_cost_eur).  
+> Coût transport ESTIMÉ par le backend sur les colis (package.shipping_cost_eur) — contrôle.  
 
 ```dax
 Coût Transport Réel = SUM(fact_transport[cout_transport])
@@ -687,11 +686,11 @@ Taux Écart Coût = DIVIDE([Écart Coût Outbound vs Estimé Backend], [Coût Tr
 
 ## Coût Moyen Colis
 
-> Coût transport réel moyen par colis.  
+> Coût outbound moyen par colis (facturé si rapproché, sinon estimé) : même base que la colonne Outbound de la page Transport.  
 
 ```dax
 Coût Moyen Colis =
-DIVIDE([Coût Transport Réel], [Nb Colis])
+DIVIDE([Coût Transport Outbound (tous colis)], [Nb Colis])
 ```
 
 *Format* : `#,##0.00 €`
@@ -739,7 +738,7 @@ Marge Brute Backend (réf.) = SUM(fact_commandes[gross_profit_eur])
 ## Frais Port Encaissés
 
 > Fix F-04 : frais de port encaissés par le client (marketplace notamment).  
-> Périmètre d'inclusion ("if relevant") non tranché — inclus par défaut dans [Marge Brute].  
+> Inclus dans le revenu publié (hors CANCELLED) — formule Marc.  
 
 ```dax
 Frais Port Encaissés =
@@ -892,8 +891,7 @@ IF(
 ## Coûts Génériques
 
 > Bloc5 (dette technique) — coûts génériques (generic_costs_eur, agrégé par commande).  
-> Provisoire : Marc doit revoir total_generic_costs_eur / la définition de generic costs  
-> de son côté avant de figer ce poste dans la marge.  
+> Hors marge brute publiée (below-the-line, profit bridge et tableaux P&L uniquement).  
 
 ```dax
 Coûts Génériques =
@@ -1095,7 +1093,7 @@ Panier Moyen = DIVIDE([CA Total HT], [Nb Commandes], 0)
 Poids Total (kg) = SUM(fact_transport[poids_kg])
 ```
 
-*Format* : `#,##0.000`
+*Format* : `#,##0`
 
 ---
 
@@ -1149,7 +1147,7 @@ Commandes Code Pays Non Attribué = CALCULATE([Nb Commandes], fact_commandes[cod
 
 ## Commandes Sans Colis
 
-> Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).  
+> Commandes hors CANCELLED sans aucun colis dans fact_transport .  
 
 ```dax
 Commandes Sans Colis =
@@ -1238,7 +1236,7 @@ Revenu =
 > --- KPI cards : Unités commandées (Ordered Units) ---  
 
 ```dax
-Unités commandées PY = CALCULATE([Unités commandées], SAMEPERIODLASTYEAR(dim_date[date]))
+Unités commandées PY = IF([_PY incomplet], BLANK(), CALCULATE([Unités commandées], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0`
@@ -1270,7 +1268,7 @@ Unités commandées YoY % = DIVIDE([Unités commandées] - [Unités commandées 
 > --- KPI cards : Revenu (Revenue) ---  
 
 ```dax
-Revenu PY = CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date]))
+Revenu PY = IF([_PY incomplet], BLANK(), CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1302,7 +1300,7 @@ Revenu YoY % = DIVIDE([Revenu] - [Revenu PY], [Revenu PY])
 > --- KPI cards : Marge Brute (Gross Profit) ---  
 
 ```dax
-Marge Brute PY = CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+Marge Brute PY = IF([_PY incomplet], BLANK(), CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1335,7 +1333,7 @@ DIVIDE([Marge Brute] - [Marge Brute PY], ABS([Marge Brute PY]))
 > --- KPI cards : Taux Marge Brute (Gross Margin %) — YoY en bps, pas en % ---  
 
 ```dax
-Taux Marge Brute PY = CALCULATE([Taux Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+Taux Marge Brute PY = IF([_PY incomplet], BLANK(), CALCULATE([Taux Marge Brute], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `0.0%`
@@ -1357,7 +1355,7 @@ Taux Marge Brute YoY bps = ([Taux Marge Brute] - [Taux Marge Brute PY]) * 10000
 > --- Tableaux détaillés P&L : même logique PY / YoY Δ / YoY % ---  
 
 ```dax
-Nb Commandes PY = CALCULATE([Nb Commandes], SAMEPERIODLASTYEAR(dim_date[date]))
+Nb Commandes PY = IF([_PY incomplet], BLANK(), CALCULATE([Nb Commandes], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0`
@@ -1387,7 +1385,7 @@ Nb Commandes YoY % = DIVIDE([Nb Commandes] - [Nb Commandes PY], [Nb Commandes PY
 ## CA HT Net Annulation PY
 
 ```dax
-CA HT Net Annulation PY = CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+CA HT Net Annulation PY = IF([_PY incomplet], BLANK(), CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1417,7 +1415,7 @@ CA HT Net Annulation YoY % = DIVIDE([CA HT Net Annulation] - [CA HT Net Annulati
 ## Frais Port Encaissés PY
 
 ```dax
-Frais Port Encaissés PY = CALCULATE([Frais Port Encaissés], SAMEPERIODLASTYEAR(dim_date[date]))
+Frais Port Encaissés PY = IF([_PY incomplet], BLANK(), CALCULATE([Frais Port Encaissés], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1447,7 +1445,7 @@ Frais Port Encaissés YoY % = DIVIDE([Frais Port Encaissés] - [Frais Port Encai
 ## Coût Achat Total PY
 
 ```dax
-Coût Achat Total PY = CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date]))
+Coût Achat Total PY = IF([_PY incomplet], BLANK(), CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1477,7 +1475,7 @@ Coût Achat Total YoY % = DIVIDE([Coût Achat Total] - [Coût Achat Total PY], [
 ## Coût Transport Amont PY
 
 ```dax
-Coût Transport Amont PY = CALCULATE([Coût Transport Amont], SAMEPERIODLASTYEAR(dim_date[date]))
+Coût Transport Amont PY = IF([_PY incomplet], BLANK(), CALCULATE([Coût Transport Amont], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1507,7 +1505,7 @@ Coût Transport Amont YoY % = DIVIDE([Coût Transport Amont] - [Coût Transport 
 ## Coût Transport Outbound (Retenu) PY
 
 ```dax
-Coût Transport Outbound (Retenu) PY = CALCULATE([Coût Transport Outbound (Retenu)], SAMEPERIODLASTYEAR(dim_date[date]))
+Coût Transport Outbound (Retenu) PY = IF([_PY incomplet], BLANK(), CALCULATE([Coût Transport Outbound (Retenu)], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1537,7 +1535,7 @@ Coût Transport Outbound (Retenu) YoY % = DIVIDE([Coût Transport Outbound (Rete
 ## Douanes Taxes PY
 
 ```dax
-Douanes Taxes PY = CALCULATE([Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date]))
+Douanes Taxes PY = IF([_PY incomplet], BLANK(), CALCULATE([Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1567,7 +1565,7 @@ Douanes Taxes YoY % = DIVIDE([Douanes Taxes] - [Douanes Taxes PY], [Douanes Taxe
 ## Commissions Marketplace PY
 
 ```dax
-Commissions Marketplace PY = CALCULATE([Commissions Marketplace], SAMEPERIODLASTYEAR(dim_date[date]))
+Commissions Marketplace PY = IF([_PY incomplet], BLANK(), CALCULATE([Commissions Marketplace], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1597,7 +1595,7 @@ Commissions Marketplace YoY % = DIVIDE([Commissions Marketplace] - [Commissions 
 ## Fournitures Expédition PY
 
 ```dax
-Fournitures Expédition PY = CALCULATE([Fournitures Expédition], SAMEPERIODLASTYEAR(dim_date[date]))
+Fournitures Expédition PY = IF([_PY incomplet], BLANK(), CALCULATE([Fournitures Expédition], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1627,7 +1625,7 @@ Fournitures Expédition YoY % = DIVIDE([Fournitures Expédition] - [Fournitures 
 ## Retours Remboursements PY
 
 ```dax
-Retours Remboursements PY = CALCULATE([Retours Remboursements], SAMEPERIODLASTYEAR(dim_date[date]))
+Retours Remboursements PY = IF([_PY incomplet], BLANK(), CALCULATE([Retours Remboursements], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1657,7 +1655,7 @@ Retours Remboursements YoY % = DIVIDE([Retours Remboursements] - [Retours Rembou
 ## Coûts Génériques PY
 
 ```dax
-Coûts Génériques PY = CALCULATE([Coûts Génériques], SAMEPERIODLASTYEAR(dim_date[date]))
+Coûts Génériques PY = IF([_PY incomplet], BLANK(), CALCULATE([Coûts Génériques], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -1687,7 +1685,7 @@ Coûts Génériques YoY % = DIVIDE([Coûts Génériques] - [Coûts Génériques 
 ## Revenu (reconstruit)
 
 > Finance KPI — Revenue (reconstruit) = CA HT net annulation reconstruit + frais port hors CANCELLED.  
-> Variante marketplace pour dashboards Finance (General View, B2C, Marketplaces…).  
+> Mesure de revenu publiée sur toutes les pages.  
 
 ```dax
 Revenu (reconstruit) =
@@ -1814,7 +1812,10 @@ IF([_PY incomplet], BLANK(), CALCULATE([Taux Marge Brute (reconstruit)], SAMEPER
 ## Taux Marge Brute (reconstruit) YoY bps
 
 ```dax
-Taux Marge Brute (reconstruit) YoY bps = ([Taux Marge Brute (reconstruit)] - [Taux Marge Brute (reconstruit) PY]) * 10000
+Taux Marge Brute (reconstruit) YoY bps =
+VAR cy = [Taux Marge Brute (reconstruit)]
+VAR py = [Taux Marge Brute (reconstruit) PY]
+RETURN IF(ISBLANK(cy) || ISBLANK(py), BLANK(), (cy - py) * 10000)
 ```
 
 *Format* : `#,##0`
@@ -1856,7 +1857,7 @@ SUMX(
 > --- KPI cards : Taux Annulation (Cancellation rate) — YoY en bps, pas en % ---  
 > Field cadrage n°4 : = Cancelled units / Ordered units (grain article, date_commande).  
 > Numérateur [Nb Articles Annulés] (internal_state = CANCELLED), dénominateur  
-> [Unités commandées] (= [Nb Articles], toutes lignes y compris annulées).  
+> [Unités commandées] (périmètre volumes : commandes avec CA et commandes annulées).  
 
 ```dax
 Taux Annulation =
@@ -1870,7 +1871,7 @@ DIVIDE([Nb Articles Annulés], [Unités commandées])
 ## Taux Annulation PY
 
 ```dax
-Taux Annulation PY = CALCULATE([Taux Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+Taux Annulation PY = IF([_PY incomplet], BLANK(), CALCULATE([Taux Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `0.0%`
@@ -1880,7 +1881,10 @@ Taux Annulation PY = CALCULATE([Taux Annulation], SAMEPERIODLASTYEAR(dim_date[da
 ## Taux Annulation YoY bps
 
 ```dax
-Taux Annulation YoY bps = ([Taux Annulation] - [Taux Annulation PY]) * 10000
+Taux Annulation YoY bps =
+VAR cy = [Taux Annulation]
+VAR py = [Taux Annulation PY]
+RETURN IF(ISBLANK(cy) || ISBLANK(py), BLANK(), (cy - py) * 10000)
 ```
 
 *Format* : `#,##0`
@@ -1996,7 +2000,9 @@ RETURN
 > Couleur conditionnelle YoY — unités (hausse = vert). Cartes + tableau.  
 
 ```dax
-Couleur YoY — Unités = IF([Unités commandées YoY %] >= 0, "#6FA84B", "#C0504D")
+Couleur YoY — Unités =
+VAR y = [Unités commandées YoY %]
+RETURN IF(ISBLANK(y), BLANK(), IF(y >= 0, "#6FA84B", "#C0504D"))
 ```
 
 ---
@@ -2006,7 +2012,9 @@ Couleur YoY — Unités = IF([Unités commandées YoY %] >= 0, "#6FA84B", "#C050
 > Couleur conditionnelle YoY — revenu reconstruit (hausse = vert). Cartes + tableau.  
 
 ```dax
-Couleur YoY — Revenue = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
+Couleur YoY — Revenue =
+VAR y = [Revenu (reconstruit) YoY %]
+RETURN IF(ISBLANK(y), BLANK(), IF(y >= 0, "#6FA84B", "#C0504D"))
 ```
 
 ---
@@ -2016,7 +2024,9 @@ Couleur YoY — Revenue = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C05
 > Couleur conditionnelle YoY — marge brute (hausse = vert). Cartes + tableau.  
 
 ```dax
-Couleur YoY — Gross Profit = IF([Marge Brute (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
+Couleur YoY — Gross Profit =
+VAR y = [Marge Brute (reconstruit) YoY %]
+RETURN IF(ISBLANK(y), BLANK(), IF(y >= 0, "#6FA84B", "#C0504D"))
 ```
 
 ---
@@ -3133,34 +3143,10 @@ RETURN Total - TopPart
 ## Revenu (reconstruit, alloué langue) PY
 
 ```dax
-Revenu (reconstruit, alloué langue) PY = CALCULATE([Revenu (reconstruit, alloué langue)], SAMEPERIODLASTYEAR(dim_date[date]))
+Revenu (reconstruit, alloué langue) PY = IF([_PY incomplet], BLANK(), CALCULATE([Revenu (reconstruit, alloué langue)], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
-
----
-
-## B2B Rank Commande — Revenue
-
-> B2B / Top sellers — rang par revenu (FULL ; ne blanke pas).  
-> Affichage Top 10 via Keep + mesures Top * (pattern B2C Display) — PAS filtre Rank PBIR.  
-
-```dax
-B2B Rank Commande — Revenue =
-IF(
-    ISBLANK([Revenu (reconstruit)]),
-    BLANK(),
-    RANKX(
-        ALLSELECTED(fact_commandes[id_commande]),
-        [Revenu (reconstruit)],
-        ,
-        DESC,
-        DENSE
-    )
-)
-```
-
-*Format* : `0`
 
 ---
 
@@ -3181,11 +3167,11 @@ IF(
             SWITCH(
                 TRUE(),
                 k = "Start",
-                    CALCULATE([Revenu (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
+                    CALCULATE(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])), REMOVEFILTERS(_BridgePaysYoY)),
                 k = "Rest",
                     CALCULATE(
                         VAR TotalCY = [Revenu (reconstruit)]
-                        VAR TotalPY = [Revenu (reconstruit) PY]
+                        VAR TotalPY = CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
                         VAR AxisCY =
                             SUMX(
                                 FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
@@ -3198,7 +3184,7 @@ IF(
                             SUMX(
                                 FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
                                 CALCULATE(
-                                    [Revenu (reconstruit) PY],
+                                    CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])),
                                     TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
                                 )
                             )
@@ -3207,7 +3193,7 @@ IF(
                     ),
                 k = "Country",
                     CALCULATE(
-                        [Revenu (reconstruit) YoY Δ],
+                        [Revenu (reconstruit)] - CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])),
                         TREATAS({ label }, dim_pays[nom_pays_en]),
                         REMOVEFILTERS(_BridgePaysYoY)
                     ),
@@ -3233,11 +3219,11 @@ IF(
             SWITCH(
                 TRUE(),
                 k = "Start",
-                    CALCULATE([Marge Brute (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
+                    CALCULATE(CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])), REMOVEFILTERS(_BridgePaysYoY)),
                 k = "Rest",
                     CALCULATE(
                         VAR TotalCY = [Marge Brute (reconstruit)]
-                        VAR TotalPY = [Marge Brute (reconstruit) PY]
+                        VAR TotalPY = CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
                         VAR AxisCY =
                             SUMX(
                                 FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
@@ -3250,7 +3236,7 @@ IF(
                             SUMX(
                                 FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
                                 CALCULATE(
-                                    [Marge Brute (reconstruit) PY],
+                                    CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])),
                                     TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
                                 )
                             )
@@ -3259,7 +3245,7 @@ IF(
                     ),
                 k = "Country",
                     CALCULATE(
-                        [Marge Brute (reconstruit) YoY Δ],
+                        [Marge Brute (reconstruit)] - CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])),
                         TREATAS({ label }, dim_pays[nom_pays_en]),
                         REMOVEFILTERS(_BridgePaysYoY)
                     ),
@@ -3272,23 +3258,10 @@ IF(
 
 ---
 
-## Top Rank Commande — Revenue
-
-> Top sellers (slide 10) — Rank blank hors Top 10 ; valeurs via Top * Commande / ISBN.  
-> Canal via filtre visuel catégoriel (fiable). PAS de filtre mesure Rank (fragile PBIR).  
-
-```dax
-Top Rank Commande — Revenue = IF([Top Keep Commande — Revenue] = 1, [B2B Rank Commande — Revenue], BLANK())
-```
-
-*Format* : `0`
-
----
-
 ## Revenu (reconstruit, alloué ISBN)
 
 > Top sellers ISBN — revenu commande réparti par article (1/n par article, cf. [_Allocation ligne active]).  
-> Calculé seulement pour les 10 ISBN retenus (classement sur les unités) : pas de RANKX sur le revenu.  
+> Alias de [Revenu (reconstruit)] : le filtre ISBN déclenche la répartition par article.  
 
 ```dax
 Revenu (reconstruit, alloué ISBN) =
@@ -3492,28 +3465,6 @@ RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
 
 ---
 
-## Top Rank Loss — Gross Profit
-
-```dax
-Top Rank Loss — Gross Profit = IF([Top Keep Loss — Gross Profit] = 1, [Top Rank Loss — Gross Profit (full)], BLANK())
-```
-
-*Format* : `0`
-
----
-
-## Top Keep Commande — Revenue
-
-```dax
-Top Keep Commande — Revenue =
-VAR r = [B2B Rank Commande — Revenue]
-RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
-```
-
-*Format* : `0`
-
----
-
 ## Top Unités Commande
 
 > TOPN + tie-break id_commande (pattern Top * ISBN) — le IF(Keep) par ligne faisait  
@@ -3685,46 +3636,6 @@ RETURN CALCULATE([Revenu (reconstruit, alloué ISBN)], KEEPFILTERS(TopSet))
 ```
 
 *Format* : `#,##0.00 €`
-
----
-
-## Top Rank Loss — Gross Profit (full)
-
-> Top loss makers (slide 11) — rang parmi commandes à Marge Brute (reconstruit) < 0 (ASC).  
-> Affichage Top 10 via Keep + mesures Top Loss * (pattern B2C) — PAS filtre Rank PBIR.  
-> Customer name = INTERIM I3 (absent).  
-
-```dax
-Top Rank Loss — Gross Profit (full) =
-IF(
-    NOT ISNUMBER([Marge Brute (reconstruit)]) || [Marge Brute (reconstruit)] >= 0,
-    BLANK(),
-    RANKX(
-        FILTER(
-            ALLSELECTED(fact_commandes[id_commande]),
-            [Marge Brute (reconstruit)] < 0
-        ),
-        [Marge Brute (reconstruit)],
-        ,
-        ASC,
-        DENSE
-    )
-)
-```
-
-*Format* : `0`
-
----
-
-## Top Keep Loss — Gross Profit
-
-```dax
-Top Keep Loss — Gross Profit =
-VAR r = [Top Rank Loss — Gross Profit (full)]
-RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
-```
-
-*Format* : `0`
 
 ---
 
@@ -4199,7 +4110,7 @@ Frais Port Net Annulation = CALCULATE([Frais Port Encaissés], fact_commandes[st
 ## Frais Port Net Annulation PY
 
 ```dax
-Frais Port Net Annulation PY = CALCULATE([Frais Port Net Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+Frais Port Net Annulation PY = IF([_PY incomplet], BLANK(), CALCULATE([Frais Port Net Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
 *Format* : `#,##0.00 €`
@@ -4256,10 +4167,7 @@ IF(
 > Numerateur [Profit Produit Pur] = [Revenu (reconstruit)] - [Coût Achat Total].  
 > [Revenu (reconstruit)] : hors CANCELLED. [Coût Achat Total] : net annulation  
 > (0 si state = CANCELLED, décision Marc 25/08/2026).  
-> Denominateur [Revenu] : hors CANCELLED (CA HT Net Annulation + frais port).  
-> Coherence volet revenu : depuis neutralisation fallback FX (19/07),  
-> [Revenu] = [Revenu (reconstruit)] (ecart 0 sur entrepot). Choix [Revenu]  
-> car definition client litterale (produit + frais de port).  
+> Denominateur [Revenu (reconstruit)] : hors CANCELLED (CA HT net annulation + frais de port), commandes avec CA.  
 > Perimetre ratio : revenu et COGS tous deux hors vente annulée.  
 
 ```dax
@@ -4276,9 +4184,7 @@ DIVIDE([Profit Produit Pur], [Revenu (reconstruit)])
 > Field cadrage n°14 : Shipping cost per unit = Shipping cost / ordered units.  
 > Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED  
 > (cout mesure sur colis expedies).  
-> Denominateur [Unités commandées] : toutes lignes y compris annulees.  
-> Perimetre DIVERGENT (definition client, pas une erreur C-01) : cout sur expedie /  
-> unites commandees (annulees incluses). Applique tel quel.  
+> Denominateur [Unités commandées (avec CA)] : unités des commandes avec CA.  
 
 ```dax
 Transport sortant par unité =
@@ -4293,7 +4199,7 @@ DIVIDE([Coût Transport Outbound (Retenu)], [Unités commandées (avec CA)])
 
 > Field cadrage n°15 : Shipping % of revenue = Shipping cost / revenue.  
 > Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED.  
-> Denominateur [Revenu] : hors CANCELLED.  
+> Denominateur [Revenu (reconstruit)] : hors CANCELLED.  
 > Perimetre DIVERGENT : cout brut colis / revenu net annulation, meme traitement  
 > des couts que [Marge Brute] / [Taux Marge Brute] (outbound conserve si colis).  
 > Variante nette des deux cotes (non retenue) :  
@@ -4313,8 +4219,7 @@ DIVIDE([Coût Transport Outbound (Retenu)], [Revenu (reconstruit)])
 
 > Field cadrage n°17 : D/T per unit = D/T / ordered units.  
 > Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.  
-> Denominateur [Unités commandées] : toutes lignes y compris annulees.  
-> Perimetre DIVERGENT (definition client) : D/T sur colis expedies / unites commandees.  
+> Denominateur [Unités commandées (avec CA)] : unités des commandes avec CA.  
 
 ```dax
 Douanes Taxes par unité =
@@ -4329,7 +4234,7 @@ DIVIDE([Douanes Taxes], [Unités commandées (avec CA)])
 
 > Field cadrage n°18 : D/T percentage of revenue = D/T / revenue.  
 > Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.  
-> Denominateur [Revenu] : hors CANCELLED.  
+> Denominateur [Revenu (reconstruit)] : hors CANCELLED.  
 > Perimetre DIVERGENT : meme logique que [Taux Transport sortant] / [Taux Marge Brute].  
 > Variante nette des deux cotes (non retenue) :  
 > DIVIDE(CALCULATE([Douanes Taxes], fact_commandes[state] <> "CANCELLED"), [Revenu], 0).  

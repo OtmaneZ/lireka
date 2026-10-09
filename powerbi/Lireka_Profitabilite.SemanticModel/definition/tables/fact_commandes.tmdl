@@ -1,5 +1,6 @@
 /// Faits — commandes clients (grain : une ligne par commande).
-/// Source : PostgreSQL analytics_views.customer_order + coûts Bloc 5 agrégés depuis customer_order_item (SQL natif).
+/// Source : PostgreSQL analytics_views.customer_order + retours / génériques agrégés depuis customer_order_item,
+/// transport retenu / droits / fournitures agrégés depuis package et v_carrier_invoice_lines, médianes par canal (SQL natif).
 /// Clé : id_commande (customer_order.id). Porte le CA, les coûts backend et
 /// la marge existante (gross_profit_eur) conservée comme référence de contrôle.
 table fact_commandes
@@ -57,7 +58,7 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
-	/// CA HT reconstruit en EUR (order_amount_eur natif ou order_amount_local / taux mensuel).
+	/// CA HT en EUR (= order_amount_eur natif ; repli devise neutralisé le 19/07/2026).
 	/// Voir commentaire Power Query dans la partition et docs/notes-techniques/reconstruction-ca-marketplace.md.
 	column ca_ht_reconstruit
 		dataType: double
@@ -188,8 +189,8 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: canal_bascule
 
-	/// "Oui" si order_amount_eur > 0, sinon "Non" (marketplaces sans montant en base depuis 09/2024,
-	/// toutes sources sept.-nov. 2024). Revenu, coûts et marge ne portent que sur "Oui" :
+	/// "Oui" si order_amount_eur > 0, sinon "Non" (commandes dont le montant EUR est vide en base).
+	/// Revenu, coûts et marge ne portent que sur "Oui" :
 	/// une commande sans CA ne déduit aucun coût. Texte (pas booléen) pour les filtres PBIR.
 	column ca_disponible
 		dataType: string
@@ -368,7 +369,7 @@ table fact_commandes
 		summarizeBy: none
 		sortByColumn: tranche_panier_ordre
 
-	/// Ordre d'affichage de tranche_panier (1..8). Colonne de tri uniquement.
+	/// Ordre d'affichage de tranche_panier (0 = No sales amount, puis 1..8). Colonne de tri uniquement.
 	/// Calcule sur ca_ht (pas via tranche_panier) pour eviter le cycle sortByColumn.
 	column tranche_panier_ordre =
 			VAR p = IF(ISBLANK(fact_commandes[ca_ht]), 0, fact_commandes[ca_ht])
@@ -550,7 +551,7 @@ table fact_commandes
 						{"retours_remboursements", "couts_generiques"}
 					),
 					// Canal poste basculant (meme regle que le prototype Python page 11).
-					// Agregats colis / marge / medianes / tranche : colonnes calculees DAX.
+					// Agregats colis et medianes : calcules en SQL ; marge / tranche / poste basculant : colonnes calculees DAX.
 					#"Canal bascule" = Table.AddColumn(
 						#"Avec bloc5",
 						"canal_bascule",

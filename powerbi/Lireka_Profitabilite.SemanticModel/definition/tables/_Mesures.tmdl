@@ -77,8 +77,8 @@ table _Mesures
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000003
 
 	/// Vrai si plus de 5 % des commandes non annulées de la période N-1 n'ont pas de montant de vente
-	/// (ca_disponible = "Non"). Rend vides les PY / YoY de revenu et de marge : une comparaison
-	/// à une période N-1 incomplète surestimerait la croissance.
+	/// (ca_disponible = "Non"). Rend vides les PY / YoY de revenu, de marge, de coûts et de volumes :
+	/// une comparaison à une période N-1 incomplète surestimerait la croissance.
 	measure '_PY incomplet' =
 			VAR seuil = 0.05
 			VAR total =
@@ -105,7 +105,7 @@ table _Mesures
 			RETURN
 				IF(
 					n > 0,
-					FORMAT(n, "#,##0") & " orders have no sales amount in the source data and are excluded from revenue, costs and margin",
+					FORMAT(n, "#,##0") & " orders have no sales amount in the source data and are excluded from volumes, revenue, costs and margin",
 					""
 				)
 		displayFolder: 12 Périmètre
@@ -348,7 +348,6 @@ table _Mesures
 		lineageTag: f8091234-5678-9abc-def0-123456789abd
 
 	/// Bloc3 (grain commande) — CA HT reconstruit hors commandes annulées.
-	/// Variante marketplace (Bloc 1) de [CA HT Net Annulation].
 	measure 'CA HT Net Annulation (reconstruit)' = CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
 		formatString: #,##0.00 €
 		displayFolder: 02 Revenus
@@ -405,7 +404,7 @@ table _Mesures
 		displayFolder: 08 Contrôles
 		lineageTag: d0af07eb-f680-4e05-bc4b-b69de2131850
 
-	/// Coût transport réel, issu des colis backend (package.shipping_cost_eur).
+	/// Coût transport ESTIMÉ par le backend sur les colis (package.shipping_cost_eur) — contrôle.
 	measure 'Coût Transport Réel' = SUM(fact_transport[cout_transport])
 		formatString: #,##0.00 €
 		isHidden
@@ -445,9 +444,9 @@ table _Mesures
 		displayFolder: 08 Contrôles
 		lineageTag: 831022a0-57dc-4efe-b01b-6eee24553f25
 
-	/// Coût transport réel moyen par colis.
+	/// Coût outbound moyen par colis (facturé si rapproché, sinon estimé) : même base que la colonne Outbound de la page Transport.
 	measure 'Coût Moyen Colis' =
-			DIVIDE([Coût Transport Réel], [Nb Colis])
+			DIVIDE([Coût Transport Outbound (tous colis)], [Nb Colis])
 		formatString: #,##0.00 €
 		isHidden
 		displayFolder: 08 Contrôles
@@ -477,7 +476,7 @@ table _Mesures
 		lineageTag: 96da7a44-3aa5-400a-ae45-f6122da0451e
 
 	/// Fix F-04 : frais de port encaissés par le client (marketplace notamment).
-	/// Périmètre d'inclusion ("if relevant") non tranché — inclus par défaut dans [Marge Brute].
+	/// Inclus dans le revenu publié (hors CANCELLED) — formule Marc.
 	measure 'Frais Port Encaissés' =
 			IF(
 				[_Allocation ligne active],
@@ -588,8 +587,7 @@ table _Mesures
 		lineageTag: e8f9a0b1-c2d3-4456-e789-0123def01234
 
 	/// Bloc5 (dette technique) — coûts génériques (generic_costs_eur, agrégé par commande).
-	/// Provisoire : Marc doit revoir total_generic_costs_eur / la définition de generic costs
-	/// de son côté avant de figer ce poste dans la marge.
+	/// Hors marge brute publiée (below-the-line, profit bridge et tableaux P&L uniquement).
 	measure 'Coûts Génériques' =
 			IF(
 				[_Allocation ligne active],
@@ -726,7 +724,7 @@ table _Mesures
 
 	/// Poids total expédié (kg).
 	measure 'Poids Total (kg)' = SUM(fact_transport[poids_kg])
-		formatString: #,##0.000
+		formatString: #,##0
 		isHidden
 		displayFolder: 08 Contrôles
 		lineageTag: 594bb787-db4c-4e44-b6d2-184b63c29975
@@ -759,7 +757,7 @@ table _Mesures
 		displayFolder: 08 Contrôles
 		lineageTag: e5f6a7b8-c9d0-4123-e456-789abcdef012
 
-	/// Commandes hors CANCELLED sans aucun colis dans fact_transport (162 attendu sur entrepôt actuel).
+	/// Commandes hors CANCELLED sans aucun colis dans fact_transport .
 	measure 'Commandes Sans Colis' =
 			COUNTROWS(
 				FILTER(
@@ -821,7 +819,7 @@ table _Mesures
 		lineageTag: 4449f741-c626-42a0-95c8-c0226f4e7f11
 
 	/// --- KPI cards : Unités commandées (Ordered Units) ---
-	measure 'Unités commandées PY' = CALCULATE([Unités commandées], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Unités commandées PY' = IF([_PY incomplet], BLANK(), CALCULATE([Unités commandées], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0
 		displayFolder: 05 YoY
 		lineageTag: dc99c916-a9a6-42a2-acfa-e7dd0b88b42a
@@ -837,7 +835,7 @@ table _Mesures
 		lineageTag: b2b7b172-1298-4d91-ba61-d1142ba285a3
 
 	/// --- KPI cards : Revenu (Revenue) ---
-	measure 'Revenu PY' = CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Revenu PY' = IF([_PY incomplet], BLANK(), CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: b6b7aeab-d880-4342-8a60-5663277104df
@@ -853,7 +851,7 @@ table _Mesures
 		lineageTag: 2891b13d-7576-4fae-acc3-746871b32126
 
 	/// --- KPI cards : Marge Brute (Gross Profit) ---
-	measure 'Marge Brute PY' = CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Marge Brute PY' = IF([_PY incomplet], BLANK(), CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		isHidden
 		displayFolder: 05 YoY
@@ -873,7 +871,7 @@ table _Mesures
 		lineageTag: 0c2bedcf-84e7-4297-8deb-7507f03ee820
 
 	/// --- KPI cards : Taux Marge Brute (Gross Margin %) — YoY en bps, pas en % ---
-	measure 'Taux Marge Brute PY' = CALCULATE([Taux Marge Brute], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Taux Marge Brute PY' = IF([_PY incomplet], BLANK(), CALCULATE([Taux Marge Brute], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: 0.0%
 		isHidden
 		displayFolder: 05 YoY
@@ -886,7 +884,7 @@ table _Mesures
 		lineageTag: 90ed7a8b-a675-4b89-9642-5b5798c3ed86
 
 	/// --- Tableaux détaillés P&L : même logique PY / YoY Δ / YoY % ---
-	measure 'Nb Commandes PY' = CALCULATE([Nb Commandes], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Nb Commandes PY' = IF([_PY incomplet], BLANK(), CALCULATE([Nb Commandes], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0
 		displayFolder: 05 YoY
 		lineageTag: c06ad058-babd-4af3-9382-8e8f7d87de2a
@@ -901,7 +899,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: a9eaf4fa-cdb1-42bc-b812-4e4175876d98
 
-	measure 'CA HT Net Annulation PY' = CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'CA HT Net Annulation PY' = IF([_PY incomplet], BLANK(), CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: b375dae1-e80e-4327-8270-83f36c50a2ad
@@ -916,7 +914,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 4d5f0088-0032-49e6-a591-1f1adb7f0e7a
 
-	measure 'Frais Port Encaissés PY' = CALCULATE([Frais Port Encaissés], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Frais Port Encaissés PY' = IF([_PY incomplet], BLANK(), CALCULATE([Frais Port Encaissés], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 3c8c29e4-4493-41b2-b9c5-62213d939366
@@ -931,7 +929,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 875b244b-fff6-4c17-94a1-9d8b16639d33
 
-	measure 'Coût Achat Total PY' = CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Coût Achat Total PY' = IF([_PY incomplet], BLANK(), CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 62fde7f2-0dab-4203-859c-3f41e6b8e8c9
@@ -946,7 +944,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: c1b2cbdc-fcbd-4283-85bb-f8633178bfc9
 
-	measure 'Coût Transport Amont PY' = CALCULATE([Coût Transport Amont], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Coût Transport Amont PY' = IF([_PY incomplet], BLANK(), CALCULATE([Coût Transport Amont], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 51d9ecde-f889-44e4-940e-026bab6fc47c
@@ -961,7 +959,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 0fca9897-d9bd-4ff6-8c5c-8cd4727b1cef
 
-	measure 'Coût Transport Outbound (Retenu) PY' = CALCULATE([Coût Transport Outbound (Retenu)], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Coût Transport Outbound (Retenu) PY' = IF([_PY incomplet], BLANK(), CALCULATE([Coût Transport Outbound (Retenu)], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: c4ce4585-9c86-47ea-a88d-d7d89b50e5fd
@@ -976,7 +974,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 8bcbd401-4e41-421b-9af7-3ccc383fb0ba
 
-	measure 'Douanes Taxes PY' = CALCULATE([Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Douanes Taxes PY' = IF([_PY incomplet], BLANK(), CALCULATE([Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: f000cb0d-655f-4ba1-a763-e8ab5d69a443
@@ -991,7 +989,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 6147462f-8305-4568-8404-63a1abee626f
 
-	measure 'Commissions Marketplace PY' = CALCULATE([Commissions Marketplace], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Commissions Marketplace PY' = IF([_PY incomplet], BLANK(), CALCULATE([Commissions Marketplace], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 09d9cbe9-ce73-470d-97d0-6cba4c2de600
@@ -1006,7 +1004,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 2f8200f8-dd17-43d9-b73f-c499062f2d77
 
-	measure 'Fournitures Expédition PY' = CALCULATE([Fournitures Expédition], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Fournitures Expédition PY' = IF([_PY incomplet], BLANK(), CALCULATE([Fournitures Expédition], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: 99df3b5d-eab6-4918-b040-24adefd6b1b0
@@ -1021,7 +1019,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 86d98470-ce8d-45aa-979d-fc7701f189d4
 
-	measure 'Retours Remboursements PY' = CALCULATE([Retours Remboursements], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Retours Remboursements PY' = IF([_PY incomplet], BLANK(), CALCULATE([Retours Remboursements], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: e430624b-7acd-4eec-a764-b0dd52df83d0
@@ -1036,7 +1034,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 0fe4f423-5830-4f64-880f-93e2e40ab98b
 
-	measure 'Coûts Génériques PY' = CALCULATE([Coûts Génériques], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Coûts Génériques PY' = IF([_PY incomplet], BLANK(), CALCULATE([Coûts Génériques], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: b962c013-7f99-440e-9eee-43f9219e752f
@@ -1052,7 +1050,7 @@ table _Mesures
 		lineageTag: 625464b5-de13-4b23-8028-5c54a97ab079
 
 	/// Finance KPI — Revenue (reconstruit) = CA HT net annulation reconstruit + frais port hors CANCELLED.
-	/// Variante marketplace pour dashboards Finance (General View, B2C, Marketplaces…).
+	/// Mesure de revenu publiée sur toutes les pages.
 	measure 'Revenu (reconstruit)' =
 			[CA HT Net Annulation (reconstruit)]
 				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
@@ -1126,7 +1124,10 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: aaaabb00-1111-2222-3333-444455556666
 
-	measure 'Taux Marge Brute (reconstruit) YoY bps' = ([Taux Marge Brute (reconstruit)] - [Taux Marge Brute (reconstruit) PY]) * 10000
+	measure 'Taux Marge Brute (reconstruit) YoY bps' =
+			VAR cy = [Taux Marge Brute (reconstruit)]
+			VAR py = [Taux Marge Brute (reconstruit) PY]
+			RETURN IF(ISBLANK(cy) || ISBLANK(py), BLANK(), (cy - py) * 10000)
 		formatString: #,##0
 		displayFolder: 05 YoY
 		lineageTag: bbbbcc00-1111-2222-3333-444455556666
@@ -1159,19 +1160,22 @@ table _Mesures
 	/// --- KPI cards : Taux Annulation (Cancellation rate) — YoY en bps, pas en % ---
 	/// Field cadrage n°4 : = Cancelled units / Ordered units (grain article, date_commande).
 	/// Numérateur [Nb Articles Annulés] (internal_state = CANCELLED), dénominateur
-	/// [Unités commandées] (= [Nb Articles], toutes lignes y compris annulées).
+	/// [Unités commandées] (périmètre volumes : commandes avec CA et commandes annulées).
 	measure 'Taux Annulation' =
 			DIVIDE([Nb Articles Annulés], [Unités commandées])
 		formatString: 0.0%
 		displayFolder: 01 KPI publiés
 		lineageTag: 3a1c5e7d-2b48-4f16-9c03-1d5e7f9a0b21
 
-	measure 'Taux Annulation PY' = CALCULATE([Taux Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Taux Annulation PY' = IF([_PY incomplet], BLANK(), CALCULATE([Taux Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: 0.0%
 		displayFolder: 05 YoY
 		lineageTag: 4b2d6f8e-3c59-4027-ad14-2e6f80ab1c32
 
-	measure 'Taux Annulation YoY bps' = ([Taux Annulation] - [Taux Annulation PY]) * 10000
+	measure 'Taux Annulation YoY bps' =
+			VAR cy = [Taux Annulation]
+			VAR py = [Taux Annulation PY]
+			RETURN IF(ISBLANK(cy) || ISBLANK(py), BLANK(), (cy - py) * 10000)
 		formatString: #,##0
 		displayFolder: 05 YoY
 		lineageTag: 5c3e709f-4d6a-4138-be25-3f7091bc2d43
@@ -1263,17 +1267,23 @@ table _Mesures
 		lineageTag: aa000004-1111-2222-3333-444455550004
 
 	/// Couleur conditionnelle YoY — unités (hausse = vert). Cartes + tableau.
-	measure 'Couleur YoY — Unités' = IF([Unités commandées YoY %] >= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Unités' =
+			VAR y = [Unités commandées YoY %]
+			RETURN IF(ISBLANK(y), BLANK(), IF(y >= 0, "#6FA84B", "#C0504D"))
 		displayFolder: 05 YoY
 		lineageTag: aa000005-1111-2222-3333-444455550005
 
 	/// Couleur conditionnelle YoY — revenu reconstruit (hausse = vert). Cartes + tableau.
-	measure 'Couleur YoY — Revenue' = IF([Revenu (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Revenue' =
+			VAR y = [Revenu (reconstruit) YoY %]
+			RETURN IF(ISBLANK(y), BLANK(), IF(y >= 0, "#6FA84B", "#C0504D"))
 		displayFolder: 05 YoY
 		lineageTag: aa000006-1111-2222-3333-444455550006
 
 	/// Couleur conditionnelle YoY — marge brute (hausse = vert). Cartes + tableau.
-	measure 'Couleur YoY — Gross Profit' = IF([Marge Brute (reconstruit) YoY %] >= 0, "#6FA84B", "#C0504D")
+	measure 'Couleur YoY — Gross Profit' =
+			VAR y = [Marge Brute (reconstruit) YoY %]
+			RETURN IF(ISBLANK(y), BLANK(), IF(y >= 0, "#6FA84B", "#C0504D"))
 		displayFolder: 05 YoY
 		lineageTag: aa000007-1111-2222-3333-444455550007
 
@@ -2150,28 +2160,10 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000043-1111-2222-3333-444455550043
 
-	measure 'Revenu (reconstruit, alloué langue) PY' = CALCULATE([Revenu (reconstruit, alloué langue)], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Revenu (reconstruit, alloué langue) PY' = IF([_PY incomplet], BLANK(), CALCULATE([Revenu (reconstruit, alloué langue)], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 09 Dette technique
 		lineageTag: ccccdd00-1111-2222-3333-444455556670
-
-	/// B2B / Top sellers — rang par revenu (FULL ; ne blanke pas).
-	/// Affichage Top 10 via Keep + mesures Top * (pattern B2C Display) — PAS filtre Rank PBIR.
-	measure 'B2B Rank Commande — Revenue' =
-			IF(
-				ISBLANK([Revenu (reconstruit)]),
-				BLANK(),
-				RANKX(
-					ALLSELECTED(fact_commandes[id_commande]),
-					[Revenu (reconstruit)],
-					,
-					DESC,
-					DENSE
-				)
-			)
-		formatString: 0
-		displayFolder: 06 Display (familles GV / B2C / Mkt)
-		lineageTag: b2b0rank-1111-2222-3333-444455550001
 
 	/// =====================================================================
 	/// B2C contribution bridges (slide 7). Axe _BridgePaysYoY = Prior year + Top 15 + Rest.
@@ -2188,11 +2180,11 @@ table _Mesures
 						SWITCH(
 							TRUE(),
 							k = "Start",
-								CALCULATE([Revenu (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
+								CALCULATE(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])), REMOVEFILTERS(_BridgePaysYoY)),
 							k = "Rest",
 								CALCULATE(
 									VAR TotalCY = [Revenu (reconstruit)]
-									VAR TotalPY = [Revenu (reconstruit) PY]
+									VAR TotalPY = CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
 									VAR AxisCY =
 										SUMX(
 											FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
@@ -2205,7 +2197,7 @@ table _Mesures
 										SUMX(
 											FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
 											CALCULATE(
-												[Revenu (reconstruit) PY],
+												CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])),
 												TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
 											)
 										)
@@ -2214,7 +2206,7 @@ table _Mesures
 								),
 							k = "Country",
 								CALCULATE(
-									[Revenu (reconstruit) YoY Δ],
+									[Revenu (reconstruit)] - CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])),
 									TREATAS({ label }, dim_pays[nom_pays_en]),
 									REMOVEFILTERS(_BridgePaysYoY)
 								),
@@ -2235,11 +2227,11 @@ table _Mesures
 						SWITCH(
 							TRUE(),
 							k = "Start",
-								CALCULATE([Marge Brute (reconstruit) PY], REMOVEFILTERS(_BridgePaysYoY)),
+								CALCULATE(CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])), REMOVEFILTERS(_BridgePaysYoY)),
 							k = "Rest",
 								CALCULATE(
 									VAR TotalCY = [Marge Brute (reconstruit)]
-									VAR TotalPY = [Marge Brute (reconstruit) PY]
+									VAR TotalPY = CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))
 									VAR AxisCY =
 										SUMX(
 											FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
@@ -2252,7 +2244,7 @@ table _Mesures
 										SUMX(
 											FILTER(_BridgePaysYoY, _BridgePaysYoY[Kind] = "Country"),
 											CALCULATE(
-												[Marge Brute (reconstruit) PY],
+												CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])),
 												TREATAS({ _BridgePaysYoY[Label] }, dim_pays[nom_pays_en])
 											)
 										)
@@ -2261,7 +2253,7 @@ table _Mesures
 								),
 							k = "Country",
 								CALCULATE(
-									[Marge Brute (reconstruit) YoY Δ],
+									[Marge Brute (reconstruit)] - CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])),
 									TREATAS({ label }, dim_pays[nom_pays_en]),
 									REMOVEFILTERS(_BridgePaysYoY)
 								),
@@ -2272,15 +2264,8 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: b2c0b711-1111-2222-3333-444455550002
 
-	/// Top sellers (slide 10) — Rank blank hors Top 10 ; valeurs via Top * Commande / ISBN.
-	/// Canal via filtre visuel catégoriel (fiable). PAS de filtre mesure Rank (fragile PBIR).
-	measure 'Top Rank Commande — Revenue' = IF([Top Keep Commande — Revenue] = 1, [B2B Rank Commande — Revenue], BLANK())
-		formatString: 0
-		displayFolder: 07 Top / Loss
-		lineageTag: top0rank-1111-2222-3333-444455550001
-
 	/// Top sellers ISBN — revenu commande réparti par article (1/n par article, cf. [_Allocation ligne active]).
-	/// Calculé seulement pour les 10 ISBN retenus (classement sur les unités) : pas de RANKX sur le revenu.
+	/// Alias de [Revenu (reconstruit)] : le filtre ISBN déclenche la répartition par article.
 	measure 'Revenu (reconstruit, alloué ISBN)' =
 			[Revenu (reconstruit)]
 		formatString: #,##0.00 €
@@ -2418,18 +2403,6 @@ table _Mesures
 			RETURN IF(NOT ISNUMBER(y), BLANK(), FORMAT(y, "+0;-0") & " bps")
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00022-1111-2222-3333-444455550022
-
-	measure 'Top Rank Loss — Gross Profit' = IF([Top Keep Loss — Gross Profit] = 1, [Top Rank Loss — Gross Profit (full)], BLANK())
-		formatString: 0
-		displayFolder: 07 Top / Loss
-		lineageTag: loss0rank-1111-2222-3333-444455550001
-
-	measure 'Top Keep Commande — Revenue' =
-			VAR r = [B2B Rank Commande — Revenue]
-			RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
-		formatString: 0
-		displayFolder: 07 Top / Loss
-		lineageTag: top0keep-1111-2222-3333-444455550001
 
 	/// TOPN + tie-break id_commande (pattern Top * ISBN) — le IF(Keep) par ligne faisait
 	/// passer le total visuel (RANKX sur revenu agrégé → Keep=1 → somme globale).
@@ -2578,35 +2551,6 @@ table _Mesures
 		formatString: #,##0.00 €
 		displayFolder: 07 Top / Loss
 		lineageTag: top0isbn-1111-2222-3333-444455550007
-
-	/// Top loss makers (slide 11) — rang parmi commandes à Marge Brute (reconstruit) < 0 (ASC).
-	/// Affichage Top 10 via Keep + mesures Top Loss * (pattern B2C) — PAS filtre Rank PBIR.
-	/// Customer name = INTERIM I3 (absent).
-	measure 'Top Rank Loss — Gross Profit (full)' =
-			IF(
-				NOT ISNUMBER([Marge Brute (reconstruit)]) || [Marge Brute (reconstruit)] >= 0,
-				BLANK(),
-				RANKX(
-					FILTER(
-						ALLSELECTED(fact_commandes[id_commande]),
-						[Marge Brute (reconstruit)] < 0
-					),
-					[Marge Brute (reconstruit)],
-					,
-					ASC,
-					DENSE
-				)
-			)
-		formatString: 0
-		displayFolder: 07 Top / Loss
-		lineageTag: loss0rank-1111-2222-3333-444455550002
-
-	measure 'Top Keep Loss — Gross Profit' =
-			VAR r = [Top Rank Loss — Gross Profit (full)]
-			RETURN IF(ISNUMBER(r) && r <= 10, 1, BLANK())
-		formatString: 0
-		displayFolder: 07 Top / Loss
-		lineageTag: loss0keep-1111-2222-3333-444455550001
 
 	/// TOPN + tie-break id_commande (pattern Top * Commande corrigé) — le IF(Keep) par ligne
 	/// faisait retomber le total visuel à BLANK (marge agrégée >= 0 hors Top Rank Loss).
@@ -3014,7 +2958,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0001
 
-	measure 'Frais Port Net Annulation PY' = CALCULATE([Frais Port Net Annulation], SAMEPERIODLASTYEAR(dim_date[date]))
+	measure 'Frais Port Net Annulation PY' = IF([_PY incomplet], BLANK(), CALCULATE([Frais Port Net Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: #,##0.00 €
 		displayFolder: 05 YoY
 		lineageTag: a1b2c3d4-e5f6-4789-a012-bridgepnl0002
@@ -3057,10 +3001,7 @@ table _Mesures
 	/// Numerateur [Profit Produit Pur] = [Revenu (reconstruit)] - [Coût Achat Total].
 	/// [Revenu (reconstruit)] : hors CANCELLED. [Coût Achat Total] : net annulation
 	/// (0 si state = CANCELLED, décision Marc 25/08/2026).
-	/// Denominateur [Revenu] : hors CANCELLED (CA HT Net Annulation + frais port).
-	/// Coherence volet revenu : depuis neutralisation fallback FX (19/07),
-	/// [Revenu] = [Revenu (reconstruit)] (ecart 0 sur entrepot). Choix [Revenu]
-	/// car definition client litterale (produit + frais de port).
+	/// Denominateur [Revenu (reconstruit)] : hors CANCELLED (CA HT net annulation + frais de port), commandes avec CA.
 	/// Perimetre ratio : revenu et COGS tous deux hors vente annulée.
 	measure 'Taux Marge Commerciale' =
 			DIVIDE([Profit Produit Pur], [Revenu (reconstruit)])
@@ -3071,9 +3012,7 @@ table _Mesures
 	/// Field cadrage n°14 : Shipping cost per unit = Shipping cost / ordered units.
 	/// Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED
 	/// (cout mesure sur colis expedies).
-	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
-	/// Perimetre DIVERGENT (definition client, pas une erreur C-01) : cout sur expedie /
-	/// unites commandees (annulees incluses). Applique tel quel.
+	/// Denominateur [Unités commandées (avec CA)] : unités des commandes avec CA.
 	measure 'Transport sortant par unité' =
 			DIVIDE([Coût Transport Outbound (Retenu)], [Unités commandées (avec CA)])
 		formatString: #,##0.00 €
@@ -3082,7 +3021,7 @@ table _Mesures
 
 	/// Field cadrage n°15 : Shipping % of revenue = Shipping cost / revenue.
 	/// Numerateur [Coût Transport Outbound (Retenu)] : grain colis, sans filtre CANCELLED.
-	/// Denominateur [Revenu] : hors CANCELLED.
+	/// Denominateur [Revenu (reconstruit)] : hors CANCELLED.
 	/// Perimetre DIVERGENT : cout brut colis / revenu net annulation, meme traitement
 	/// des couts que [Marge Brute] / [Taux Marge Brute] (outbound conserve si colis).
 	/// Variante nette des deux cotes (non retenue) :
@@ -3096,8 +3035,7 @@ table _Mesures
 
 	/// Field cadrage n°17 : D/T per unit = D/T / ordered units.
 	/// Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.
-	/// Denominateur [Unités commandées] : toutes lignes y compris annulees.
-	/// Perimetre DIVERGENT (definition client) : D/T sur colis expedies / unites commandees.
+	/// Denominateur [Unités commandées (avec CA)] : unités des commandes avec CA.
 	measure 'Douanes Taxes par unité' =
 			DIVIDE([Douanes Taxes], [Unités commandées (avec CA)])
 		formatString: #,##0.00 €
@@ -3106,7 +3044,7 @@ table _Mesures
 
 	/// Field cadrage n°18 : D/T percentage of revenue = D/T / revenue.
 	/// Numerateur [Douanes Taxes] : grain colis, sans filtre CANCELLED.
-	/// Denominateur [Revenu] : hors CANCELLED.
+	/// Denominateur [Revenu (reconstruit)] : hors CANCELLED.
 	/// Perimetre DIVERGENT : meme logique que [Taux Transport sortant] / [Taux Marge Brute].
 	/// Variante nette des deux cotes (non retenue) :
 	/// DIVIDE(CALCULATE([Douanes Taxes], fact_commandes[state] <> "CANCELLED"), [Revenu], 0).

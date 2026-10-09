@@ -28,7 +28,8 @@
               },
               "queryRef": "BridgePnL.Libelle",
               "nativeQueryRef": "Libelle",
-              "active": true
+              "active": true,
+              "displayName": "Item"
             }
           ]
         },
@@ -46,7 +47,8 @@
                 }
               },
               "queryRef": "_Mesures.Bridge PnL YoY",
-              "nativeQueryRef": "Bridge PnL YoY"
+              "nativeQueryRef": "Bridge PnL YoY",
+              "displayName": "Gross Profit change"
             }
           ]
         }

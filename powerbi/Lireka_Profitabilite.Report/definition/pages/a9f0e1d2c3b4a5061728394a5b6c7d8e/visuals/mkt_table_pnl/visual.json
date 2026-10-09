@@ -3,9 +3,9 @@
   "name": "mkt_table_pnl",
   "position": {
     "x": 237,
-    "y": 134,
+    "y": 148,
     "z": 23000,
-    "height": 538,
+    "height": 524,
     "width": 1035,
     "tabOrder": 23000
   },
@@ -600,7 +600,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Revenue and profitability by Marketplace'"
+                  "Value": "'Revenue and profitability by marketplace'"
                 }
               }
             },

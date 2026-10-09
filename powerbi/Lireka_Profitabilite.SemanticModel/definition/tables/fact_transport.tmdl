@@ -3,7 +3,7 @@
 /// cout_transport = shipping_cost_eur (estimation backend ou coût saisi).
 /// Fix F-02 : cout_transport_facture = montant facturé rapproché ; cout_transport_retenu =
 /// facturé si disponible sinon estimé (poste "outbound" de la marge).
-/// Fix F-03 : source_cout : "facture_rapprochee" (facture Colissimo/Chronopost rapprochée dont
+/// Fix F-03 : source_cout : "facture_rapprochee" (facture transporteur rapprochée dont
 /// la VALEUR est portée dans cout_transport_retenu), "backend_seul" (backend sans facture —
 /// Colis Privé, Postes Canada, autres), "aucun" (ni facture ni coût backend).
 /// Le transporteur est inféré du numéro de suivi (aucune colonne transporteur en source).

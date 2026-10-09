@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Data by web channel, figures in EUR, YoY variations vs prior year",
+                    "value": "Data by destination country, figures in EUR, YoY variations vs prior year",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontSize": "8pt",

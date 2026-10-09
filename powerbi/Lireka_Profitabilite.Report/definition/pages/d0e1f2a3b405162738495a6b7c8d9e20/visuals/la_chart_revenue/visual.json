@@ -100,7 +100,8 @@
                 }
               },
               "queryRef": "_Mesures.Revenu (reconstruit)",
-              "nativeQueryRef": "Revenu (reconstruit)"
+              "nativeQueryRef": "Revenu (reconstruit)",
+              "displayName": "Revenue"
             }
           ]
         },
@@ -528,7 +529,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Revenue by sales channel'"
+                  "Value": "'Revenue, Librairie Arthaud'"
                 }
               }
             },

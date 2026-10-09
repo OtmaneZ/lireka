@@ -131,7 +131,7 @@ table fact_lignes
 					// Articles ⋈ groupes (ISBN / prix) ⋈ commandes (source) : jointures calculées par PostgreSQL.
 					Source = fnRequeteSql(Text.Combine({
 						"SELECT i.id, i.order_id, i.item_group_id, i.internal_state, i.package_id, i.product_cost_eur,",
-						"g.isbn, g.quantity AS quantity_groupe, g.customer_price_per_item_eur,",
+						"upper(trim(g.isbn)) AS isbn, g.quantity AS quantity_groupe, g.customer_price_per_item_eur,",
 						"o.source, COUNT(*) OVER (PARTITION BY i.order_id) AS nb_articles_commande",
 						"FROM " & PgSchema & ".customer_order_item i",
 						"LEFT JOIN " & PgSchema & ".customer_order_item_group g ON g.id = i.item_group_id",

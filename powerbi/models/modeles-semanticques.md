@@ -1,7 +1,8 @@
 # Modèles sémantiques Power BI — Lireka
 
 > **Référence** : [`../../docs/01-cadrage/devis.md`](../../docs/01-cadrage/devis.md)  
-> Document de travail technique — aligné sur `Lireka_Profitabilite` (14/07/2026).
+> **Document historique** (14/07/2026, sources CSV / SharePoint) : ne décrit plus le modèle actuel.  
+> État actuel : [`../../docs/04-processus/processus-etl-gouvernance.md`](../../docs/04-processus/processus-etl-gouvernance.md) (sources, tables, relations, refresh) et [`mesures-dax.md`](mesures-dax.md) (mesures).
 
 ---
 

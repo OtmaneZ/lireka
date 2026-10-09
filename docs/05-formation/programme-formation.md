@@ -27,7 +27,7 @@
 | 15 min | Introduction | Power BI Service, workspace Lireka |
 | 30 min | Navigation | Filtres, slicers, pages du dashboard profitabilité |
 | 30 min | Lecture des KPIs | Marge brute par pays, par type de commande |
-| 15 min | Processus | Import CSV, refresh, limites connues |
+| 15 min | Processus | Source PostgreSQL, refresh quotidien, limites connues |
 | 10 min | Q&R | |
 
 ### Support

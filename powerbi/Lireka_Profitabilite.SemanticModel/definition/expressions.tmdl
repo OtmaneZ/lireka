@@ -78,8 +78,8 @@ expression fnCanonTransporteur =
 
 /// Fix F-12 : normalisation robuste des clés textuelles de rapprochement.
 /// Supprime les espaces insécables (NBSP U+00A0) fréquents dans les exports Excel/CSV FR,
-/// applique Text.Trim puis passe en majuscules. Utilisée des DEUX côtés (colis ET factures,
-/// variantes Colissimo/Chronopost) pour garantir une symétrie stricte des clés de jointure.
+/// applique Text.Trim puis passe en majuscules. Utilisée par fnNormaliserTransporteur
+/// et fnCanonTransporteur (le rapprochement par numéro de suivi est fait par le backend).
 expression fnNormaliserSuivi =
 		(x as nullable text) as text =>
 		let
@@ -91,7 +91,7 @@ expression fnNormaliserSuivi =
 	lineageTag: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e
 
 /// Date de la dernière commande avec CA en base (jour UTC de max(origin_created), customer_order, order_amount_eur > 0).
-/// Référence temporelle unique de dim_date : borne Fin du calendrier et fenêtre 12 derniers mois.
+/// Référence temporelle de dim_date (borne Fin du calendrier) et de la carte « Data through ».
 /// Conversion identique à fact_commandes[date_commande] (étape "Date commande ajoutee").
 /// Erreur explicite si la table est vide : un refresh ne doit pas publier une fenêtre vide.
 expression DateDerniereCommande =

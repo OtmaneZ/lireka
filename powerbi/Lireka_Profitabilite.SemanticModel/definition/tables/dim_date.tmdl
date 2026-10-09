@@ -1,7 +1,7 @@
 /// Dimension — calendrier (2020-01-01 -> fin de l'année suivante, glissant), libellés en français.
 /// Étendue à 2020 pour couvrir l'historique backend (origin_created dès 2020-01)
 /// et permettre le YoY sur toute la plage. Table générée en Power Query
-/// (indépendante des sources). Reliée à fact_commandes[date_commande] et
+/// (bornée par DateDerniereCommande, donc par PostgreSQL). Reliée à fact_commandes[date_commande] et
 /// fact_factures_transport[date_facture].
 table dim_date
 	lineageTag: 1ae962f8-740f-448c-901d-b26c93c27570
@@ -107,7 +107,7 @@ table dim_date
 
 		annotation SummarizationSetBy = Automatic
 
-	/// Libellé semaine ISO (AAA-Sww) — axe graphe General View.
+	/// Libellé semaine (lundi début de semaine, semaine 1 = celle du 1er janvier ; pas la norme ISO) — axe graphe General View.
 	column semaine_annee_libelle
 		dataType: string
 		lineageTag: d1e2f3a4-b5c6-7890-dabc-ef1234567890

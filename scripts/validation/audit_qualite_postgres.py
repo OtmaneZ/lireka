@@ -57,10 +57,10 @@ def connect() -> psycopg2.extensions.connection:
         raise SystemExit(2)
 
     conn = psycopg2.connect(
-        host="10.111.119.1",
+        host=os.environ["PGHOST"],
         port=5432,
         dbname="analytics",
-        user="liber_power_bi",
+        user=os.environ["PGUSER"],
         password=password,
         connect_timeout=30,
     )
@@ -760,9 +760,9 @@ def main() -> int:
 
     report: dict[str, Any] = {
         "meta": {
-            "host": "10.111.119.1",
+            "host": os.environ["PGHOST"],
             "dbname": "analytics",
-            "user": "liber_power_bi",
+            "user": os.environ["PGUSER"],
             "started_at": time.strftime("%Y-%m-%d %H:%M:%S"),
             "finished_at": None,
             "elapsed_seconds": None,

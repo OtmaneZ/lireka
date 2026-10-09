@@ -32,36 +32,6 @@
             },
             {
               "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_isbn"
-                    }
-                  },
-                  "Property": "title"
-                }
-              },
-              "queryRef": "dim_isbn.title",
-              "nativeQueryRef": "title",
-              "displayName": "Title"
-            },
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_isbn"
-                    }
-                  },
-                  "Property": "author"
-                }
-              },
-              "queryRef": "dim_isbn.author",
-              "nativeQueryRef": "author",
-              "displayName": "Author"
-            },
-            {
-              "field": {
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
@@ -260,7 +230,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Top 10 ISBNs by ordered units, Marketplaces (interim)'"
+                  "Value": "'Top 10 ISBNs by ordered units, Marketplaces'"
                 }
               }
             },

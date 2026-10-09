@@ -28,7 +28,7 @@
               },
               "queryRef": "dim_pays.nom_pays_en",
               "nativeQueryRef": "nom_pays_en",
-              "displayName": "Country (interim)"
+              "displayName": "Country"
             },
             {
               "field": {
@@ -630,7 +630,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Revenue and profitability by customer'"
+                  "Value": "'Revenue and profitability by destination country'"
                 }
               }
             },

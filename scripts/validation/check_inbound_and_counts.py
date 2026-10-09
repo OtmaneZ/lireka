@@ -97,10 +97,10 @@ def main() -> int:
     lines.append("")
 
     conn = psycopg2.connect(
-        host="10.111.119.1",
+        host=os.environ["PGHOST"],
         port=5432,
         dbname="analytics",
-        user="liber_power_bi",
+        user=os.environ["PGUSER"],
         password=password,
         connect_timeout=30,
     )

@@ -28,7 +28,8 @@
               },
               "queryRef": "dim_date.mois_annee_court_en",
               "nativeQueryRef": "mois_annee_court_en",
-              "active": true
+              "active": true,
+              "displayName": "Month"
             }
           ]
         },
@@ -65,7 +66,8 @@
                 }
               },
               "queryRef": "_Mesures.Coût Transport Outbound (tous colis)",
-              "nativeQueryRef": "Coût Transport Outbound (tous colis)"
+              "nativeQueryRef": "Coût Transport Outbound (tous colis)",
+              "displayName": "Outbound shipping"
             }
           ]
         },
