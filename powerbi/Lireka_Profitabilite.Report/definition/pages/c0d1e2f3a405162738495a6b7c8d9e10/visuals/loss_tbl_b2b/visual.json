@@ -103,7 +103,7 @@
               },
               "queryRef": "_Mesures.Top Loss — Shipping",
               "nativeQueryRef": "Top Loss — Shipping",
-              "displayName": "Shipping"
+              "displayName": "Outbound shipping"
             },
             {
               "field": {

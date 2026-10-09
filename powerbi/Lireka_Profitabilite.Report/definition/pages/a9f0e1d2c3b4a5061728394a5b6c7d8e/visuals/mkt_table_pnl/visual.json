@@ -103,7 +103,7 @@
               },
               "queryRef": "_Mesures.Mkt Display - Shipping",
               "nativeQueryRef": "Mkt Display - Shipping",
-              "displayName": "Shipping"
+              "displayName": "Outbound shipping"
             },
             {
               "field": {
@@ -163,7 +163,7 @@
               },
               "queryRef": "_Mesures.Mkt Display - Gross profit",
               "nativeQueryRef": "Mkt Display - Gross profit",
-              "displayName": "Gross profit"
+              "displayName": "Gross Profit"
             },
             {
               "field": {

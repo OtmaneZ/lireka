@@ -103,7 +103,7 @@
               },
               "queryRef": "_Mesures.B2C Display - Shipping",
               "nativeQueryRef": "B2C Display - Shipping",
-              "displayName": "Shipping"
+              "displayName": "Outbound shipping"
             },
             {
               "field": {
@@ -163,7 +163,7 @@
               },
               "queryRef": "_Mesures.B2C Display - Gross profit",
               "nativeQueryRef": "B2C Display - Gross profit",
-              "displayName": "Gross profit"
+              "displayName": "Gross Profit"
             },
             {
               "field": {

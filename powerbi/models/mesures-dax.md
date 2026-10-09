@@ -5,7 +5,7 @@
 > **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
 > Ne pas éditer à la main : régénérer depuis `_Mesures.tmdl` (script one-shot).
 
-> Total : **272 mesures**, dans l'ordre du modèle.
+> Total : **273 mesures**, dans l'ordre du modèle.
 
 ---
 
@@ -1910,8 +1910,8 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 100000, FORMAT(py / 1000, "#,##0", "en-US") & "k",
-        a >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k",
+        a >= 100000, FORMAT(py / 1000, "#,##0", "en-US") & "K",
+        a >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "K",
         FORMAT(py, "#,##0", "en-US")
     )
 RETURN
@@ -1937,8 +1937,8 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
-        a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+        a >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "K",
+        a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "K",
         "€" & FORMAT(py, "#,##0", "en-US")
     )
 RETURN
@@ -1964,8 +1964,8 @@ VAR a = ABS(py)
 VAR pytxt =
     SWITCH(
         TRUE(),
-        a >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
-        a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+        a >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "K",
+        a >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "K",
         "€" & FORMAT(py, "#,##0", "en-US")
     )
 RETURN
@@ -2098,7 +2098,7 @@ RETURN
 
 ## KPI Compact — Ordered units
 
-> General View — KPI card valeur compacte (k adaptatif : 0.0k sous 100k, #,##0k au-delà).  
+> General View — KPI card valeur compacte (K adaptatif : 0.0K sous 100K, #,##0K au-delà, comme les étiquettes des graphiques).  
 > formatString DAX (,,M / ,"k") ne s'applique pas aux cartes en locale FR.  
 
 ```dax
@@ -2111,8 +2111,8 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 100000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "K",
             FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -2134,8 +2134,8 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -2155,8 +2155,8 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -2176,8 +2176,8 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -2197,8 +2197,8 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 100000, FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "K",
             FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -2218,10 +2218,26 @@ RETURN
         "€0",
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
+    )
+```
+
+---
+
+## KPI Compact — Commandes déficitaires
+
+```dax
+KPI Compact — Commandes déficitaires =
+VAR v = [Nb Commandes Deficitaires]
+RETURN
+    SWITCH(
+        TRUE(),
+        v >= 100000, FORMAT(v / 1000, "#,##0", "en-US") & "K",
+        v >= 1000, FORMAT(v / 1000, "0.0", "en-US") & "K",
+        FORMAT(v, "#,##0", "en-US")
     )
 ```
 
@@ -2239,8 +2255,8 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -2260,8 +2276,8 @@ RETURN
         "n/a",
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -2319,8 +2335,8 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -4612,8 +4628,8 @@ VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
     SWITCH(
         TRUE(),
-        ABS(py) >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
-        ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+        ABS(py) >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "K",
+        ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "K",
         "€" & FORMAT(py, "#,##0", "en-US")
     )
 RETURN
@@ -4637,7 +4653,7 @@ VAR py = CALCULATE([Nb Commandes Deficitaires], SAMEPERIODLASTYEAR(dim_date[date
 VAR yoy = DIVIDE(cy - py, ABS(py))
 VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
-    IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k", FORMAT(py, "#,##0", "en-US"))
+    IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "K", FORMAT(py, "#,##0", "en-US"))
 RETURN
     IF(
         ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
@@ -4699,7 +4715,7 @@ VAR py = CALCULATE([Nb Colis], SAMEPERIODLASTYEAR(dim_date[date]))
 VAR yoy = DIVIDE(cy - py, ABS(py))
 VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
-    IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "k", FORMAT(py, "#,##0", "en-US"))
+    IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0", "en-US") & "K", FORMAT(py, "#,##0", "en-US"))
 RETURN
     IF(
         ISBLANK(py),
@@ -4759,8 +4775,8 @@ VAR arrow = IF(yoy >= 0, UNICHAR(9650), UNICHAR(9660))
 VAR pytxt =
     SWITCH(
         TRUE(),
-        ABS(py) >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "k",
-        ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "k",
+        ABS(py) >= 100000, "€" & FORMAT(py / 1000, "#,##0", "en-US") & "K",
+        ABS(py) >= 1000, "€" & FORMAT(py / 1000, "0.0", "en-US") & "K",
         "€" & FORMAT(py, "#,##0", "en-US")
     )
 RETURN
@@ -4806,8 +4822,8 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
     )
@@ -4827,8 +4843,8 @@ RETURN
         BLANK(),
         SWITCH(
             TRUE(),
-            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "k",
-            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "k",
+            a >= 100000, "€" & FORMAT(v / 1000, "#,##0", "en-US") & "K",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0", "en-US") & "K",
             "€" & FORMAT(v, "#,##0", "en-US")
         )
     )

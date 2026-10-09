@@ -48,7 +48,7 @@
               },
               "queryRef": "_Mesures.Marge Brute (reconstruit)",
               "nativeQueryRef": "Marge Brute (reconstruit)",
-              "displayName": "Gross profit"
+              "displayName": "Gross Profit"
             }
           ]
         },
@@ -67,7 +67,7 @@
               },
               "queryRef": "_Mesures.Taux Marge Brute (reconstruit)",
               "nativeQueryRef": "Taux Marge Brute (reconstruit)",
-              "displayName": "Gross margin %"
+              "displayName": "Gross Margin %"
             }
           ]
         }
@@ -159,7 +159,7 @@
             "labelPrecision": {
               "expr": {
                 "Literal": {
-                  "Value": "1L"
+                  "Value": "0L"
                 }
               }
             }
@@ -247,7 +247,7 @@
             "labelPrecision": {
               "expr": {
                 "Literal": {
-                  "Value": "1L"
+                  "Value": "0L"
                 }
               }
             },
@@ -265,6 +265,27 @@
                 }
               }
             }
+          }
+        },
+        {
+          "properties": {
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            },
+            "labelPrecision": {
+              "expr": {
+                "Literal": {
+                  "Value": "1L"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.Taux Marge Brute (reconstruit)"
           }
         }
       ],
@@ -284,7 +305,7 @@
             }
           },
           "selector": {
-            "metadata": "_Mesures.Marge Brute"
+            "metadata": "_Mesures.Marge Brute (reconstruit)"
           }
         },
         {
@@ -302,7 +323,7 @@
             }
           },
           "selector": {
-            "metadata": "_Mesures.Taux Marge Brute"
+            "metadata": "_Mesures.Taux Marge Brute (reconstruit)"
           }
         }
       ]
@@ -389,7 +410,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Gross margin by basket size'"
+                  "Value": "'Gross Margin by basket size'"
                 }
               }
             },

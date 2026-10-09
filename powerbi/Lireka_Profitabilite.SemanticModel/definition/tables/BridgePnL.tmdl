@@ -49,11 +49,11 @@ table BridgePnL
 							{1, "Prior year", "MB_PY", 1},
 							{2, "Revenue", "CA", 1},
 							{3, "Shipping revenue", "PORT", 1},
-							{4, "Cost of goods", "ACHAT", -1},
-							{5, "Inbound transport", "AMONT", -1},
-							{6, "Outbound transport", "OUTBOUND", -1},
+							{4, "COGS", "ACHAT", -1},
+							{5, "Inbound freight", "AMONT", -1},
+							{6, "Outbound shipping", "OUTBOUND", -1},
 							{7, "Duties and taxes", "DOUANES", -1},
-							{8, "Marketplace commissions", "COMMISSIONS", -1},
+							{8, "Marketplace fees", "COMMISSIONS", -1},
 							{9, "Shipping supplies", "FOURNITURES", -1}
 						}
 					),
