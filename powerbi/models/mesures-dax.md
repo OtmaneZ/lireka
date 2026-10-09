@@ -2106,7 +2106,7 @@ VAR a = ABS(v)
 RETURN
     IF(
         ISBLANK(v),
-        BLANK(),
+        "n/a",
         SWITCH(
             TRUE(),
             a >= 1000000, FORMAT(v / 1000, "#,##0") & "k",
@@ -4400,9 +4400,12 @@ DIVIDE([Marge Brute (reconstruit)], [Unités commandées (avec CA)])
 
 ```dax
 Nb Commandes Deficitaires =
-CALCULATE(
-    COUNTROWS(fact_commandes),
-    fact_commandes[marge_brute_commande] < 0
+COALESCE(
+    CALCULATE(
+        COUNTROWS(fact_commandes),
+        fact_commandes[marge_brute_commande] < 0
+    ),
+    0
 )
 ```
 
@@ -4448,7 +4451,7 @@ CALCULATE(
 
 ```dax
 Part Pertes Marge Brute =
-DIVIDE(-[Pertes Totales], [Marge Brute (reconstruit)])
+DIVIDE(-COALESCE([Pertes Totales], 0), [Marge Brute (reconstruit)])
 ```
 
 *Format* : `0.0%`
@@ -4697,7 +4700,7 @@ VAR pytxt =
     IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
 RETURN
     IF(
-        ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
+        ISBLANK(py),
         "PY: n/a",
         "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
     )
@@ -4716,7 +4719,7 @@ VAR rpy = CALCULATE([Taux Transport sortant (tous colis)], SAMEPERIODLASTYEAR(di
 RETURN
     IF(
         ISBLANK(r),
-        BLANK(),
+        "n/a",
         FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
     )
 ```
@@ -4734,7 +4737,7 @@ VAR rpy = CALCULATE([Taux Douanes Taxes (tous colis)], SAMEPERIODLASTYEAR(dim_da
 RETURN
     IF(
         ISBLANK(r),
-        BLANK(),
+        "n/a",
         FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
     )
 ```
@@ -4760,7 +4763,7 @@ VAR pytxt =
     )
 RETURN
     IF(
-        ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
+        ISBLANK(py),
         "PY: n/a",
         "PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
     )

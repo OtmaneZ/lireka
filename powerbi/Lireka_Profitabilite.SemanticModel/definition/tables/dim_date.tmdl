@@ -107,7 +107,7 @@ table dim_date
 
 		annotation SummarizationSetBy = Automatic
 
-	/// Libellé semaine (lundi début de semaine, semaine 1 = celle du 1er janvier ; pas la norme ISO) — axe graphe General View.
+	/// Libellé semaine ISO (AAAA-Sww, année ISO) — axe graphe General View.
 	column semaine_annee_libelle
 		dataType: string
 		lineageTag: d1e2f3a4-b5c6-7890-dabc-ef1234567890
@@ -179,25 +179,27 @@ table dim_date
 					#"Mois ajoute" = Table.AddColumn(#"Trimestre ajoute", "mois", each Date.Month([date]), Int64.Type),
 					#"Nom mois ajoute" = Table.AddColumn(#"Mois ajoute", "nom_mois", each Date.ToText([date], [Format = "MMMM", Culture = "fr-FR"]), type text),
 					#"Annee mois ajoutee" = Table.AddColumn(#"Nom mois ajoute", "annee_mois", each [annee] * 100 + [mois], Int64.Type),
-					#"Semaine ajoutee" = Table.AddColumn(#"Annee mois ajoutee", "semaine", each Date.WeekOfYear([date], Day.Monday), Int64.Type),
+					// Semaine ISO 8601 : lundi début de semaine ; la semaine et son année sont celles de son jeudi
+					// (une semaine à cheval sur deux années n'est pas coupée).
+					#"Semaine ajoutee" = Table.AddColumn(#"Annee mois ajoutee", "semaine", each Number.RoundDown((Date.DayOfYear(Date.AddDays([date], 3 - Date.DayOfWeek([date], Day.Monday))) - 1) / 7) + 1, Int64.Type),
 					#"Jour semaine ajoute" = Table.AddColumn(#"Semaine ajoutee", "jour_semaine", each Date.ToText([date], [Format = "dddd", Culture = "fr-FR"]), type text),
 					#"Num jour semaine ajoute" = Table.AddColumn(#"Jour semaine ajoute", "num_jour_semaine", each Date.DayOfWeek([date], Day.Monday) + 1, Int64.Type),
 					#"Semaine annee libelle" = Table.AddColumn(
 						#"Num jour semaine ajoute",
 						"semaine_annee_libelle",
-						each Text.From([annee]) & "-S" & Text.PadStart(Text.From([semaine]), 2, "0"),
+						each Text.From(Date.Year(Date.AddDays([date], 3 - Date.DayOfWeek([date], Day.Monday)))) & "-S" & Text.PadStart(Text.From([semaine]), 2, "0"),
 						type text
 					),
 					#"Annee semaine ajoutee" = Table.AddColumn(
 						#"Semaine annee libelle",
 						"annee_semaine",
-						each [annee] * 100 + [semaine],
+						each Date.Year(Date.AddDays([date], 3 - Date.DayOfWeek([date], Day.Monday))) * 100 + [semaine],
 						Int64.Type
 					),
 					#"Semaine annee court" = Table.AddColumn(
 						#"Annee semaine ajoutee",
 						"semaine_annee_court",
-						each "S" & Text.PadStart(Text.From([semaine]), 2, "0") & " " & Text.End(Text.From([annee]), 2),
+						each "S" & Text.PadStart(Text.From([semaine]), 2, "0") & " " & Text.End(Text.From(Date.Year(Date.AddDays([date], 3 - Date.DayOfWeek([date], Day.Monday)))), 2),
 						type text
 					),
 					#"Nom mois annee" = Table.AddColumn(

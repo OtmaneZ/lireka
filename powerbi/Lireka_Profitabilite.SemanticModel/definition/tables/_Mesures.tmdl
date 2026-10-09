@@ -1338,7 +1338,7 @@ table _Mesures
 			RETURN
 				IF(
 					ISBLANK(v),
-					BLANK(),
+					"n/a",
 					SWITCH(
 						TRUE(),
 						a >= 1000000, FORMAT(v / 1000, "#,##0") & "k",
@@ -3163,9 +3163,12 @@ table _Mesures
 
 	/// Page 11 Loss analysis : nombre de commandes à marge_brute_commande < 0 (7 postes, CA reconstruit).
 	measure 'Nb Commandes Deficitaires' =
-			CALCULATE(
-				COUNTROWS(fact_commandes),
-				fact_commandes[marge_brute_commande] < 0
+			COALESCE(
+				CALCULATE(
+					COUNTROWS(fact_commandes),
+					fact_commandes[marge_brute_commande] < 0
+				),
+				0
 			)
 		formatString: #,##0
 		displayFolder: 11 Loss analysis
@@ -3193,7 +3196,7 @@ table _Mesures
 
 	/// Page 11 Loss analysis : |pertes| / marge brute publiée.
 	measure 'Part Pertes Marge Brute' =
-			DIVIDE(-[Pertes Totales], [Marge Brute (reconstruit)])
+			DIVIDE(-COALESCE([Pertes Totales], 0), [Marge Brute (reconstruit)])
 		formatString: 0.0%
 		displayFolder: 11 Loss analysis
 		lineageTag: c011b001-4e11-4b11-8b11-000000000004
@@ -3370,7 +3373,7 @@ table _Mesures
 				IF(ABS(py) >= 1000, FORMAT(py / 1000, "0.0") & "k", FORMAT(py, "#,##0"))
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
+					ISBLANK(py),
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)
@@ -3384,7 +3387,7 @@ table _Mesures
 			RETURN
 				IF(
 					ISBLANK(r),
-					BLANK(),
+					"n/a",
 					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
 				)
 		displayFolder: 01 KPI publiés
@@ -3397,7 +3400,7 @@ table _Mesures
 			RETURN
 				IF(
 					ISBLANK(r),
-					BLANK(),
+					"n/a",
 					FORMAT(r, "0.0%") & " of revenue" & IF(ISBLANK(rpy) || [_PY incomplet], "", "   (PY " & FORMAT(rpy, "0.0%") & ")")
 				)
 		displayFolder: 01 KPI publiés
@@ -3418,7 +3421,7 @@ table _Mesures
 				)
 			RETURN
 				IF(
-					ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
+					ISBLANK(py),
 					"PY: n/a",
 					"PY: " & pytxt & IF(ISBLANK(yoy), "", "   (" & arrow & " " & FORMAT(yoy, "+0.0%;-0.0%") & " YoY)")
 				)
