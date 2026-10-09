@@ -1490,33 +1490,34 @@ table _Mesures
 		lineageTag: bb000004-1111-2222-3333-444455550004
 
 	/// General View — tableau KPI, formats compacts (texte).
+	/// Tableaux General View / Arthaud : valeur en milliers (tri numérique), affichée « €6,101K » / « €62.0K ».
 	measure 'GV Display — Ordered units' =
-			[Unités commandées]
+			DIVIDE([Unités commandées], 1000)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000011-1111-2222-3333-444455550011
 
-		formatStringDefinition = SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "#,##0,.0K", "#,##0")
+		formatStringDefinition = IF(ABS(SELECTEDMEASURE()) >= 100, "#,##0K", "#,##0.0K")
 
 	measure 'GV Display — Revenue' =
-			[Revenu (reconstruit)]
+			DIVIDE([Revenu (reconstruit)], 1000)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000012-1111-2222-3333-444455550012
 
-		formatStringDefinition = SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")
+		formatStringDefinition = IF(ABS(SELECTEDMEASURE()) >= 100, "€#,##0K", "€#,##0.0K")
 
 	measure 'GV Display — Gross Profit' =
-			[Marge Brute (reconstruit)]
+			DIVIDE([Marge Brute (reconstruit)], 1000)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000013-1111-2222-3333-444455550013
 
-		formatStringDefinition = SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")
+		formatStringDefinition = IF(ABS(SELECTEDMEASURE()) >= 100, "€#,##0K", "€#,##0.0K")
 
 	measure 'GV Display — YoY€' =
-			[Revenu (reconstruit) YoY Δ]
+			DIVIDE([Revenu (reconstruit) YoY Δ], 1000)
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: bb000014-1111-2222-3333-444455550014
 
-		formatStringDefinition = SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")
+		formatStringDefinition = IF(ABS(SELECTEDMEASURE()) >= 100, "€#,##0K", "€#,##0.0K")
 
 	/// =====================================================================
 	/// Bloc 10 — Website B2C (stable) : Display ASCII + Rest via code_pays

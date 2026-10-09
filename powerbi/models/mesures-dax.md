@@ -2298,13 +2298,14 @@ RETURN IF(ISBLANK(r), "n/a", FORMAT(r, "0.0%", "en-US"))
 ## GV Display — Ordered units
 
 > General View — tableau KPI, formats compacts (texte).  
+> Tableaux General View / Arthaud : valeur en milliers (tri numérique), affichée « €6,101K » / « €62.0K ».  
 
 ```dax
 GV Display — Ordered units =
-[Unités commandées]
+DIVIDE([Unités commandées], 1000)
 ```
 
-*Format dynamique* : `SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "#,##0,.0K", "#,##0")`
+*Format dynamique* : `IF(ABS(SELECTEDMEASURE()) >= 100, "#,##0K", "#,##0.0K")`
 
 ---
 
@@ -2312,10 +2313,10 @@ GV Display — Ordered units =
 
 ```dax
 GV Display — Revenue =
-[Revenu (reconstruit)]
+DIVIDE([Revenu (reconstruit)], 1000)
 ```
 
-*Format dynamique* : `SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")`
+*Format dynamique* : `IF(ABS(SELECTEDMEASURE()) >= 100, "€#,##0K", "€#,##0.0K")`
 
 ---
 
@@ -2323,10 +2324,10 @@ GV Display — Revenue =
 
 ```dax
 GV Display — Gross Profit =
-[Marge Brute (reconstruit)]
+DIVIDE([Marge Brute (reconstruit)], 1000)
 ```
 
-*Format dynamique* : `SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")`
+*Format dynamique* : `IF(ABS(SELECTEDMEASURE()) >= 100, "€#,##0K", "€#,##0.0K")`
 
 ---
 
@@ -2334,10 +2335,10 @@ GV Display — Gross Profit =
 
 ```dax
 GV Display — YoY€ =
-[Revenu (reconstruit) YoY Δ]
+DIVIDE([Revenu (reconstruit) YoY Δ], 1000)
 ```
 
-*Format dynamique* : `SWITCH(TRUE(), ABS(SELECTEDMEASURE()) >= 100000, "€#,##0,K", ABS(SELECTEDMEASURE()) >= 1000, "€#,##0,.0K", "€#,##0")`
+*Format dynamique* : `IF(ABS(SELECTEDMEASURE()) >= 100, "€#,##0K", "€#,##0.0K")`
 
 ---
 
