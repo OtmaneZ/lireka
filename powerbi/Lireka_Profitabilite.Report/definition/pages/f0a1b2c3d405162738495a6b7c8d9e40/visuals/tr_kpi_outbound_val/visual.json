@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Coût Transport Outbound (tous colis)"
+                  "Property": "KPI Compact — Outbound (tous colis)"
                 }
               },
-              "queryRef": "_Mesures.Coût Transport Outbound (tous colis)",
-              "nativeQueryRef": "Coût Transport Outbound (tous colis)"
+              "queryRef": "_Mesures.KPI Compact — Outbound (tous colis)",
+              "nativeQueryRef": "KPI Compact — Outbound (tous colis)"
             }
           ]
         }
@@ -40,7 +40,7 @@
             "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "1000D"
+                  "Value": "1D"
                 }
               }
             },

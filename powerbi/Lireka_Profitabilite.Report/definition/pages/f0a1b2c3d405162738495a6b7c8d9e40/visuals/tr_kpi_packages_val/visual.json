@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Nb Colis"
+                  "Property": "KPI Compact — Colis"
                 }
               },
-              "queryRef": "_Mesures.Nb Colis",
-              "nativeQueryRef": "Nb Colis"
+              "queryRef": "_Mesures.KPI Compact — Colis",
+              "nativeQueryRef": "KPI Compact — Colis"
             }
           ]
         }
@@ -40,7 +40,7 @@
             "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "1000D"
+                  "Value": "1D"
                 }
               }
             },

@@ -5,7 +5,7 @@
 > **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
 > Ne pas éditer à la main : régénérer depuis `_Mesures.tmdl` (script one-shot).
 
-> Total : **267 mesures**, dans l'ordre du modèle.
+> Total : **272 mesures**, dans l'ordre du modèle.
 
 ---
 
@@ -300,7 +300,7 @@ Unités commandées (avec CA) = CALCULATE([Unités commandées], KEEPFILTERS(fac
 Coût Transport Outbound (tous colis) = SUM(fact_transport[cout_transport_retenu])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -310,7 +310,7 @@ Coût Transport Outbound (tous colis) = SUM(fact_transport[cout_transport_retenu
 Coût Transport Outbound (tous colis) PY = CALCULATE([Coût Transport Outbound (tous colis)], SAMEPERIODLASTYEAR(dim_date[date]))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -332,7 +332,7 @@ Coût Transport Outbound (tous colis) YoY % = DIVIDE([Coût Transport Outbound (
 Douanes Taxes (tous colis) = SUM(fact_transport[duties_taxes_eur])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -356,7 +356,7 @@ RETURN DIVIDE([Douanes Taxes (tous colis)] - py, py)
 Fournitures Expédition (tous colis) = SUM(fact_transport[shipping_supply_cost_eur])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -425,7 +425,7 @@ CALCULATE(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -447,7 +447,7 @@ VAR cogsActif =
 RETURN IF(ISBLANK(cogsActif), 0, cogsActif)
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -485,7 +485,7 @@ Nb Articles Annulés Après Expédition = CALCULATE([Nb Articles], fact_lignes[s
 Marge Brute (grain article, prov.) = [CA Total HT (grain article, ajusté annulation)] - [Coût Achat Total (grain article)]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -505,7 +505,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -526,7 +526,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -541,7 +541,7 @@ IF(
 CA HT Net Annulation = CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -553,7 +553,7 @@ CA HT Net Annulation = CALCULATE([CA Total HT], fact_commandes[state] <> "CANCEL
 CA HT Net Annulation (reconstruit) = CALCULATE([CA Total HT (reconstruit)], fact_commandes[state] <> "CANCELLED")
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -586,7 +586,7 @@ CALCULATE(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -608,7 +608,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -620,7 +620,7 @@ IF(
 Coût Transport Estimé = SUM(fact_commandes[cout_transport_estime])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -632,7 +632,7 @@ Coût Transport Estimé = SUM(fact_commandes[cout_transport_estime])
 Coût Transport Réel = SUM(fact_transport[cout_transport])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -654,7 +654,7 @@ CALCULATE(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -668,7 +668,7 @@ CALCULATE(
 Écart Coût Outbound vs Estimé Backend = [Coût Transport Outbound (Retenu)] - [Coût Transport Estimé]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -693,7 +693,7 @@ Coût Moyen Colis =
 DIVIDE([Coût Transport Outbound (tous colis)], [Nb Colis])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0.00`
 
 ---
 
@@ -707,7 +707,7 @@ DIVIDE([Coût Transport Outbound (tous colis)], [Nb Colis])
 Marge Brute (prov.) = [CA Total HT] - [Coût Achat Total] - [Coût Transport Réel]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -719,7 +719,7 @@ Marge Brute (prov.) = [CA Total HT] - [Coût Achat Total] - [Coût Transport Ré
 Marge Brute Backend (réf.) = SUM(fact_commandes[gross_profit_eur])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -731,7 +731,7 @@ Marge Brute Backend (réf.) = SUM(fact_commandes[gross_profit_eur])
 Écart Marge vs Backend = [Marge Brute (prov.)] - [Marge Brute Backend (réf.)]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -752,7 +752,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -775,7 +775,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -799,7 +799,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -819,7 +819,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -839,7 +839,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -859,7 +859,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -884,7 +884,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -905,7 +905,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -942,7 +942,7 @@ Marge Brute =
     - [Coûts Génériques]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -973,7 +973,7 @@ DIVIDE(
 Écart Marge vs Backend (v2) = [Marge Brute] - [Marge Brute Backend (réf.)]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1030,7 +1030,7 @@ CALCULATE(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1044,7 +1044,7 @@ CALCULATE(
 Écart Réel vs Facturé = [Coût Transport Réel] - [Coût Facturé Rapproché]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1081,7 +1081,7 @@ DIVIDE([Nb Colis Avec Facture], [Nb Colis])
 Panier Moyen = DIVIDE([CA Total HT], [Nb Commandes], 0)
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0.00`
 
 ---
 
@@ -1105,7 +1105,7 @@ Poids Total (kg) = SUM(fact_transport[poids_kg])
 CA Mois Précédent = CALCULATE([CA Total HT], DATEADD(dim_date[date], -1, MONTH))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1227,7 +1227,7 @@ Revenu =
     + CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1271,7 +1271,7 @@ Unités commandées YoY % = DIVIDE([Unités commandées] - [Unités commandées 
 Revenu PY = IF([_PY incomplet], BLANK(), CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1281,7 +1281,7 @@ Revenu PY = IF([_PY incomplet], BLANK(), CALCULATE([Revenu], SAMEPERIODLASTYEAR(
 Revenu YoY Δ = [Revenu] - [Revenu PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1303,7 +1303,7 @@ Revenu YoY % = DIVIDE([Revenu] - [Revenu PY], [Revenu PY])
 Marge Brute PY = IF([_PY incomplet], BLANK(), CALCULATE([Marge Brute], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1313,7 +1313,7 @@ Marge Brute PY = IF([_PY incomplet], BLANK(), CALCULATE([Marge Brute], SAMEPERIO
 Marge Brute YoY Δ = [Marge Brute] - [Marge Brute PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1388,7 +1388,7 @@ Nb Commandes YoY % = DIVIDE([Nb Commandes] - [Nb Commandes PY], [Nb Commandes PY
 CA HT Net Annulation PY = IF([_PY incomplet], BLANK(), CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1398,7 +1398,7 @@ CA HT Net Annulation PY = IF([_PY incomplet], BLANK(), CALCULATE([CA HT Net Annu
 CA HT Net Annulation YoY Δ = [CA HT Net Annulation] - [CA HT Net Annulation PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1418,7 +1418,7 @@ CA HT Net Annulation YoY % = DIVIDE([CA HT Net Annulation] - [CA HT Net Annulati
 Frais Port Encaissés PY = IF([_PY incomplet], BLANK(), CALCULATE([Frais Port Encaissés], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1428,7 +1428,7 @@ Frais Port Encaissés PY = IF([_PY incomplet], BLANK(), CALCULATE([Frais Port En
 Frais Port Encaissés YoY Δ = [Frais Port Encaissés] - [Frais Port Encaissés PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1448,7 +1448,7 @@ Frais Port Encaissés YoY % = DIVIDE([Frais Port Encaissés] - [Frais Port Encai
 Coût Achat Total PY = IF([_PY incomplet], BLANK(), CALCULATE([Coût Achat Total], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1458,7 +1458,7 @@ Coût Achat Total PY = IF([_PY incomplet], BLANK(), CALCULATE([Coût Achat Total
 Coût Achat Total YoY Δ = [Coût Achat Total] - [Coût Achat Total PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1478,7 +1478,7 @@ Coût Achat Total YoY % = DIVIDE([Coût Achat Total] - [Coût Achat Total PY], [
 Coût Transport Amont PY = IF([_PY incomplet], BLANK(), CALCULATE([Coût Transport Amont], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1488,7 +1488,7 @@ Coût Transport Amont PY = IF([_PY incomplet], BLANK(), CALCULATE([Coût Transpo
 Coût Transport Amont YoY Δ = [Coût Transport Amont] - [Coût Transport Amont PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1508,7 +1508,7 @@ Coût Transport Amont YoY % = DIVIDE([Coût Transport Amont] - [Coût Transport 
 Coût Transport Outbound (Retenu) PY = IF([_PY incomplet], BLANK(), CALCULATE([Coût Transport Outbound (Retenu)], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1518,7 +1518,7 @@ Coût Transport Outbound (Retenu) PY = IF([_PY incomplet], BLANK(), CALCULATE([C
 Coût Transport Outbound (Retenu) YoY Δ = [Coût Transport Outbound (Retenu)] - [Coût Transport Outbound (Retenu) PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1538,7 +1538,7 @@ Coût Transport Outbound (Retenu) YoY % = DIVIDE([Coût Transport Outbound (Rete
 Douanes Taxes PY = IF([_PY incomplet], BLANK(), CALCULATE([Douanes Taxes], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1548,7 +1548,7 @@ Douanes Taxes PY = IF([_PY incomplet], BLANK(), CALCULATE([Douanes Taxes], SAMEP
 Douanes Taxes YoY Δ = [Douanes Taxes] - [Douanes Taxes PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1568,7 +1568,7 @@ Douanes Taxes YoY % = DIVIDE([Douanes Taxes] - [Douanes Taxes PY], [Douanes Taxe
 Commissions Marketplace PY = IF([_PY incomplet], BLANK(), CALCULATE([Commissions Marketplace], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1578,7 +1578,7 @@ Commissions Marketplace PY = IF([_PY incomplet], BLANK(), CALCULATE([Commissions
 Commissions Marketplace YoY Δ = [Commissions Marketplace] - [Commissions Marketplace PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1598,7 +1598,7 @@ Commissions Marketplace YoY % = DIVIDE([Commissions Marketplace] - [Commissions 
 Fournitures Expédition PY = IF([_PY incomplet], BLANK(), CALCULATE([Fournitures Expédition], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1608,7 +1608,7 @@ Fournitures Expédition PY = IF([_PY incomplet], BLANK(), CALCULATE([Fournitures
 Fournitures Expédition YoY Δ = [Fournitures Expédition] - [Fournitures Expédition PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1628,7 +1628,7 @@ Fournitures Expédition YoY % = DIVIDE([Fournitures Expédition] - [Fournitures 
 Retours Remboursements PY = IF([_PY incomplet], BLANK(), CALCULATE([Retours Remboursements], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1638,7 +1638,7 @@ Retours Remboursements PY = IF([_PY incomplet], BLANK(), CALCULATE([Retours Remb
 Retours Remboursements YoY Δ = [Retours Remboursements] - [Retours Remboursements PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1658,7 +1658,7 @@ Retours Remboursements YoY % = DIVIDE([Retours Remboursements] - [Retours Rembou
 Coûts Génériques PY = IF([_PY incomplet], BLANK(), CALCULATE([Coûts Génériques], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1668,7 +1668,7 @@ Coûts Génériques PY = IF([_PY incomplet], BLANK(), CALCULATE([Coûts Généri
 Coûts Génériques YoY Δ = [Coûts Génériques] - [Coûts Génériques PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1693,7 +1693,7 @@ Revenu (reconstruit) =
     + CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1704,7 +1704,7 @@ Revenu (reconstruit) PY =
 IF([_PY incomplet], BLANK(), CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1715,7 +1715,7 @@ Revenu (reconstruit) YoY Δ =
 IF([_PY incomplet], BLANK(), [Revenu (reconstruit)] - [Revenu (reconstruit) PY])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1750,7 +1750,7 @@ Marge Brute (reconstruit) =
     - [Fournitures Expédition]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1761,7 +1761,7 @@ Marge Brute (reconstruit) PY =
 IF([_PY incomplet], BLANK(), CALCULATE([Marge Brute (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1772,7 +1772,7 @@ Marge Brute (reconstruit) YoY Δ =
 IF([_PY incomplet], BLANK(), [Marge Brute (reconstruit)] - [Marge Brute (reconstruit) PY])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -1848,7 +1848,7 @@ SUMX(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2118,6 +2118,113 @@ RETURN
 
 ---
 
+## KPI Compact — Outbound (tous colis)
+
+> Cartes KPI Transport / Loss analysis : valeur compacte (même format que les cartes KPI des autres pages).  
+
+```dax
+KPI Compact — Outbound (tous colis) =
+VAR v = [Coût Transport Outbound (tous colis)]
+VAR a = ABS(v)
+RETURN
+    IF(
+        ISBLANK(v),
+        "n/a",
+        SWITCH(
+            TRUE(),
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+            "€" & FORMAT(v, "#,##0")
+        )
+    )
+```
+
+---
+
+## KPI Compact — Douanes (tous colis)
+
+```dax
+KPI Compact — Douanes (tous colis) =
+VAR v = [Douanes Taxes (tous colis)]
+VAR a = ABS(v)
+RETURN
+    IF(
+        ISBLANK(v),
+        "n/a",
+        SWITCH(
+            TRUE(),
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+            "€" & FORMAT(v, "#,##0")
+        )
+    )
+```
+
+---
+
+## KPI Compact — Fournitures (tous colis)
+
+```dax
+KPI Compact — Fournitures (tous colis) =
+VAR v = [Fournitures Expédition (tous colis)]
+VAR a = ABS(v)
+RETURN
+    IF(
+        ISBLANK(v),
+        "n/a",
+        SWITCH(
+            TRUE(),
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+            "€" & FORMAT(v, "#,##0")
+        )
+    )
+```
+
+---
+
+## KPI Compact — Colis
+
+```dax
+KPI Compact — Colis =
+VAR v = [Nb Colis]
+VAR a = ABS(v)
+RETURN
+    IF(
+        ISBLANK(v),
+        "n/a",
+        SWITCH(
+            TRUE(),
+            a >= 1000000, FORMAT(v / 1000, "#,##0") & "k",
+            a >= 1000, FORMAT(v / 1000, "0.0") & "k",
+            FORMAT(v, "#,##0")
+        )
+    )
+```
+
+---
+
+## KPI Compact — Pertes
+
+```dax
+KPI Compact — Pertes =
+VAR v = [Pertes Totales]
+VAR a = ABS(v)
+RETURN
+    IF(
+        ISBLANK(v),
+        "€0",
+        SWITCH(
+            TRUE(),
+            a >= 1000000, "€" & FORMAT(v / 1000, "#,##0") & "k",
+            a >= 1000, "€" & FORMAT(v / 1000, "0.0") & "k",
+            "€" & FORMAT(v, "#,##0")
+        )
+    )
+```
+
+---
+
 ## KPI Compact — Revenue
 
 ```dax
@@ -2227,7 +2334,7 @@ RETURN
 Profit Produit Pur = [Revenu (reconstruit)] - [Coût Achat Total]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2247,7 +2354,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -2282,7 +2389,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
     )
 ```
 
@@ -2318,7 +2425,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
     )
 ```
 
@@ -2354,7 +2461,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
     )
 ```
 
@@ -2376,7 +2483,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Retours Remboursements], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -2397,7 +2504,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Amont], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -2418,7 +2525,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Outbound (Retenu)], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -2439,7 +2546,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Douanes Taxes], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -2460,7 +2567,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Fournitures Expédition], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -2481,7 +2588,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Commissions Marketplace], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -2502,7 +2609,7 @@ VAR v =
             IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coûts Génériques], BLANK())
         )
     )
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -2758,7 +2865,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2785,7 +2892,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2812,7 +2919,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2839,7 +2946,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2866,7 +2973,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2893,7 +3000,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2920,7 +3027,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2947,7 +3054,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -2974,7 +3081,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3001,7 +3108,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3028,7 +3135,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3055,7 +3162,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3082,7 +3189,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3109,7 +3216,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3136,7 +3243,7 @@ VAR Total =
 RETURN Total - TopPart
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3146,7 +3253,7 @@ RETURN Total - TopPart
 Revenu (reconstruit, alloué langue) PY = IF([_PY incomplet], BLANK(), CALCULATE([Revenu (reconstruit, alloué langue)], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3202,7 +3309,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3254,7 +3361,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3268,7 +3375,7 @@ Revenu (reconstruit, alloué ISBN) =
 [Revenu (reconstruit)]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3312,7 +3419,7 @@ RETURN
 ```dax
 Mkt Display - Sales =
 VAR v = [Revenu (reconstruit)]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -3327,7 +3434,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
     )
 ```
 
@@ -3343,7 +3450,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
     )
 ```
 
@@ -3354,7 +3461,7 @@ RETURN
 ```dax
 Mkt Display - Returns and refunds =
 VAR v = [Retours Remboursements]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -3364,7 +3471,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
 ```dax
 Mkt Display - Inbound freight =
 VAR v = [Coût Transport Amont]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -3374,7 +3481,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
 ```dax
 Mkt Display - Shipping =
 VAR v = [Coût Transport Outbound (Retenu)]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -3384,7 +3491,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
 ```dax
 Mkt Display - Duties and taxes =
 VAR v = [Douanes Taxes]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -3394,7 +3501,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
 ```dax
 Mkt Display - Shipping supplies =
 VAR v = [Fournitures Expédition]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -3404,7 +3511,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
 ```dax
 Mkt Display - Marketplace fees =
 VAR v = [Commissions Marketplace]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -3414,7 +3521,7 @@ RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
 ```dax
 Mkt Display - Generic costs =
 VAR v = [Coûts Génériques]
-RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "#,##0") & "€")
+RETURN IF(ISBLANK(v), BLANK(), FORMAT(ROUND(v, 0), "€#,##0"))
 ```
 
 ---
@@ -3429,7 +3536,7 @@ RETURN
     IF(
         ISBLANK(v),
         BLANK(),
-        FORMAT(ROUND(v, 0), "#,##0") & "€ (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
+        FORMAT(ROUND(v, 0), "€#,##0") & " (" & FORMAT(DIVIDE(v, sales, 0), "0.0%") & ")"
     )
 ```
 
@@ -3548,7 +3655,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3589,7 +3696,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3635,7 +3742,7 @@ VAR TopSet =
 RETURN CALCULATE([Revenu (reconstruit, alloué ISBN)], KEEPFILTERS(TopSet))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3722,7 +3829,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3763,7 +3870,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3804,7 +3911,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3845,7 +3952,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3886,7 +3993,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3927,7 +4034,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -3968,7 +4075,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4009,7 +4116,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4050,7 +4157,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4091,7 +4198,7 @@ RETURN
     )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4103,7 +4210,7 @@ RETURN
 Frais Port Net Annulation = CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4113,7 +4220,7 @@ Frais Port Net Annulation = CALCULATE([Frais Port Encaissés], fact_commandes[st
 Frais Port Net Annulation PY = IF([_PY incomplet], BLANK(), CALCULATE([Frais Port Net Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4123,7 +4230,7 @@ Frais Port Net Annulation PY = IF([_PY incomplet], BLANK(), CALCULATE([Frais Por
 Frais Port Net Annulation YoY Δ = [Frais Port Net Annulation] - [Frais Port Net Annulation PY]
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4157,7 +4264,7 @@ IF(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4191,7 +4298,7 @@ Transport sortant par unité =
 DIVIDE([Coût Transport Outbound (Retenu)], [Unités commandées (avec CA)])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0.00`
 
 ---
 
@@ -4226,7 +4333,7 @@ Douanes Taxes par unité =
 DIVIDE([Douanes Taxes], [Unités commandées (avec CA)])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0.00`
 
 ---
 
@@ -4283,7 +4390,7 @@ Marge Brute par unité =
 DIVIDE([Marge Brute (reconstruit)], [Unités commandées (avec CA)])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0.00`
 
 ---
 
@@ -4331,7 +4438,7 @@ CALCULATE(
 )
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0`
 
 ---
 
@@ -4357,7 +4464,7 @@ Perte Moyenne =
 DIVIDE([Pertes Totales], [Nb Commandes Deficitaires])
 ```
 
-*Format* : `#,##0.00 €`
+*Format* : `€#,##0.00`
 
 ---
 

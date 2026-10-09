@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Douanes Taxes (tous colis)"
+                  "Property": "KPI Compact — Douanes (tous colis)"
                 }
               },
-              "queryRef": "_Mesures.Douanes Taxes (tous colis)",
-              "nativeQueryRef": "Douanes Taxes (tous colis)"
+              "queryRef": "_Mesures.KPI Compact — Douanes (tous colis)",
+              "nativeQueryRef": "KPI Compact — Douanes (tous colis)"
             }
           ]
         }
@@ -40,7 +40,7 @@
             "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "1000D"
+                  "Value": "1D"
                 }
               }
             },

@@ -23,11 +23,11 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Pertes Totales"
+                  "Property": "KPI Compact — Pertes"
                 }
               },
-              "queryRef": "_Mesures.Pertes Totales",
-              "nativeQueryRef": "Pertes Totales"
+              "queryRef": "_Mesures.KPI Compact — Pertes",
+              "nativeQueryRef": "KPI Compact — Pertes"
             }
           ]
         }

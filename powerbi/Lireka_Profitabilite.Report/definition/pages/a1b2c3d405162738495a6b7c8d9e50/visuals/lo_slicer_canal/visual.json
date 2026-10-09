@@ -217,6 +217,11 @@
           }
         }
       ]
+    },
+    "syncGroup": {
+      "groupName": "ChannelSync",
+      "fieldChanges": true,
+      "filterChanges": true
     }
   }
 }
