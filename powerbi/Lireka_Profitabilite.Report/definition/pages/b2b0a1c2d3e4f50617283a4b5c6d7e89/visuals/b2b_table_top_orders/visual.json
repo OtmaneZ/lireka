@@ -17,17 +17,17 @@
           "projections": [
             {
               "field": {
-                "Column": {
+                "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_commandes"
+                      "Entity": "_Mesures"
                     }
                   },
-                  "Property": "id_commande"
+                  "Property": "Order ID (Lireka)"
                 }
               },
-              "queryRef": "fact_commandes.id_commande",
-              "nativeQueryRef": "id_commande",
+              "queryRef": "_Mesures.Order ID (Lireka)",
+              "nativeQueryRef": "Order ID (Lireka)",
               "displayName": "Order ID"
             },
             {
@@ -74,6 +74,21 @@
               "queryRef": "_Mesures.Top Marge Commande",
               "nativeQueryRef": "Top Marge Commande",
               "displayName": "Gross Profit"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_commandes"
+                    }
+                  },
+                  "Property": "id_commande"
+                }
+              },
+              "queryRef": "fact_commandes.id_commande",
+              "nativeQueryRef": "id_commande",
+              "displayName": " "
             }
           ]
         }
@@ -165,6 +180,22 @@
       "general": [
         {
           "properties": {}
+        }
+      ],
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_commandes.id_commande"
+          }
         }
       ]
     },

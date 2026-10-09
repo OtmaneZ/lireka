@@ -2590,6 +2590,12 @@ table _Mesures
 		displayFolder: 07 Top / Loss
 		lineageTag: top0gp00-1111-2222-3333-444455550001
 
+	/// Identifiant Lireka de la commande (origin_order_id) pour les tableaux Top / Loss :
+	/// les lignes restent groupées sur id_commande (classement TOPN inchangé), colonne masquée.
+	measure 'Order ID (Lireka)' = SELECTEDVALUE(fact_commandes[origin_order_id])
+		displayFolder: 07 Top / Loss
+		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000701
+
 	measure 'Top Unités ISBN' =
 			VAR TopSet =
 				TOPN(

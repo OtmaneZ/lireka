@@ -13,6 +13,13 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: id_commande
 
+	/// Identifiant de commande au format Lireka (back office), affiché dans les tableaux Top / Loss.
+	column origin_order_id
+		dataType: string
+		lineageTag: b5efc10c-9a0b-454a-962a-6e58acc360a1
+		summarizeBy: none
+		sourceColumn: origin_order_id
+
 	column state
 		dataType: string
 		lineageTag: d552aead-fcf3-4c76-852d-52f81f7ea027
@@ -466,7 +473,7 @@ table fact_commandes
 					// Commandes (customer_order, schéma PgSchema) + coûts Bloc 5 agrégés par commande (customer_order_item).
 					// Jointure et SUM calculés par PostgreSQL : la passerelle reçoit une ligne par commande.
 					Source = fnRequeteSql(Text.Combine({
-						"SELECT o.id, o.state, o.source, o.destination_country, o.origin_created,",
+						"SELECT o.id, o.origin_order_id, o.state, o.source, o.destination_country, o.origin_created,",
 						"o.order_amount_eur, o.shipping_fee_eur, o.marketplace_fees_eur, o.product_cost_eur,",
 						"o.inbound_transportation_cost_eur, o.total_shipping_cost_to_delivery_country_eur,",
 						"o.gross_profit_eur,",
@@ -489,6 +496,7 @@ table fact_commandes
 					}, " ")),
 					#"Types appliques" = Table.TransformColumnTypes(Source, {
 						{"id", Int64.Type},
+						{"origin_order_id", type text},
 						{"state", type text},
 						{"source", type text},
 						{"destination_country", type text},
@@ -651,7 +659,7 @@ table fact_commandes
 						type nullable number
 					),
 					#"Colonnes conservees" = Table.SelectColumns(#"Revenu commande", {
-						"id_commande", "state", "source", "type_commande", "code_pays",
+						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays",
 						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						"cout_transport_amont", "commissions_marketplace",
 						"retours_remboursements", "couts_generiques",

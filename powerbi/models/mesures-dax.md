@@ -5,7 +5,7 @@
 > **Généré automatiquement** depuis `Lireka_Profitabilite.SemanticModel/definition/tables/_Mesures.tmdl`.  
 > Ne pas éditer à la main : régénérer depuis `_Mesures.tmdl` (script one-shot).
 
-> Total : **273 mesures**, dans l'ordre du modèle.
+> Total : **274 mesures**, dans l'ordre du modèle.
 
 ---
 
@@ -3689,6 +3689,17 @@ RETURN
 ```
 
 *Format* : `€#,##0`
+
+---
+
+## Order ID (Lireka)
+
+> Identifiant Lireka de la commande (origin_order_id) pour les tableaux Top / Loss :  
+> les lignes restent groupées sur id_commande (classement TOPN inchangé), colonne masquée.  
+
+```dax
+Order ID (Lireka) = SELECTEDVALUE(fact_commandes[origin_order_id])
+```
 
 ---
 
