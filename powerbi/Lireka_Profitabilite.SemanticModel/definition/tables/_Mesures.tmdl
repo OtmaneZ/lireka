@@ -1563,7 +1563,7 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000011-1111-2222-3333-444455550011
 
-		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""
+		formatStringDefinition = VAR pct = FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") RETURN "€#,##0"" (" & pct & ")"""
 
 	measure 'B2C Display - Product profit' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1582,7 +1582,7 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000012-1111-2222-3333-444455550012
 
-		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""
+		formatStringDefinition = VAR pct = FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") RETURN "€#,##0"" (" & pct & ")"""
 
 	measure 'B2C Display - Gross profit' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -1601,7 +1601,7 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000019-1111-2222-3333-444455550019
 
-		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") & "")"""
+		formatStringDefinition = VAR pct = FORMAT(DIVIDE(SELECTEDMEASURE(), [B2C Display - Sales], 0), "0.0%", "en-US") RETURN "€#,##0"" (" & pct & ")"""
 
 	measure 'B2C Display - Returns and refunds' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
@@ -2392,14 +2392,14 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00011-1111-2222-3333-444455550011
 
-		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""
+		formatStringDefinition = VAR pct = FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") RETURN "€#,##0"" (" & pct & ")"""
 
 	measure 'Mkt Display - Product profit' =
 			[Profit Produit Pur]
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00012-1111-2222-3333-444455550012
 
-		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""
+		formatStringDefinition = VAR pct = FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") RETURN "€#,##0"" (" & pct & ")"""
 
 	measure 'Mkt Display - Returns and refunds' =
 			[Retours Remboursements]
@@ -2455,7 +2455,7 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: mkt00019-1111-2222-3333-444455550019
 
-		formatStringDefinition = "€#,##0"" ("" & FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") & "")"""
+		formatStringDefinition = VAR pct = FORMAT(DIVIDE(SELECTEDMEASURE(), [Mkt Display - Sales], 0), "0.0%", "en-US") RETURN "€#,##0"" (" & pct & ")"""
 
 	measure 'Mkt Display - Revenue YoY %' =
 			[Revenu (reconstruit) YoY %]
