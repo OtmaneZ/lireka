@@ -252,7 +252,7 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: fournitures_cmd
 
-	/// Revenu de la commande (CA net annulation + frais de port hors CANCELLED), vide sans CA.
+	/// Revenu de la commande (CA net annulation, frais de port inclus dans order_amount_eur), vide sans CA.
 	/// Clé de classement des tableaux Top (colonne : classement sans réévaluer une mesure par commande).
 	column revenu_commande
 		dataType: double
@@ -264,7 +264,8 @@ table fact_commandes
 
 	/// Page 11 Loss analysis : marge brute au grain commande = formule publiée 7 postes,
 	/// base CA reconstruit (colonne ca_ht_reconstruit, présente par commande).
-	/// CANCELLED : CA, frais de port et COGS à 0 ; transport amont conservé ; outbound /
+	/// Frais de port inclus dans ca_ht_net (order_amount_eur), pas ajoutés une seconde fois.
+	/// CANCELLED : CA et COGS à 0 ; transport amont conservé ; outbound /
 	/// duties / fournitures via colis (0 si jamais expédiée). Hors retours / génériques.
 	/// BLANK si ca_disponible = "Non" : pas de perte artificielle sur une commande sans CA en base.
 	column marge_brute_commande =
@@ -272,7 +273,6 @@ table fact_commandes
 				fact_commandes[ca_disponible] = "Non",
 				BLANK(),
 				fact_commandes[ca_ht_net]
-					+ IF(fact_commandes[state] = "CANCELLED", 0, IF(ISBLANK(fact_commandes[frais_port_encaisse]), 0, fact_commandes[frais_port_encaisse]))
 					- fact_commandes[cout_achat_net]
 					- IF(ISBLANK(fact_commandes[cout_transport_amont]), 0, fact_commandes[cout_transport_amont])
 					- fact_commandes[cout_transport_retenu_cmd]
@@ -581,7 +581,6 @@ table fact_commandes
 						"WHEN trim(o.source) IN ('WEBSITE', 'PRO_WEBSITE', 'CULTURA', 'RAKUTEN', 'FNAC') THEN trim(o.source)",
 						"ELSE 'AUTRES' END AS canal_bascule,",
 						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE o.order_amount_eur END AS ca,",
-						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE COALESCE(o.shipping_fee_eur, 0) END AS port,",
 						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE COALESCE(o.product_cost_eur, 0) END AS achat,",
 						"COALESCE(o.inbound_transportation_cost_eur, 0) AS amont,",
 						"COALESCE(o.marketplace_fees_eur, 0) AS commissions",
@@ -610,7 +609,7 @@ table fact_commandes
 						"percentile_cont(0.5) WITHIN GROUP (ORDER BY (commissions / ca)::float8) AS med_r_commissions,",
 						"percentile_cont(0.5) WITHIN GROUP (ORDER BY (fournitures / ca)::float8) AS med_r_fournitures",
 						"FROM m",
-						"WHERE ca > 0 AND ca + port - achat - amont - outbound - duties - commissions - fournitures >= 0",
+						"WHERE ca > 0 AND ca - achat - amont - outbound - duties - commissions - fournitures >= 0",
 						"GROUP BY canal_bascule"
 						}, " ")),
 						{
@@ -631,15 +630,9 @@ table fact_commandes
 						each if [state] = "CANCELLED" then 0 else if [ca_ht_reconstruit] = null then 0 else [ca_ht_reconstruit],
 						type number
 					),
-					#"Frais port net" = Table.AddColumn(
-						#"CA HT net",
-						"frais_port_net",
-						each if [state] = "CANCELLED" then 0 else if [frais_port_encaisse] = null then 0 else [frais_port_encaisse],
-						type number
-					),
 					// ca_disponible : "Oui" si un montant de vente EUR existe en base (cf. colonne).
 					#"CA disponible" = Table.AddColumn(
-						#"Frais port net",
+						#"CA HT net",
 						"ca_disponible",
 						each if [ca_ht] <> null and [ca_ht] > 0 then "Oui" else "Non",
 						type text
@@ -650,12 +643,12 @@ table fact_commandes
 						each if [ca_disponible] = "Oui" or [state] = "CANCELLED" then "Oui" else "Non",
 						type text
 					),
-					// Revenu de la commande (CA net annulation + frais de port hors CANCELLED), vide sans CA :
+					// Revenu de la commande (CA net annulation, frais de port inclus dans order_amount_eur), vide sans CA :
 					// clé de classement des tableaux Top (même définition que [Revenu (reconstruit)] par commande).
 					#"Revenu commande" = Table.AddColumn(
 						#"Perimetre volumes",
 						"revenu_commande",
-						each if [ca_disponible] = "Oui" then [ca_ht_net] + [frais_port_net] else null,
+						each if [ca_disponible] = "Oui" then [ca_ht_net] else null,
 						type nullable number
 					),
 					#"Colonnes conservees" = Table.SelectColumns(#"Revenu commande", {

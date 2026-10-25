@@ -621,7 +621,6 @@ table _Mesures
 	/// CANCELLED clos (COGS neutralisé). Grain commande.
 	measure 'Marge Brute' =
 			[CA HT Net Annulation]
-				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 				- [Coût Achat Total]
 				- [Coût Transport Amont]
 				- [Coût Transport Outbound (Retenu)]
@@ -636,12 +635,11 @@ table _Mesures
 		lineageTag: 1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b
 
 	/// Fix F-04 / C-01 : taux = Marge Brute / revenu net annulation
-	/// ([CA HT Net Annulation] + frais port hors CANCELLED) — même périmètre que [Marge Brute].
+	/// ([CA HT Net Annulation], frais de port inclus dans order_amount_eur) — même périmètre que [Marge Brute].
 	measure 'Taux Marge Brute' =
 			DIVIDE(
 				[Marge Brute],
-				[CA HT Net Annulation]
-					+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED"),
+				[CA HT Net Annulation],
 				0
 			)
 		formatString: 0.0%
@@ -811,11 +809,10 @@ table _Mesures
 		displayFolder: 03 Coûts
 		lineageTag: 62d36844-d7c6-4108-bb36-42ec9c44c92c
 
-	/// Finance KPI — Revenue = CA produit net annulation + frais de port (hors CANCELLED).
+	/// Finance KPI — Revenue = CA net annulation (order_amount_eur inclut les frais de port, Michal 07/10/2026).
 	/// Aligné sur le dénominateur de [Taux Marge Brute].
 	measure Revenu =
 			[CA HT Net Annulation]
-				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 		formatString: €#,##0
 		displayFolder: 02 Revenus
 		lineageTag: 4449f741-c626-42a0-95c8-c0226f4e7f11
@@ -1051,11 +1048,11 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 625464b5-de13-4b23-8028-5c54a97ab079
 
-	/// Finance KPI — Revenue (reconstruit) = CA HT net annulation reconstruit + frais port hors CANCELLED.
+	/// Finance KPI — Revenue (reconstruit) = CA net annulation reconstruit. order_amount_eur inclut déjà les
+	/// frais de port (Michal 07/10/2026) : ils ne sont plus ajoutés une seconde fois.
 	/// Mesure de revenu publiée sur toutes les pages.
 	measure 'Revenu (reconstruit)' =
 			[CA HT Net Annulation (reconstruit)]
-				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 		formatString: €#,##0
 		displayFolder: 02 Revenus
 		lineageTag: 11112222-3333-4444-5555-666677778888
@@ -1078,14 +1075,13 @@ table _Mesures
 		lineageTag: 44445555-6666-7777-8888-999900001111
 
 	/// Marge brute publiée — 7 postes contractuels Marc, base CA reconstruit.
-	/// Revenu (CA reconstruit net annulation + frais de port hors CANCELLED)
+	/// Revenu (CA reconstruit net annulation, frais de port inclus dans order_amount_eur)
 	/// − COGS (0 si state = CANCELLED, décision Marc 25/08/2026) − transport amont
 	/// (conservé 100 %, pas de filtre statut) − transport sortant (colis, donc seulement
 	/// si expédiée) − droits et taxes − commissions marketplace − fournitures d'expédition.
 	/// Retours / coûts génériques exclus (below-the-line, profit bridge uniquement).
 	measure 'Marge Brute (reconstruit)' =
 			[CA HT Net Annulation (reconstruit)]
-				+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 				- [Coût Achat Total]
 				- [Coût Transport Amont]
 				- [Coût Transport Outbound (Retenu)]
@@ -1141,8 +1137,7 @@ table _Mesures
 				VALUES(fact_commandes[id_commande]),
 				VAR Rev =
 					CALCULATE(
-						[CA HT Net Annulation (reconstruit)]
-							+ CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED"),
+						[CA HT Net Annulation (reconstruit)],
 						ALLEXCEPT(fact_commandes, fact_commandes[id_commande]),
 						REMOVEFILTERS(fact_lignes[langue_livre], fact_lignes[canal_ligne], fact_lignes[canal_langue])
 					)
@@ -3032,7 +3027,7 @@ table _Mesures
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0gp00-1111-2222-3333-444455550001
 
-	/// Frais de port hors CANCELLED - même périmètre que le revenu publié.
+	/// Frais de port hors CANCELLED (information : déjà inclus dans le revenu via order_amount_eur).
 	measure 'Frais Port Net Annulation' = CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 		formatString: €#,##0
 		displayFolder: 05 YoY
@@ -3062,8 +3057,7 @@ table _Mesures
 						SWITCH(
 							poste,
 							"MB_PY", [Marge Brute (reconstruit) PY],
-							"CA", ([Revenu (reconstruit) YoY Δ] - [Frais Port Net Annulation YoY Δ]) * signe,
-							"PORT", [Frais Port Net Annulation YoY Δ] * signe,
+							"CA", [Revenu (reconstruit) YoY Δ] * signe,
 							"ACHAT", [Coût Achat Total YoY Δ] * signe,
 							"AMONT", [Coût Transport Amont YoY Δ] * signe,
 							"OUTBOUND", [Coût Transport Outbound (Retenu) YoY Δ] * signe,
@@ -3081,7 +3075,7 @@ table _Mesures
 	/// Numerateur [Profit Produit Pur] = [Revenu (reconstruit)] - [Coût Achat Total].
 	/// [Revenu (reconstruit)] : hors CANCELLED. [Coût Achat Total] : net annulation
 	/// (0 si state = CANCELLED, décision Marc 25/08/2026).
-	/// Denominateur [Revenu (reconstruit)] : hors CANCELLED (CA HT net annulation + frais de port), commandes avec CA.
+	/// Denominateur [Revenu (reconstruit)] : hors CANCELLED (CA net annulation, frais de port inclus), commandes avec CA.
 	/// Perimetre ratio : revenu et COGS tous deux hors vente annulée.
 	measure 'Taux Marge Commerciale' =
 			DIVIDE([Profit Produit Pur], [Revenu (reconstruit)])
