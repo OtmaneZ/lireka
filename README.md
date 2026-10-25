@@ -32,7 +32,7 @@ lireka/
 
 1. **Accès à la base** — le modèle lit PostgreSQL (`analytics`, schéma `analytics_views`) sur le réseau COex : tunnel WireGuard actif sur le poste (ou travail sur la VM de la passerelle).
 2. **Power BI Desktop** (Windows, 16 Go de RAM conseillés) — ouvrir `powerbi/Lireka_Profitabilite.pbip`. Paramètres (*Transformer les données* → *Gérer les paramètres*) : `PgServer`, `PgDatabase`, `PgSchema`. Au premier *Actualiser*, saisir les identifiants PostgreSQL et approuver les requêtes SQL natives.
-3. **Publication** — *Accueil* → *Publier* vers l'espace de travail « Lireka Profitabilité », en remplaçant le modèle existant. Le refresh quotidien (6:00, Europe/Paris) passe par la passerelle Lireka-Gateway (VM Azure, tunnel WireGuard). Détails : [`docs/04-processus/processus-etl-gouvernance.md`](docs/04-processus/processus-etl-gouvernance.md).
+3. **Publication** : *Accueil* → *Publier* vers l'espace de travail « LIREKA - Power BI », en remplaçant le modèle existant. Refresh quotidien prévu à 6:00 (Europe/Paris) via la passerelle Lireka-Gateway (VM Azure, tunnel WireGuard) : en cours de mise en place au 25/10/2026. Détails : [`docs/04-processus/processus-etl-gouvernance.md`](docs/04-processus/processus-etl-gouvernance.md).
 4. **Python** (scripts de contrôle) — depuis la racine du dépôt :
 
 ```powershell

@@ -30,7 +30,7 @@ Power BI est l'outil de Microsoft pour visualiser et analyser des données. Lire
 
 1. Ouvrir [app.powerbi.com](https://app.powerbi.com)
 2. Se connecter avec votre compte Lireka
-3. Cliquer sur **Workspaces** → **Lireka - Transport** ou **Lireka - Profitabilité**
+3. Cliquer sur **Workspaces** → **LIREKA - Power BI**
 
 ### L'interface d'un rapport
 
