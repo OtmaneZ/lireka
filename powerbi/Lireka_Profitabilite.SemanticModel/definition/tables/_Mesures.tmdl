@@ -322,6 +322,7 @@ table _Mesures
 				CALCULATE(SUM(fact_commandes[ca_ht]), KEEPFILTERS(fact_commandes[ca_disponible] = "Oui"))
 			)
 		formatString: €#,##0
+		isHidden
 		displayFolder: 02 Revenus
 		lineageTag: dda226fa-8e6c-4c56-acbd-56fa1c84d136
 
@@ -346,6 +347,7 @@ table _Mesures
 	/// borne CA cf. limite-etf-annulation.md) — limite connue documentée.
 	measure 'CA HT Net Annulation' = CALCULATE([CA Total HT], fact_commandes[state] <> "CANCELLED")
 		formatString: €#,##0
+		isHidden
 		displayFolder: 02 Revenus
 		lineageTag: f8091234-5678-9abc-def0-123456789abd
 
@@ -814,6 +816,7 @@ table _Mesures
 	measure Revenu =
 			[CA HT Net Annulation]
 		formatString: €#,##0
+		isHidden
 		displayFolder: 02 Revenus
 		lineageTag: 4449f741-c626-42a0-95c8-c0226f4e7f11
 
@@ -836,16 +839,19 @@ table _Mesures
 	/// --- KPI cards : Revenu (Revenue) ---
 	measure 'Revenu PY' = IF([_PY incomplet], BLANK(), CALCULATE([Revenu], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: €#,##0
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: b6b7aeab-d880-4342-8a60-5663277104df
 
 	measure 'Revenu YoY Δ' = [Revenu] - [Revenu PY]
 		formatString: €#,##0
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 61fb369e-68bb-4d68-9514-2c4448bb0e73
 
 	measure 'Revenu YoY %' = DIVIDE([Revenu] - [Revenu PY], [Revenu PY])
 		formatString: 0.0%
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 2891b13d-7576-4fae-acc3-746871b32126
 
@@ -900,16 +906,19 @@ table _Mesures
 
 	measure 'CA HT Net Annulation PY' = IF([_PY incomplet], BLANK(), CALCULATE([CA HT Net Annulation], SAMEPERIODLASTYEAR(dim_date[date])))
 		formatString: €#,##0
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: b375dae1-e80e-4327-8270-83f36c50a2ad
 
 	measure 'CA HT Net Annulation YoY Δ' = [CA HT Net Annulation] - [CA HT Net Annulation PY]
 		formatString: €#,##0
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 41d555c8-ff35-47ba-89b9-8b94949401bc
 
 	measure 'CA HT Net Annulation YoY %' = DIVIDE([CA HT Net Annulation] - [CA HT Net Annulation PY], [CA HT Net Annulation PY])
 		formatString: 0.0%
+		isHidden
 		displayFolder: 05 YoY
 		lineageTag: 4d5f0088-0032-49e6-a591-1f1adb7f0e7a
 
@@ -2142,52 +2151,6 @@ table _Mesures
 		formatString: €#,##0
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000039-1111-2222-3333-444455550039
-
-	measure 'B2C Rest Gross profit' =
-			VAR TopSet =
-				TOPN(
-					15,
-					FILTER(
-						ALLSELECTED(dim_pays[nom_pays_en]),
-						dim_pays[nom_pays_en] <> "Rest of the world"
-					),
-					[Revenu (reconstruit)],
-					DESC,
-					dim_pays[nom_pays_en],
-					ASC
-				)
-			VAR TopPart =
-				CALCULATE([Marge Brute], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
-			VAR Total =
-				CALCULATE([Marge Brute], ALLSELECTED(dim_pays[nom_pays_en]))
-			RETURN Total - TopPart
-		formatString: €#,##0
-		isHidden
-		displayFolder: 06 Display (familles GV / B2C / Mkt)
-		lineageTag: cc000040-1111-2222-3333-444455550040
-
-	measure 'B2C Rest Gross profit PY' =
-			VAR TopSet =
-				TOPN(
-					15,
-					FILTER(
-						ALLSELECTED(dim_pays[nom_pays_en]),
-						dim_pays[nom_pays_en] <> "Rest of the world"
-					),
-					[Revenu (reconstruit)],
-					DESC,
-					dim_pays[nom_pays_en],
-					ASC
-				)
-			VAR TopPart =
-				CALCULATE([Marge Brute PY], ALLSELECTED(dim_pays[nom_pays_en]), KEEPFILTERS(TopSet))
-			VAR Total =
-				CALCULATE([Marge Brute PY], ALLSELECTED(dim_pays[nom_pays_en]))
-			RETURN Total - TopPart
-		formatString: €#,##0
-		isHidden
-		displayFolder: 06 Display (familles GV / B2C / Mkt)
-		lineageTag: cc000041-1111-2222-3333-444455550041
 
 	measure 'B2C Rest GP reconstruit' =
 			VAR TopSet =
