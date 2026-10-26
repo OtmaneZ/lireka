@@ -1293,22 +1293,17 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: aa000007-1111-2222-3333-444455550007
 
-	/// Couleur conditionnelle YoY — taux marge, delta bps. Vert si >= 0 ; rouge si <= -100 bps ; neutre entre.
+	/// Couleur conditionnelle YoY — taux marge, delta bps. Vert si >= 0 ; rouge si < 0.
 	measure 'Couleur YoY — Gross Margin' =
 			VAR bps = [Taux Marge Brute (reconstruit) YoY bps]
-			RETURN
-				SWITCH(
-					TRUE(),
-					NOT ISNUMBER(bps), BLANK(),
-					bps >= 0, "#6FA84B",
-					bps <= -100, "#C0504D",
-					"#1B3A5C"
-				)
+			RETURN IF(NOT ISNUMBER(bps), BLANK(), IF(bps >= 0, "#6FA84B", "#C0504D"))
 		displayFolder: 05 YoY
 		lineageTag: aa000008-1111-2222-3333-444455550008
 
-	/// Couleur conditionnelle YoY — taux d'annulation, delta bps. Baisse = vert (inversé).
-	measure 'Couleur YoY — Cancellation' = IF([Taux Annulation YoY bps] <= 0, "#6FA84B", "#C0504D")
+	/// Couleur conditionnelle YoY — taux d'annulation, delta bps. Vert si >= 0 ; rouge si < 0 (même règle que les autres colonnes).
+	measure 'Couleur YoY — Cancellation' =
+			VAR bps = [Taux Annulation YoY bps]
+			RETURN IF(NOT ISNUMBER(bps), BLANK(), IF(bps >= 0, "#6FA84B", "#C0504D"))
 		displayFolder: 05 YoY
 		lineageTag: aa000009-1111-2222-3333-444455550009
 
@@ -1834,17 +1829,10 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000108
 
-	/// Couleur colonne Gross Margin YoY (bps) des tableaux B2C / B2B : vert >= 0, rouge <= -100, neutre entre.
+	/// Couleur colonne Gross Margin YoY (bps) des tableaux B2C / B2B : vert >= 0, rouge < 0.
 	measure 'B2C Couleur - GM YoY' =
 			VAR bps = [B2C YoY - GM bps]
-			RETURN
-				SWITCH(
-					TRUE(),
-					NOT ISNUMBER(bps), BLANK(),
-					bps >= 0, "#6FA84B",
-					bps <= -100, "#C0504D",
-					"#1B3A5C"
-				)
+			RETURN IF(NOT ISNUMBER(bps), BLANK(), IF(bps >= 0, "#6FA84B", "#C0504D"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000109
 
