@@ -311,7 +311,7 @@ table _Mesures
 		displayFolder: 08 Contrôles
 		lineageTag: e7f8a9b0-c1d2-4345-a678-901234ef0123
 
-	/// Chiffre d'affaires HT (order_amount_eur).
+	/// Chiffre d'affaires HT (order_amount_excl_vat_eur).
 	measure 'CA Total HT' =
 			IF(
 				[_Allocation ligne active],
@@ -326,7 +326,7 @@ table _Mesures
 		displayFolder: 02 Revenus
 		lineageTag: dda226fa-8e6c-4c56-acbd-56fa1c84d136
 
-	/// CA HT des commandes avec CA (ca_ht_reconstruit = order_amount_eur depuis la neutralisation du
+	/// CA HT des commandes avec CA (ca_ht_reconstruit = order_amount_excl_vat_eur depuis le 26/10/2026 ; neutralisation du
 	/// fallback FX du 19/07/2026 ; aucune conversion de devise). Base des mesures publiées « (reconstruit) ».
 	measure 'CA Total HT (reconstruit)' =
 			IF(
@@ -637,7 +637,7 @@ table _Mesures
 		lineageTag: 1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b
 
 	/// Fix F-04 / C-01 : taux = Marge Brute / revenu net annulation
-	/// ([CA HT Net Annulation], frais de port inclus dans order_amount_eur) — même périmètre que [Marge Brute].
+	/// ([CA HT Net Annulation], frais de port HT inclus) — même périmètre que [Marge Brute].
 	measure 'Taux Marge Brute' =
 			DIVIDE(
 				[Marge Brute],
@@ -811,7 +811,7 @@ table _Mesures
 		displayFolder: 03 Coûts
 		lineageTag: 62d36844-d7c6-4108-bb36-42ec9c44c92c
 
-	/// Finance KPI — Revenue = CA net annulation (order_amount_eur inclut les frais de port, Michal 07/10/2026).
+	/// Finance KPI — Revenue = CA HT net annulation (order_amount_excl_vat_eur, frais de port HT inclus).
 	/// Aligné sur le dénominateur de [Taux Marge Brute].
 	measure Revenu =
 			[CA HT Net Annulation]
@@ -1057,7 +1057,7 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 625464b5-de13-4b23-8028-5c54a97ab079
 
-	/// Finance KPI — Revenue (reconstruit) = CA net annulation reconstruit. order_amount_eur inclut déjà les
+	/// Finance KPI — Revenue (reconstruit) = CA HT net annulation (order_amount_excl_vat_eur). Le montant inclut déjà les
 	/// frais de port (Michal 07/10/2026) : ils ne sont plus ajoutés une seconde fois.
 	/// Mesure de revenu publiée sur toutes les pages.
 	measure 'Revenu (reconstruit)' =
@@ -1084,7 +1084,7 @@ table _Mesures
 		lineageTag: 44445555-6666-7777-8888-999900001111
 
 	/// Marge brute publiée — 7 postes contractuels Marc, base CA reconstruit.
-	/// Revenu (CA reconstruit net annulation, frais de port inclus dans order_amount_eur)
+	/// Revenu (CA HT net annulation, frais de port HT inclus)
 	/// − COGS (0 si state = CANCELLED, décision Marc 25/08/2026) − transport amont
 	/// (conservé 100 %, pas de filtre statut) − transport sortant (colis, donc seulement
 	/// si expédiée) − droits et taxes − commissions marketplace − fournitures d'expédition.
@@ -2990,7 +2990,7 @@ table _Mesures
 		displayFolder: 07 Top / Loss
 		lineageTag: loss0gp00-1111-2222-3333-444455550001
 
-	/// Frais de port hors CANCELLED (information : déjà inclus dans le revenu via order_amount_eur).
+	/// Frais de port hors CANCELLED (information : déjà inclus dans le revenu via order_amount_excl_vat_eur).
 	measure 'Frais Port Net Annulation' = CALCULATE([Frais Port Encaissés], fact_commandes[state] <> "CANCELLED")
 		formatString: €#,##0
 		displayFolder: 05 YoY

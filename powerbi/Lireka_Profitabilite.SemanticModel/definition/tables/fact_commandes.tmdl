@@ -55,7 +55,7 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
-	/// Chiffre d'affaires HT en EUR (order_amount_eur).
+	/// Chiffre d'affaires HT en EUR (order_amount_excl_vat_eur, frais de port HT inclus ; colonne COEX du 26/10/2026).
 	column ca_ht
 		dataType: double
 		formatString: #,##0.00 €
@@ -65,7 +65,7 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
-	/// CA HT en EUR (= order_amount_eur natif ; repli devise neutralisé le 19/07/2026).
+	/// CA HT en EUR (= order_amount_excl_vat_eur ; order_amount_eur est TTC, confirmation COEX du 26/10/2026).
 	/// Voir commentaire Power Query dans la partition et docs/notes-techniques/reconstruction-ca-marketplace.md.
 	column ca_ht_reconstruit
 		dataType: double
@@ -196,7 +196,7 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: canal_bascule
 
-	/// "Oui" si order_amount_eur > 0, sinon "Non" (commandes dont le montant EUR est vide en base).
+	/// "Oui" si order_amount_excl_vat_eur > 0, sinon "Non" (commandes dont le montant EUR est vide en base).
 	/// Revenu, coûts et marge ne portent que sur "Oui" :
 	/// une commande sans CA ne déduit aucun coût. Texte (pas booléen) pour les filtres PBIR.
 	column ca_disponible
@@ -252,7 +252,7 @@ table fact_commandes
 		summarizeBy: sum
 		sourceColumn: fournitures_cmd
 
-	/// Revenu de la commande (CA net annulation, frais de port inclus dans order_amount_eur), vide sans CA.
+	/// Revenu de la commande (CA HT net annulation, frais de port HT inclus), vide sans CA.
 	/// Clé de classement des tableaux Top (colonne : classement sans réévaluer une mesure par commande).
 	column revenu_commande
 		dataType: double
@@ -264,7 +264,7 @@ table fact_commandes
 
 	/// Page 11 Loss analysis : marge brute au grain commande = formule publiée 7 postes,
 	/// base CA reconstruit (colonne ca_ht_reconstruit, présente par commande).
-	/// Frais de port inclus dans ca_ht_net (order_amount_eur), pas ajoutés une seconde fois.
+	/// Frais de port HT inclus dans ca_ht_net (order_amount_excl_vat_eur), pas ajoutés une seconde fois.
 	/// CANCELLED : CA et COGS à 0 ; transport amont conservé ; outbound /
 	/// duties / fournitures via colis (0 si jamais expédiée). Hors retours / génériques.
 	/// BLANK si ca_disponible = "Non" : pas de perte artificielle sur une commande sans CA en base.
@@ -337,7 +337,7 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: med_r_fournitures
 
-	/// Page 11 Loss analysis : tranche de panier (order_amount_eur / ca_ht), bornes 0/15/20/30/40/70/90/200.
+	/// Page 11 Loss analysis : tranche de panier (ca_ht, montant HT), bornes 0/15/20/30/40/70/90/200.
 	/// "No sales amount" (ordre 0) si ca_disponible = "Non".
 	column tranche_panier =
 			VAR p = IF(ISBLANK(fact_commandes[ca_ht]), 0, fact_commandes[ca_ht])
@@ -474,7 +474,7 @@ table fact_commandes
 					// Jointure et SUM calculés par PostgreSQL : la passerelle reçoit une ligne par commande.
 					Source = fnRequeteSql(Text.Combine({
 						"SELECT o.id, o.origin_order_id, o.state, o.source, o.destination_country, o.origin_created,",
-						"o.order_amount_eur, o.shipping_fee_eur, o.marketplace_fees_eur, o.product_cost_eur,",
+						"o.order_amount_eur, o.order_amount_excl_vat_eur, o.shipping_fee_eur, o.marketplace_fees_eur, o.product_cost_eur,",
 						"o.inbound_transportation_cost_eur, o.total_shipping_cost_to_delivery_country_eur,",
 						"o.gross_profit_eur,",
 						"b.retours_remboursements, b.couts_generiques,",
@@ -501,6 +501,7 @@ table fact_commandes
 						{"source", type text},
 						{"destination_country", type text},
 						{"order_amount_eur", type number},
+						{"order_amount_excl_vat_eur", type number},
 						{"shipping_fee_eur", type number},
 						{"marketplace_fees_eur", type number},
 						{"product_cost_eur", type number},
@@ -531,8 +532,9 @@ table fact_commandes
 						"order_amount_eur_reconstruit",
 						each
 							let
-								eurNatif = [order_amount_eur]
-								// Neutralisation fallback FX (19/07) : order_amount_eur natif partout ;
+								eurNatif = [order_amount_excl_vat_eur]
+								// CA HT (order_amount_excl_vat_eur) : order_amount_eur est TTC (COEX, 26/10/2026).
+								// Neutralisation fallback FX (19/07) : montant EUR natif partout ;
 								// branche local/taux non validée (sous-éval. x10 AMAZON) → null si absent.
 							in
 								if eurNatif <> null and eurNatif <> 0 then eurNatif
@@ -543,7 +545,7 @@ table fact_commandes
 					#"Type commande derive" = Table.AddColumn(#"Code pays normalise", "type_commande", each if [source] = null or Text.Trim([source]) = "" then "INCONNU" else Text.Upper(Text.Trim([source])), type text),
 					#"Colonnes renommees" = Table.RenameColumns(#"Type commande derive", {
 						{"id", "id_commande"},
-						{"order_amount_eur", "ca_ht"},
+						{"order_amount_excl_vat_eur", "ca_ht"},
 						{"order_amount_eur_reconstruit", "ca_ht_reconstruit"},
 						{"product_cost_eur", "cout_achat"},
 						{"total_shipping_cost_to_delivery_country_eur", "cout_transport_estime"},
@@ -580,7 +582,7 @@ table fact_commandes
 						"CASE WHEN trim(o.source) LIKE 'AMAZON%' THEN 'AMAZON'",
 						"WHEN trim(o.source) IN ('WEBSITE', 'PRO_WEBSITE', 'CULTURA', 'RAKUTEN', 'FNAC') THEN trim(o.source)",
 						"ELSE 'AUTRES' END AS canal_bascule,",
-						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE o.order_amount_eur END AS ca,",
+						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE o.order_amount_excl_vat_eur END AS ca,",
 						"CASE WHEN o.state = 'CANCELLED' THEN 0 ELSE COALESCE(o.product_cost_eur, 0) END AS achat,",
 						"COALESCE(o.inbound_transportation_cost_eur, 0) AS amont,",
 						"COALESCE(o.marketplace_fees_eur, 0) AS commissions",
@@ -643,7 +645,7 @@ table fact_commandes
 						each if [ca_disponible] = "Oui" or [state] = "CANCELLED" then "Oui" else "Non",
 						type text
 					),
-					// Revenu de la commande (CA net annulation, frais de port inclus dans order_amount_eur), vide sans CA :
+					// Revenu de la commande (CA HT net annulation, frais de port HT inclus), vide sans CA :
 					// clé de classement des tableaux Top (même définition que [Revenu (reconstruit)] par commande).
 					#"Revenu commande" = Table.AddColumn(
 						#"Perimetre volumes",

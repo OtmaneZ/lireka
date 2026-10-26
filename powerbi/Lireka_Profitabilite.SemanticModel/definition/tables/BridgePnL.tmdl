@@ -1,7 +1,7 @@
 /// Axe waterfall Profit bridge - 8 lignes figees, sans dependance aux faits.
 /// Ordre | Libelle | Poste | Signe (+1 revenu, -1 cout). Aucune relation vers les autres tables.
 /// Uniquement les postes de la formule de marge brute (Marc) : Prior year + 7 variations.
-/// Revenue inclut les frais de port (order_amount_eur, Michal 07/10/2026) : pas de ligne Shipping revenue.
+/// Revenue = CA HT frais de port inclus (order_amount_excl_vat_eur) : pas de ligne Shipping revenue.
 /// Total waterfall = [Marge Brute (reconstruit)] de la periode, a l'euro pres.
 /// Retours / couts generiques exclus (hors marge brute).
 table BridgePnL
