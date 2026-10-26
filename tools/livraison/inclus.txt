@@ -1,0 +1,12 @@
+README.md
+powerbi/.gitignore
+powerbi/Lireka_Profitabilite.pbip
+powerbi/Lireka_Profitabilite.Report
+powerbi/Lireka_Profitabilite.SemanticModel
+docs/1-guide-du-rapport.md
+docs/2-donnees-et-calculs.md
+docs/3-git-et-publication.md
+docs/4-passation.md
+docs/5-formation.md
+docs/6-recette.md
+deploiement
