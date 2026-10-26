@@ -11,14 +11,14 @@ lireka/
 ├── powerbi/
 │   ├── Lireka_Profitabilite.pbip            fichier à ouvrir dans Power BI Desktop
 │   ├── Lireka_Profitabilite.SemanticModel/  modèle sémantique (tables, relations, mesures)
-│   ├── Lireka_Profitabilite.Report/         pages et visuels du rapport
-│   └── models/                              référentiel des mesures DAX
+│   └── Lireka_Profitabilite.Report/         pages et visuels du rapport
 ├── docs/
-│   ├── 04-processus/       chargement des données et actualisation (documentation du processus)
-│   ├── 05-formation/       supports de formation
-│   ├── 06-exploitation/    serveur Git du VPS : accès, usage, dépannage
-│   ├── doc_reunion_4_08/   règles de calcul des KPI publiés et recette chiffrée
-│   └── notes-techniques/   limites connues des données source
+│   ├── 1-guide-du-rapport.md    les pages et les indicateurs
+│   ├── 2-donnees-et-calculs.md  sources, chargement, règles de calcul, actualisation
+│   ├── 3-git-et-publication.md  récupérer, modifier, publier ; administration du serveur Git
+│   ├── 4-passation.md           accès, architecture, exploitation, contacts, points connus
+│   ├── 5-formation.md           support de la session de prise en main
+│   └── 6-recette.md             compte rendu de recette
 └── deploiement/vps/        scripts d'administration du serveur Git
 ```
 
@@ -31,14 +31,14 @@ lireka/
 ## Publier et actualiser
 
 - **Publication** : *Accueil* > *Publier* vers l'espace de travail « LIREKA - Power BI », en remplaçant le modèle existant.
-- **Actualisation** : quotidienne à 6:00 (Europe/Paris), par la passerelle Lireka-Gateway installée sur le VPS (tunnel WireGuard vers la base). Détails : [`docs/04-processus/processus-etl-gouvernance.md`](docs/04-processus/processus-etl-gouvernance.md).
+- **Actualisation** : quotidienne à 6:00 (Europe/Paris), par la passerelle Lireka-Gateway installée sur le VPS (tunnel WireGuard vers la base). Détails : [`docs/2-donnees-et-calculs.md`](docs/2-donnees-et-calculs.md).
 
 ## Travailler avec Git
 
-Le dépôt central est sur le VPS de Lireka (`C:\git\lireka.git`), accessible en SSH par clé. Installation, ajout d'une personne et commandes du quotidien : [`docs/06-exploitation/serveur-git-vps.md`](docs/06-exploitation/serveur-git-vps.md).
+Le dépôt central est sur le VPS de Lireka (`C:\git\lireka.git`), accessible en SSH par clé. Récupérer, modifier, publier et administrer : [`docs/3-git-et-publication.md`](docs/3-git-et-publication.md).
 
 ## Règles de calcul
 
 - Chiffre d'affaires **hors TVA**, frais de port inclus (`order_amount_excl_vat_eur`), hors commandes annulées.
 - Marge brute : chiffre d'affaires moins coût d'achat, transport amont, transport sortant, droits et taxes, commissions marketplace et fournitures d'expédition.
-- Référentiel complet des mesures : [`powerbi/models/mesures-dax.md`](powerbi/models/mesures-dax.md).
+- Détail des règles : [`docs/2-donnees-et-calculs.md`](docs/2-donnees-et-calculs.md) ; pages et indicateurs : [`docs/1-guide-du-rapport.md`](docs/1-guide-du-rapport.md).
