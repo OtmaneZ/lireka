@@ -3248,6 +3248,58 @@ table _Mesures
 		displayFolder: 01 KPI publiés
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000204
 
+	/// Profit bridge — couleur du sous-titre GP par unité : vert si la variation N-1 est >= 0, rouge si < 0 (même règle que General View).
+	measure 'Couleur YoY — GP par unité' =
+			VAR cy = [Marge Brute par unité]
+			VAR py = CALCULATE([Marge Brute par unité], SAMEPERIODLASTYEAR(dim_date[date]))
+			RETURN
+				IF(
+					ISBLANK(cy) || ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
+					BLANK(),
+					IF(cy - py >= 0, "#6FA84B", "#C0504D")
+				)
+		displayFolder: 05 YoY
+		lineageTag: 43827212-0b17-4a96-a53a-d8075db92c67
+
+	/// Profit bridge — couleur du sous-titre PPM : vert si la variation N-1 est >= 0, rouge si < 0 (même règle que General View).
+	measure 'Couleur YoY — PPM' =
+			VAR cy = [Taux Marge Commerciale]
+			VAR py = CALCULATE([Taux Marge Commerciale], SAMEPERIODLASTYEAR(dim_date[date]))
+			RETURN
+				IF(
+					ISBLANK(cy) || ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
+					BLANK(),
+					IF(cy - py >= 0, "#6FA84B", "#C0504D")
+				)
+		displayFolder: 05 YoY
+		lineageTag: a6bc34aa-998d-4654-a883-642277e33b9d
+
+	/// Profit bridge — couleur du sous-titre Transport par unité : vert si la variation N-1 est >= 0, rouge si < 0 (même règle que General View).
+	measure 'Couleur YoY — Transport par unité' =
+			VAR cy = [Transport sortant par unité]
+			VAR py = CALCULATE([Transport sortant par unité], SAMEPERIODLASTYEAR(dim_date[date]))
+			RETURN
+				IF(
+					ISBLANK(cy) || ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
+					BLANK(),
+					IF(cy - py >= 0, "#6FA84B", "#C0504D")
+				)
+		displayFolder: 05 YoY
+		lineageTag: 76817278-e118-45e4-acc7-898fd67b5ec6
+
+	/// Profit bridge — couleur du sous-titre Douanes par unité : vert si la variation N-1 est >= 0, rouge si < 0 (même règle que General View).
+	measure 'Couleur YoY — Douanes par unité' =
+			VAR cy = [Douanes Taxes par unité]
+			VAR py = CALCULATE([Douanes Taxes par unité], SAMEPERIODLASTYEAR(dim_date[date]))
+			RETURN
+				IF(
+					ISBLANK(cy) || ISBLANK(py) || ISBLANK(CALCULATE([Revenu (reconstruit)], SAMEPERIODLASTYEAR(dim_date[date]))) || [_PY incomplet],
+					BLANK(),
+					IF(cy - py >= 0, "#6FA84B", "#C0504D")
+				)
+		displayFolder: 05 YoY
+		lineageTag: bd63986c-a334-4287-a8ef-95e3fff35884
+
 	/// Loss analysis — sous-titre carte pertes totales.
 	measure 'KPI Sous-titre — Pertes' =
 			VAR cy = [Pertes Totales]
