@@ -1862,6 +1862,15 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: e7da2d53-5d28-477a-9843-4d8eaeabbbac
 
+	/// Drapeau du pays de la ligne (image intégrée, table _Drapeaux) : icône devant le nom du pays
+	/// dans les tableaux par pays (mise en forme conditionnelle > Icônes > Valeur de champ). Vide pour Rest of the world.
+	measure 'Drapeau pays' =
+			VAR c = SELECTEDVALUE(dim_pays[code_pays])
+			RETURN IF(ISBLANK(c), BLANK(), LOOKUPVALUE(_Drapeaux[drapeau], _Drapeaux[code_pays], c))
+		dataCategory: ImageUrl
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: 686efbef-abfb-440f-a7e8-9e50d581fed7
+
 	/// Clé de tri tableau B2C (dans Values, isHidden) : Sales desc ; Rest = -1.
 	/// Top 15 via [B2C Rank] ici seulement — sinon toutes les lignes réapparaissent.
 	/// Pas de RANKX dans les mesures Display.
