@@ -359,9 +359,7 @@
               }
             }
           }
-        }
-      ],
-      "columnFormatting": [
+        },
         {
           "properties": {
             "fontColor": {
@@ -382,6 +380,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Mkt Display - COGS"
           }
         },
@@ -405,6 +410,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Mkt Display - Product profit"
           }
         },
@@ -428,6 +440,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Mkt Display - Gross profit"
           }
         },
@@ -451,6 +470,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Mkt Display - Revenue YoY %"
           }
         },
@@ -474,6 +500,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Mkt Display - GP YoY %"
           }
         },
@@ -497,6 +530,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Mkt Display - GM YoY bps"
           }
         }

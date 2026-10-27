@@ -3,9 +3,9 @@
   "name": "la_table_channel",
   "position": {
     "x": 236.99563318777294,
-    "y": 424.80349344978168,
+    "y": 424.8034934497817,
     "z": 27000,
-    "height": 272.76855895196508,
+    "height": 272.7685589519651,
     "width": 1035.17903930131,
     "tabOrder": 27000
   },
@@ -328,9 +328,7 @@
               }
             }
           }
-        }
-      ],
-      "columnFormatting": [
+        },
         {
           "properties": {
             "fontColor": {
@@ -351,6 +349,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Unités commandées YoY %"
           }
         },
@@ -374,6 +379,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Taux Annulation YoY bps"
           }
         },
@@ -397,6 +409,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.GV Display — YoY€"
           }
         },
@@ -420,6 +439,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Revenu (reconstruit) YoY %"
           }
         },
@@ -443,6 +469,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.GV Display — Gross Profit"
           }
         },
@@ -466,6 +499,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Marge Brute (reconstruit) YoY %"
           }
         },
@@ -489,6 +529,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.Taux Marge Brute (reconstruit) YoY bps"
           }
         }
