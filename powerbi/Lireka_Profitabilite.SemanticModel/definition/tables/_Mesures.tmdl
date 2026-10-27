@@ -571,8 +571,8 @@ table _Mesures
 		displayFolder: 03 Coûts
 		lineageTag: 0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a
 
-	/// Bloc5 (dette technique) — retours et remboursements (returns_and_refunds_cost_eur,
-	/// agrégé par commande). Décision Marc 25/08/2026 : inclure uniquement si la commande
+	/// Bloc5 — retours et remboursements (customer_order.returns_and_refunds_eur,
+	/// montant de la commande). Décision Marc 25/08/2026 : inclure uniquement si la commande
 	/// a été remboursée — proxifié par le montant (pas de flag « refunded » distinct dans
 	/// le modèle). SUM du champ = 0 si non remboursé, montant réel sinon ; pas de filtre
 	/// CANCELLED. Double comptage vs COGS sur annulation clos : [Coût Achat Total] = 0

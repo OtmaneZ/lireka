@@ -117,8 +117,8 @@ table fact_commandes
 
 		changedProperty = IsHidden
 
-	/// Bloc5 (dette technique) — retours et remboursements agrégés par commande
-	/// (SUM returns_and_refunds_cost_eur depuis customer_order_item). Périmètre provisoire.
+	/// Bloc5 — retours et remboursements de la commande (customer_order.returns_and_refunds_eur).
+	/// Le champ ligne returns_and_refunds_cost_eur n'est plus alimenté depuis 10/2026 (vérifié 27/10/2026). Hors marge brute.
 	column retours_remboursements
 		dataType: double
 		formatString: #,##0.00 €
@@ -484,12 +484,12 @@ table fact_commandes
 						"o.order_amount_eur, o.order_amount_excl_vat_eur, o.shipping_fee_eur, o.marketplace_fees_eur, o.product_cost_eur,",
 						"o.inbound_transportation_cost_eur, o.total_shipping_cost_to_delivery_country_eur,",
 						"o.gross_profit_eur, o.b2b_organization_name,",
-						"b.retours_remboursements, b.couts_generiques,",
+						"o.returns_and_refunds_eur AS retours_remboursements, b.couts_generiques,",
 						"COALESCE(t.cout_transport_retenu_cmd, 0) AS cout_transport_retenu_cmd,",
 						"COALESCE(t.duties_taxes_cmd, 0) AS duties_taxes_cmd,",
 						"COALESCE(t.fournitures_cmd, 0) AS fournitures_cmd",
 						"FROM " & PgSchema & ".customer_order o",
-						"LEFT JOIN (SELECT order_id, SUM(returns_and_refunds_cost_eur) AS retours_remboursements,",
+						"LEFT JOIN (SELECT order_id,",
 						"SUM(generic_costs_eur) AS couts_generiques",
 						"FROM " & PgSchema & ".customer_order_item GROUP BY order_id) b ON b.order_id = o.id",
 						"LEFT JOIN (SELECT pk.order_id,",
