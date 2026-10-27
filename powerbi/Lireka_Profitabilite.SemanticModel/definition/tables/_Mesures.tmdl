@@ -1836,7 +1836,8 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000109
 
-	measure 'B2C couleur - cout' = "#C86B5A"
+	/// Couleur colonne COGS des tableaux P&L (B2C, B2B, Marketplaces) : rouge.
+	measure 'B2C couleur - cout' = "#C0504D"
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000070-1111-2222-3333-444455550070
 
@@ -1851,6 +1852,20 @@ table _Mesures
 			RETURN IF(v >= 0, "#6FA84B", "#C0504D")
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000071-1111-2222-3333-444455550071
+
+	/// Couleur colonne Product profit : vert si >= 0, rouge si < 0.
+	measure 'B2C couleur - Product profit' =
+			VAR v = [B2C Display - Product profit]
+			RETURN IF(ISBLANK(v), BLANK(), IF(v >= 0, "#6FA84B", "#C0504D"))
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: 9a18d0a7-3bb3-446e-9851-c0144e39f445
+
+	/// Couleur colonne Product profit : vert si >= 0, rouge si < 0.
+	measure 'Mkt couleur - Product profit' =
+			VAR v = [Mkt Display - Product profit]
+			RETURN IF(ISBLANK(v), BLANK(), IF(v >= 0, "#6FA84B", "#C0504D"))
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: e7da2d53-5d28-477a-9843-4d8eaeabbbac
 
 	/// Clé de tri tableau B2C (dans Values, isHidden) : Sales desc ; Rest = -1.
 	/// Top 15 via [B2C Rank] ici seulement — sinon toutes les lignes réapparaissent.

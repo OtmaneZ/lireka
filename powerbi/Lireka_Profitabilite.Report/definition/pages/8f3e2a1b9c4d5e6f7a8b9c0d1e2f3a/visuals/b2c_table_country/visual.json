@@ -388,6 +388,52 @@
                           "Entity": "_Mesures"
                         }
                       },
+                      "Property": "B2C couleur - cout"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.B2C Display - COGS"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Mesures"
+                        }
+                      },
+                      "Property": "B2C couleur - Product profit"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.B2C Display - Product profit"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Mesures"
+                        }
+                      },
                       "Property": "B2C couleur - profit"
                     }
                   }

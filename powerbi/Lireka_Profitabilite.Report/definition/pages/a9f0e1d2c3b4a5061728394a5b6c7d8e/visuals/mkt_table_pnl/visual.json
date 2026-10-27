@@ -374,6 +374,52 @@
                           "Entity": "_Mesures"
                         }
                       },
+                      "Property": "B2C couleur - cout"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.Mkt Display - COGS"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Mesures"
+                        }
+                      },
+                      "Property": "Mkt couleur - Product profit"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Mesures.Mkt Display - Product profit"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Mesures"
+                        }
+                      },
                       "Property": "KPI couleur — valeur"
                     }
                   }
