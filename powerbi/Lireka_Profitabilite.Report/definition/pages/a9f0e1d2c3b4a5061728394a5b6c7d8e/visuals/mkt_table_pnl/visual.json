@@ -158,12 +158,12 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Mkt Display - Gross profit"
+                  "Property": "Mkt Display - Returns and refunds"
                 }
               },
-              "queryRef": "_Mesures.Mkt Display - Gross profit",
-              "nativeQueryRef": "Mkt Display - Gross profit",
-              "displayName": "Gross Profit"
+              "queryRef": "_Mesures.Mkt Display - Returns and refunds",
+              "nativeQueryRef": "Mkt Display - Returns and refunds",
+              "displayName": "Returns and refunds"
             },
             {
               "field": {
@@ -173,12 +173,12 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Mkt Display - Returns and refunds"
+                  "Property": "Mkt Display - Gross profit"
                 }
               },
-              "queryRef": "_Mesures.Mkt Display - Returns and refunds",
-              "nativeQueryRef": "Mkt Display - Returns and refunds",
-              "displayName": "Returns and refunds (not in GP)"
+              "queryRef": "_Mesures.Mkt Display - Gross profit",
+              "nativeQueryRef": "Mkt Display - Gross profit",
+              "displayName": "Gross Profit"
             },
             {
               "field": {

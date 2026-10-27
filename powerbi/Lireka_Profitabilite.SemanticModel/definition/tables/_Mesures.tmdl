@@ -1083,12 +1083,12 @@ table _Mesures
 		displayFolder: 05 YoY
 		lineageTag: 44445555-6666-7777-8888-999900001111
 
-	/// Marge brute publiée — 7 postes contractuels Marc, base CA reconstruit.
+	/// Marge brute publiée — 8 postes, base CA reconstruit (retours ajoutés le 27/10/2026, demande Marc).
 	/// Revenu (CA HT net annulation, frais de port HT inclus)
 	/// − COGS (0 si state = CANCELLED, décision Marc 25/08/2026) − transport amont
 	/// (conservé 100 %, pas de filtre statut) − transport sortant (colis, donc seulement
-	/// si expédiée) − droits et taxes − commissions marketplace − fournitures d'expédition.
-	/// Retours / coûts génériques exclus (below-the-line, profit bridge uniquement).
+	/// si expédiée) − droits et taxes − commissions marketplace − fournitures d'expédition
+	/// − retours et remboursements (customer_order.returns_and_refunds_eur). Coûts génériques exclus.
 	measure 'Marge Brute (reconstruit)' =
 			[CA HT Net Annulation (reconstruit)]
 				- [Coût Achat Total]
@@ -1097,6 +1097,7 @@ table _Mesures
 				- [Douanes Taxes]
 				- [Commissions Marketplace]
 				- [Fournitures Expédition]
+				- [Retours Remboursements]
 		formatString: €#,##0
 		displayFolder: 04 Marge
 		lineageTag: 55556666-7777-8888-9999-000011112222
@@ -3034,6 +3035,7 @@ table _Mesures
 							"DOUANES", [Douanes Taxes YoY Δ] * signe,
 							"COMMISSIONS", [Commissions Marketplace YoY Δ] * signe,
 							"FOURNITURES", [Fournitures Expédition YoY Δ] * signe,
+							"RETOURS", [Retours Remboursements YoY Δ] * signe,
 							BLANK()
 						)
 			)

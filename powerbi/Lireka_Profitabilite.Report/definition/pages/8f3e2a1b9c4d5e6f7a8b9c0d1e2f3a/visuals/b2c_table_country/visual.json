@@ -158,12 +158,12 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "B2C Display - Gross profit"
+                  "Property": "B2C Display - Returns and refunds"
                 }
               },
-              "queryRef": "_Mesures.B2C Display - Gross profit",
-              "nativeQueryRef": "B2C Display - Gross profit",
-              "displayName": "Gross Profit"
+              "queryRef": "_Mesures.B2C Display - Returns and refunds",
+              "nativeQueryRef": "B2C Display - Returns and refunds",
+              "displayName": "Returns and refunds"
             },
             {
               "field": {
@@ -173,12 +173,12 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "B2C Display - Returns and refunds"
+                  "Property": "B2C Display - Gross profit"
                 }
               },
-              "queryRef": "_Mesures.B2C Display - Returns and refunds",
-              "nativeQueryRef": "B2C Display - Returns and refunds",
-              "displayName": "Returns and refunds (not in GP)"
+              "queryRef": "_Mesures.B2C Display - Gross profit",
+              "nativeQueryRef": "B2C Display - Gross profit",
+              "displayName": "Gross Profit"
             },
             {
               "field": {

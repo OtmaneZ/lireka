@@ -118,7 +118,7 @@ table fact_commandes
 		changedProperty = IsHidden
 
 	/// Bloc5 — retours et remboursements de la commande (customer_order.returns_and_refunds_eur).
-	/// Le champ ligne returns_and_refunds_cost_eur n'est plus alimenté depuis 10/2026 (vérifié 27/10/2026). Hors marge brute.
+	/// Le champ ligne returns_and_refunds_cost_eur n'est plus alimenté depuis 10/2026 (vérifié 27/10/2026). Inclus dans la marge brute (27/10/2026).
 	column retours_remboursements
 		dataType: double
 		formatString: #,##0.00 €
@@ -269,11 +269,11 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: revenu_commande
 
-	/// Page 11 Loss analysis : marge brute au grain commande = formule publiée 7 postes,
+	/// Marge brute au grain commande = formule publiée 8 postes (Top loss makers),
 	/// base CA reconstruit (colonne ca_ht_reconstruit, présente par commande).
 	/// Frais de port HT inclus dans ca_ht_net (order_amount_excl_vat_eur), pas ajoutés une seconde fois.
 	/// CANCELLED : CA et COGS à 0 ; transport amont conservé ; outbound /
-	/// duties / fournitures via colis (0 si jamais expédiée). Hors retours / génériques.
+	/// duties / fournitures via colis (0 si jamais expédiée). Retours inclus, génériques exclus.
 	/// BLANK si ca_disponible = "Non" : pas de perte artificielle sur une commande sans CA en base.
 	column marge_brute_commande =
 			IF(
@@ -286,6 +286,7 @@ table fact_commandes
 					- fact_commandes[duties_taxes_cmd]
 					- IF(ISBLANK(fact_commandes[commissions_marketplace]), 0, fact_commandes[commissions_marketplace])
 					- fact_commandes[fournitures_cmd]
+					- fact_commandes[retours_remboursements]
 			)
 		dataType: double
 		formatString: #,##0.00 €

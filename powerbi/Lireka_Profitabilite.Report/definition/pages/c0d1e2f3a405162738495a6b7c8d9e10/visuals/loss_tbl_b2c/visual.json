@@ -158,12 +158,12 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Top Loss — Gross Profit"
+                  "Property": "Top Loss — Returns"
                 }
               },
-              "queryRef": "_Mesures.Top Loss — Gross Profit",
-              "nativeQueryRef": "Top Loss — Gross Profit",
-              "displayName": "Gross Profit"
+              "queryRef": "_Mesures.Top Loss — Returns",
+              "nativeQueryRef": "Top Loss — Returns",
+              "displayName": "Returns and refunds"
             },
             {
               "field": {
@@ -173,12 +173,12 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Top Loss — Returns"
+                  "Property": "Top Loss — Gross Profit"
                 }
               },
-              "queryRef": "_Mesures.Top Loss — Returns",
-              "nativeQueryRef": "Top Loss — Returns",
-              "displayName": "Returns and refunds (not in GP)"
+              "queryRef": "_Mesures.Top Loss — Gross Profit",
+              "nativeQueryRef": "Top Loss — Gross Profit",
+              "displayName": "Gross Profit"
             },
             {
               "field": {

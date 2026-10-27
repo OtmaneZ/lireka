@@ -1,9 +1,9 @@
-/// Axe waterfall Profit bridge - 8 lignes figees, sans dependance aux faits.
+/// Axe waterfall Profit bridge - 9 lignes figees, sans dependance aux faits.
 /// Ordre | Libelle | Poste | Signe (+1 revenu, -1 cout). Aucune relation vers les autres tables.
-/// Uniquement les postes de la formule de marge brute (Marc) : Prior year + 7 variations.
+/// Uniquement les postes de la formule de marge brute (Marc) : Prior year + 8 variations.
 /// Revenue = CA HT frais de port inclus (order_amount_excl_vat_eur) : pas de ligne Shipping revenue.
 /// Total waterfall = [Marge Brute (reconstruit)] de la periode, a l'euro pres.
-/// Retours / couts generiques exclus (hors marge brute).
+/// Retours inclus (27/10/2026) ; couts generiques exclus (hors marge brute).
 table BridgePnL
 	lineageTag: b7c8d9e0-f1a2-4b3c-9d0e-1f2a3b4c5d6e
 
@@ -54,7 +54,8 @@ table BridgePnL
 							{6, "Outbound shipping", "OUTBOUND", -1},
 							{7, "Duties and taxes", "DOUANES", -1},
 							{8, "Marketplace fees", "COMMISSIONS", -1},
-							{9, "Shipping supplies", "FOURNITURES", -1}
+							{9, "Shipping supplies", "FOURNITURES", -1},
+							{10, "Returns and refunds", "RETOURS", -1}
 						}
 					),
 					#"Trie par Ordre" = Table.Sort(Source, {{"Ordre", Order.Ascending}})
