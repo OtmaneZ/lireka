@@ -59,11 +59,11 @@
                       "Entity": "dim_type_commande"
                     }
                   },
-                  "Property": "canal"
+                  "Property": "canal_graphe"
                 }
               },
-              "queryRef": "dim_type_commande.canal",
-              "nativeQueryRef": "canal",
+              "queryRef": "dim_type_commande.canal_graphe",
+              "nativeQueryRef": "canal_graphe",
               "displayName": "Channel"
             }
           ]
@@ -352,7 +352,7 @@
                             "Entity": "dim_type_commande"
                           }
                         },
-                        "Property": "canal"
+                        "Property": "canal_graphe"
                       }
                     },
                     "Right": {
@@ -393,7 +393,7 @@
                             "Entity": "dim_type_commande"
                           }
                         },
-                        "Property": "canal"
+                        "Property": "canal_graphe"
                       }
                     },
                     "Right": {
@@ -434,7 +434,7 @@
                             "Entity": "dim_type_commande"
                           }
                         },
-                        "Property": "canal"
+                        "Property": "canal_graphe"
                       }
                     },
                     "Right": {
