@@ -32,6 +32,21 @@
             },
             {
               "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_commandes"
+                    }
+                  },
+                  "Property": "client_b2b"
+                }
+              },
+              "queryRef": "fact_commandes.client_b2b",
+              "nativeQueryRef": "client_b2b",
+              "displayName": "Customer"
+            },
+            {
+              "field": {
                 "Measure": {
                   "Expression": {
                     "SourceRef": {

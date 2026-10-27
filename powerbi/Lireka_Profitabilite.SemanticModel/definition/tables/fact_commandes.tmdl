@@ -20,6 +20,13 @@ table fact_commandes
 		summarizeBy: none
 		sourceColumn: origin_order_id
 
+	/// Nom du client professionnel (customer_order.b2b_organization_name), vide pour les particuliers.
+	column client_b2b
+		dataType: string
+		lineageTag: 986fec4b-4e60-4610-ac69-317b453e3823
+		summarizeBy: none
+		sourceColumn: client_b2b
+
 	column state
 		dataType: string
 		lineageTag: d552aead-fcf3-4c76-852d-52f81f7ea027
@@ -476,7 +483,7 @@ table fact_commandes
 						"SELECT o.id, o.origin_order_id, o.state, o.source, o.destination_country, o.origin_created,",
 						"o.order_amount_eur, o.order_amount_excl_vat_eur, o.shipping_fee_eur, o.marketplace_fees_eur, o.product_cost_eur,",
 						"o.inbound_transportation_cost_eur, o.total_shipping_cost_to_delivery_country_eur,",
-						"o.gross_profit_eur,",
+						"o.gross_profit_eur, o.b2b_organization_name,",
 						"b.retours_remboursements, b.couts_generiques,",
 						"COALESCE(t.cout_transport_retenu_cmd, 0) AS cout_transport_retenu_cmd,",
 						"COALESCE(t.duties_taxes_cmd, 0) AS duties_taxes_cmd,",
@@ -508,6 +515,7 @@ table fact_commandes
 						{"inbound_transportation_cost_eur", type number},
 						{"total_shipping_cost_to_delivery_country_eur", type number},
 						{"gross_profit_eur", type number},
+						{"b2b_organization_name", type text},
 						{"retours_remboursements", type number},
 						{"couts_generiques", type number},
 						{"cout_transport_retenu_cmd", type number},
@@ -551,7 +559,8 @@ table fact_commandes
 						{"total_shipping_cost_to_delivery_country_eur", "cout_transport_estime"},
 						{"shipping_fee_eur", "frais_port_encaisse"},
 						{"inbound_transportation_cost_eur", "cout_transport_amont"},
-						{"marketplace_fees_eur", "commissions_marketplace"}
+						{"marketplace_fees_eur", "commissions_marketplace"},
+						{"b2b_organization_name", "client_b2b"}
 					}),
 					#"Avec bloc5" = Table.ReplaceValue(
 						#"Colonnes renommees",
@@ -654,7 +663,7 @@ table fact_commandes
 						type nullable number
 					),
 					#"Colonnes conservees" = Table.SelectColumns(#"Revenu commande", {
-						"id_commande", "origin_order_id", "state", "source", "type_commande", "code_pays",
+						"id_commande", "origin_order_id", "client_b2b", "state", "source", "type_commande", "code_pays",
 						"ca_ht", "ca_ht_reconstruit", "frais_port_encaisse", "cout_achat", "cout_transport_estime",
 						"cout_transport_amont", "commissions_marketplace",
 						"retours_remboursements", "couts_generiques",
