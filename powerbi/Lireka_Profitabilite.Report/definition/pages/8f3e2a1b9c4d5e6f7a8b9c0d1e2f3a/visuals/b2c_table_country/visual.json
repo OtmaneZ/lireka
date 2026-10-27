@@ -416,9 +416,7 @@
             ],
             "metadata": "dim_pays.nom_pays_en"
           }
-        }
-      ],
-      "columnFormatting": [
+        },
         {
           "properties": {
             "fontColor": {
@@ -439,6 +437,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.B2C Display - COGS"
           }
         },
@@ -462,6 +467,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.B2C Display - Product profit"
           }
         },
@@ -485,6 +497,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.B2C Display - Gross profit"
           }
         },
@@ -508,6 +527,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.B2C Display - Revenue YoY %"
           }
         },
@@ -531,6 +557,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.B2C Display - GP YoY %"
           }
         },
@@ -554,6 +587,13 @@
             }
           },
           "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
             "metadata": "_Mesures.B2C Display - GM YoY bps"
           }
         }
