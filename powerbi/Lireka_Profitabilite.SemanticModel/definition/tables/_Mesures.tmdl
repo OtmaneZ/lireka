@@ -1841,15 +1841,10 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000070-1111-2222-3333-444455550070
 
+	/// Couleur colonne Gross Profit des tableaux B2C / B2B : signe de la valeur affichée (vert >= 0, rouge < 0).
 	measure 'B2C couleur - profit' =
-			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR v =
-				IF(
-					Country = "Rest of the world",
-					[B2C Rest GP reconstruit],
-					[Marge Brute (reconstruit)]
-				)
-			RETURN IF(v >= 0, "#6FA84B", "#C0504D")
+			VAR v = [B2C Display - Gross profit]
+			RETURN IF(ISBLANK(v), BLANK(), IF(v >= 0, "#6FA84B", "#C0504D"))
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000071-1111-2222-3333-444455550071
 
