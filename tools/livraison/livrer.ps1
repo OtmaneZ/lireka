@@ -8,6 +8,7 @@
     2. Remplace le contenu du dépôt C:\git\lireka.git par les seuls chemins listés dans
        tools\livraison\inclus.txt : un élément retiré de la liste disparaît aussi du dépôt client.
     3. Crée un commit et le pousse sur main. Aucun commit si rien n'a changé.
+    4. Supprime le dossier extrait et le zip (aussi en cas d'erreur : retélécharger le zip avant de relancer).
 
 .EXAMPLE
     C:\lireka\livrer.ps1 -Message 'Mise a jour de la documentation'
@@ -66,4 +67,6 @@ try {
 }
 finally {
     Remove-Item $Travail -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item $Dossier -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item $Zip.FullName -Force -ErrorAction SilentlyContinue
 }
