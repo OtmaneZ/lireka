@@ -32,6 +32,21 @@
             },
             {
               "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_isbn"
+                    }
+                  },
+                  "Property": "title"
+                }
+              },
+              "queryRef": "dim_isbn.title",
+              "nativeQueryRef": "title",
+              "displayName": "Title"
+            },
+            {
+              "field": {
                 "Measure": {
                   "Expression": {
                     "SourceRef": {

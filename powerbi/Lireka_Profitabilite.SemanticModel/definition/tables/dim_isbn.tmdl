@@ -1,6 +1,6 @@
 /// Dimension — catalogue ISBN (grain : un ISBN).
 /// Clé = isbn ; ISBN distincts de customer_order_item_group (PostgreSQL, même grain que fact_lignes[isbn]).
-/// title / author : vides tant qu'aucune vue catalogue n'est disponible en base (stg_catalogue_isbn = table vide).
+/// title : v_book_attributes.book_title (stg_catalogue_isbn). author : vide (pas de nom d'auteur dans la vue).
 table dim_isbn
 	lineageTag: d1m2i3s4-b5n6-7890-abcd-ef1234567890
 
