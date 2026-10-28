@@ -43,7 +43,7 @@ Synthèse des trois canaux en ligne (Website B2C, Website B2B, Marketplaces ; Li
 ### Website B2C
 Ventes du site grand public par **pays de livraison**.
 - Cartes KPI.
-- **Revenue and profitability by country** : les 15 premiers pays par revenu, puis « Rest of the world » ; pour chacun, revenu, coût d'achat, transport, droits et taxes, commissions, fournitures, marge brute et leurs variations N-1.
+- **Revenue and profitability by country** : tous les pays de livraison, triés par revenu (défilement dans le tableau). La colonne Sales %, juste après Sales, est la part du revenu de tous les pays : un filtre Pays ne la recalcule pas à 100 %. Filtre Pays sur la page.
 
 ### Website B2C Contribution
 Contribution de chaque pays à l'évolution du site grand public.
@@ -52,7 +52,7 @@ Contribution de chaque pays à l'évolution du site grand public.
 ### Website B2B
 Ventes du site professionnel.
 - Cartes KPI.
-- **Revenue and profitability by destination country**.
+- **Revenue and profitability by destination country** : tous les pays, triés par revenu, avec la colonne Sales % (part du total, filtre Pays ignoré) et un filtre Pays.
 - **Top 10 B2B orders by revenue** : identifiant de commande Lireka, unités, revenu, marge brute.
 
 ### Marketplaces

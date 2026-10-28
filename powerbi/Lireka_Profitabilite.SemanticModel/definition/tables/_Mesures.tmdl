@@ -1520,7 +1520,7 @@ table _Mesures
 		formatStringDefinition = IF(ABS(SELECTEDMEASURE()) >= 100, "€#,##0K", "€#,##0.0K")
 
 	/// =====================================================================
-	/// Bloc 10 — Website B2C (stable) : Display ASCII + Rest via code_pays
+	/// Bloc 10 — Website B2C et B2B : tous les pays, hors ligne « Rest of the world ».
 	/// =====================================================================
 	measure 'Profit Produit Pur' = [Revenu (reconstruit)] - [Coût Achat Total]
 		formatString: €#,##0
@@ -1529,37 +1529,45 @@ table _Mesures
 
 	measure 'B2C Display - Sales' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Revenu (reconstruit)],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Sales],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit)], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Revenu (reconstruit)]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000010-1111-2222-3333-444455550010
 
 		formatStringDefinition = "€#,##0"
 
+	/// Part du revenu du pays dans le revenu de tous les pays.
+	/// Les filtres date, canal et langue restent. Le filtre pays est ignoré :
+	/// les pays sélectionnés ne se recalent pas à 100 %.
+	measure 'B2C Display - Sales %' =
+			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
+			VAR Total =
+				CALCULATE(
+					[Revenu (reconstruit)],
+					REMOVEFILTERS(dim_pays)
+				)
+			RETURN
+				IF(
+					Country = "Rest of the world",
+					BLANK(),
+					DIVIDE([B2C Display - Sales], Total)
+				)
+		formatString: 0.0%
+		displayFolder: 06 Display (familles GV / B2C / Mkt)
+		lineageTag: c4e8a1b2-7d63-4f90-9a15-2b6c0d11e447
+
 	measure 'B2C Display - COGS' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Coût Achat Total],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest COGS],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Achat Total], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Coût Achat Total]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000011-1111-2222-3333-444455550011
 
@@ -1567,18 +1575,12 @@ table _Mesures
 
 	measure 'B2C Display - Product profit' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Profit Produit Pur],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Product profit],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Profit Produit Pur], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Profit Produit Pur]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000012-1111-2222-3333-444455550012
 
@@ -1586,18 +1588,12 @@ table _Mesures
 
 	measure 'B2C Display - Gross profit' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Marge Brute (reconstruit)],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest GP reconstruit],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute (reconstruit)], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Marge Brute (reconstruit)]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000019-1111-2222-3333-444455550019
 
@@ -1605,18 +1601,12 @@ table _Mesures
 
 	measure 'B2C Display - Returns and refunds' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Retours Remboursements],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Returns],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Retours Remboursements], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Retours Remboursements]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000013-1111-2222-3333-444455550013
 
@@ -1624,18 +1614,12 @@ table _Mesures
 
 	measure 'B2C Display - Inbound freight' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Coût Transport Amont],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Inbound],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Amont], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Coût Transport Amont]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000014-1111-2222-3333-444455550014
 
@@ -1643,18 +1627,12 @@ table _Mesures
 
 	measure 'B2C Display - Shipping' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Coût Transport Outbound (Retenu)],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Shipping],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coût Transport Outbound (Retenu)], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Coût Transport Outbound (Retenu)]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000015-1111-2222-3333-444455550015
 
@@ -1662,18 +1640,12 @@ table _Mesures
 
 	measure 'B2C Display - Duties and taxes' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Douanes Taxes],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Duties],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Douanes Taxes], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Douanes Taxes]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000016-1111-2222-3333-444455550016
 
@@ -1681,18 +1653,12 @@ table _Mesures
 
 	measure 'B2C Display - Shipping supplies' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Fournitures Expédition],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Supplies],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Fournitures Expédition], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Fournitures Expédition]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000017-1111-2222-3333-444455550017
 
@@ -1700,18 +1666,12 @@ table _Mesures
 
 	measure 'B2C Display - Marketplace fees' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Commissions Marketplace],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Commissions],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Commissions Marketplace], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Commissions Marketplace]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000103
 
@@ -1719,18 +1679,12 @@ table _Mesures
 
 	measure 'B2C Display - Generic costs' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR v =
+			RETURN
 				IF(
-					ISBLANK(Country),
-					[Coûts Génériques],
-					IF(
-						Country = "Rest of the world",
-						[B2C Rest Generic],
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Coûts Génériques], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Coûts Génériques]
 				)
-			RETURN v
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000018-1111-2222-3333-444455550018
 
@@ -1757,59 +1711,42 @@ table _Mesures
 
 		formatStringDefinition = "+0"" bps"";-0"" bps"""
 
-	/// Valeur numérique de [B2C Display - Revenue YoY %] (Top 15 + Rest of the world) : base des couleurs.
+	/// Valeur numérique de [B2C Display - Revenue YoY %] (tous les pays, hors Rest of the world) : base des couleurs.
 	measure 'B2C YoY - Revenue %' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
 			RETURN
 				IF(
-					ISBLANK(Country),
-					[Revenu (reconstruit) YoY %],
-					IF(
-						Country = "Rest of the world",
-						DIVIDE([B2C Rest Sales] - [B2C Rest Sales PY], [B2C Rest Sales PY]),
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Revenu (reconstruit) YoY %], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Revenu (reconstruit) YoY %]
 				)
 		formatString: 0.0%
 		isHidden
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000104
 
-	/// Valeur numérique de [B2C Display - GP YoY %] (Top 15 + Rest of the world) : base des couleurs.
+	/// Valeur numérique de [B2C Display - GP YoY %] (tous les pays, hors Rest of the world) : base des couleurs.
 	measure 'B2C YoY - GP %' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
 			RETURN
 				IF(
-					ISBLANK(Country),
-					[Marge Brute (reconstruit) YoY %],
-					IF(
-						Country = "Rest of the world",
-						DIVIDE([B2C Rest GP reconstruit] - [B2C Rest GP reconstruit PY], ABS([B2C Rest GP reconstruit PY])),
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Marge Brute (reconstruit) YoY %], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Marge Brute (reconstruit) YoY %]
 				)
 		formatString: 0.0%
 		isHidden
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 0b5c1e2a-6f3d-4a41-9d7e-12c0a0000105
 
-	/// Valeur numérique de [B2C Display - GM YoY bps] (Top 15 + Rest of the world) : base des couleurs.
+	/// Valeur numérique de [B2C Display - GM YoY bps] (tous les pays, hors Rest of the world) : base des couleurs.
 	measure 'B2C YoY - GM bps' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
-			VAR RateCy = DIVIDE([B2C Rest GP reconstruit], [B2C Rest Sales])
-			VAR RatePy = DIVIDE([B2C Rest GP reconstruit PY], [B2C Rest Sales PY])
 			RETURN
 				IF(
-					ISBLANK(Country),
-					[Taux Marge Brute (reconstruit) YoY bps],
-					IF(
-						Country = "Rest of the world",
-						IF(ISBLANK(RateCy) || ISBLANK(RatePy), BLANK(), (RateCy - RatePy) * 10000),
-						IF(ISNUMBER(CountryRank) && CountryRank <= 15, [Taux Marge Brute (reconstruit) YoY bps], BLANK())
-					)
+					Country = "Rest of the world",
+					BLANK(),
+					[Taux Marge Brute (reconstruit) YoY bps]
 				)
 		formatString: #,##0
 		isHidden
@@ -1872,27 +1809,21 @@ table _Mesures
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: 686efbef-abfb-440f-a7e8-9e50d581fed7
 
-	/// Clé de tri tableau B2C (dans Values, isHidden) : Sales desc ; Rest = -1.
-	/// Top 15 via [B2C Rank] ici seulement — sinon toutes les lignes réapparaissent.
-	/// Pas de RANKX dans les mesures Display.
+	/// Clé de tri des tableaux pays B2C et B2B : revenu décroissant. Vide pour le total et pour « Rest of the world ».
 	measure 'B2C Sort Key' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
-			VAR CountryRank = [B2C Rank]
 			RETURN
 				IF(
-					Country = "Rest of the world",
-					-1,
-					IF(
-						ISNUMBER(CountryRank) && CountryRank <= 15,
-						[Revenu (reconstruit)],
-						BLANK()
-					)
+					ISBLANK(Country) || Country = "Rest of the world",
+					BLANK(),
+					[Revenu (reconstruit)]
 				)
 		formatString: #,##0.00
 		displayFolder: 06 Display (familles GV / B2C / Mkt)
 		lineageTag: cc000004-1111-2222-3333-444455550004
 
-	/// TOPN + tie-break nom_pays_en (PAS Rank DENSE) ; BLANK hors TopSet (contrat 1-15, pas de rang 16+). 2026-08-29.
+	/// Les tableaux pays listent tous les pays depuis le 28/10/2026.
+	/// Les ponts B2C gardent leur propre Top 15, figé dans _BridgePaysYoY.
 	measure 'B2C Rank' =
 			VAR Country = SELECTEDVALUE(dim_pays[nom_pays_en])
 			VAR TopSet =
@@ -2212,7 +2143,7 @@ table _Mesures
 	/// =====================================================================
 	/// B2C contribution bridges (slide 7). Axe _BridgePaysYoY = Prior year + Top 15 + Rest.
 	/// Rest = complement de l'axe fige (Total - somme des 15 pays de l'axe). 2026-08-29.
-	/// Ce Top 15 (refresh) differe volontairement de celui du tableau P&L (dynamique, via [B2C Rank]).
+	/// Le tableau P&L liste tous les pays (28/10/2026). Ce Top 15 reste celui de l'axe, figé au refresh.
 	/// =====================================================================
 	measure 'B2C Bridge — Revenue' =
 			IF(

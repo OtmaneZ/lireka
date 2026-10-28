@@ -53,6 +53,21 @@
                       "Entity": "_Mesures"
                     }
                   },
+                  "Property": "B2C Display - Sales %"
+                }
+              },
+              "queryRef": "_Mesures.B2C Display - Sales %",
+              "nativeQueryRef": "B2C Display - Sales %",
+              "displayName": "Sales %"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Mesures"
+                    }
+                  },
                   "Property": "B2C Display - COGS"
                 }
               },
@@ -272,6 +287,19 @@
               }
             },
             "direction": "Descending"
+          },
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "dim_pays"
+                  }
+                },
+                "Property": "nom_pays_en"
+              }
+            },
+            "direction": "Ascending"
           }
         ]
       }
@@ -805,5 +833,67 @@
         }
       ]
     }
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "excludeRestOfWorld",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_pays"
+              }
+            },
+            "Property": "nom_pays_en"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "d",
+              "Entity": "dim_pays",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "Not": {
+                  "Expression": {
+                    "In": {
+                      "Expressions": [
+                        {
+                          "Column": {
+                            "Expression": {
+                              "SourceRef": {
+                                "Source": "d"
+                              }
+                            },
+                            "Property": "nom_pays_en"
+                          }
+                        }
+                      ],
+                      "Values": [
+                        [
+                          {
+                            "Literal": {
+                              "Value": "'Rest of the world'"
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "howCreated": "User"
+      }
+    ]
   }
 }
