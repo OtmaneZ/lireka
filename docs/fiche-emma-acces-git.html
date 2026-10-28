@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Lireka - Accès Git et publication Power BI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 12mm 14mm;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.35;
+      color: #111;
+      background: #fff;
+      max-width: 210mm;
+    }
+    h1 {
+      font-size: 14pt;
+      font-weight: 600;
+      margin: 0 0 0.15rem 0;
+    }
+    .meta {
+      font-size: 9.5pt;
+      color: #444;
+      margin: 0 0 0.7rem 0;
+    }
+    h2 {
+      font-size: 11.5pt;
+      font-weight: 600;
+      margin: 0.7rem 0 0.3rem 0;
+      padding-bottom: 0.12rem;
+      border-bottom: 1px solid #ccc;
+    }
+    p { margin: 0.25rem 0; }
+    ol { margin: 0.25rem 0 0.25rem 1.15rem; padding: 0; }
+    li { margin: 0.15rem 0; }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 9pt;
+    }
+    pre {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      padding: 0.4rem 0.6rem;
+      margin: 0.3rem 0;
+      white-space: pre-wrap;
+    }
+    pre.empreinte { white-space: pre; }
+    .note {
+      border: 1px solid #bbb;
+      padding: 0.4rem 0.6rem;
+      margin: 0.4rem 0;
+      background: #fafafa;
+    }
+    @media print {
+      body { padding: 10mm 12mm; }
+      h2 { page-break-after: avoid; }
+      pre, .note { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Accès Git Lireka et publication du rapport</h1>
+  <p class="meta">Emma Henry (ehenry@lireka.com). Octobre 2026. Question : otmane@zineinsight.com.<br>
+  Une seule personne modifie le rapport à la fois, sur <code>main</code>.</p>
+
+  <h2>1. Une fois</h2>
+  <ol>
+    <li>Installer <strong>Git for Windows</strong> (https://git-scm.com/download/win, options par défaut) et <strong>Power BI Desktop</strong> (licence Pro, compte Lireka). Écrivez-moi avant d'installer Desktop : il faut la même version que l'équipe.</li>
+    <li>Dans PowerShell, créer la clé. Entrée pour l'emplacement. La phrase secrète se retape à chaque <code>git pull</code> et <code>git push</code>. Ce n'est pas le mot de passe du serveur. Entrée deux fois pour ne pas en mettre.
+      <pre>ssh-keygen -t ed25519 -C "ehenry@lireka.com"</pre>
+    </li>
+    <li>M'envoyer toute la ligne qui commence par <code>ssh-ed25519</code>. Jamais le fichier sans <code>.pub</code>.
+      <pre>Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub</pre>
+    </li>
+    <li>Après mon feu vert, dans PowerShell. Le nom <code>emma.henry</code> est le compte du serveur, pas votre e-mail. Le dossier est sur votre poste, pas dans Documents.
+      <pre>New-Item -ItemType Directory -Force C:\src | Out-Null
+cd C:\src
+git clone emma.henry@20.19.33.4:C:/git/lireka.git
+cd lireka
+git config --global user.name "Emma Henry"
+git config --global user.email "ehenry@lireka.com"</pre>
+    </li>
+  </ol>
+  <p>Au premier clone, l'empreinte doit être exactement celle-ci. Si elle diffère, ne pas répondre <code>yes</code>.</p>
+  <pre class="empreinte">SHA256:eBMqTCmtpfbE5ym8v8/94o5zQl9i0h6ADtGQhMk4zJc</pre>
+
+  <h2>2. Chaque fois</h2>
+  <pre>cd C:\src\lireka
+git pull</pre>
+  <p>Ouvrir <code>powerbi\Lireka_Profitabilite.pbip</code>, modifier, <strong>Fichier &gt; Enregistrer</strong>. Sans accès à la base, ne pas cliquer sur <strong>Actualiser</strong>.</p>
+  <pre>git status
+git add -A
+git commit -m "Description courte de votre changement"
+git push</pre>
+  <p>Pour que les utilisateurs voient la version : dans Desktop, <strong>Accueil &gt; Publier</strong>, espace <strong>LIREKA - Power BI</strong>, <strong>Remplacer</strong>. Ne pas changer les sources de données. Vérifier l'historique d'actualisation : <strong>Completed</strong>.</p>
+
+  <h2>3. Si ça bloque, m'écrire</h2>
+  <div class="note">
+    <code>Permission denied (publickey)</code>, empreinte différente, ou <code>CONFLICT</code> après un <code>git pull</code>. Ne rien corriger. Ne pas lancer <code>git push --force</code>.
+  </div>
+
+</body>
+</html>
