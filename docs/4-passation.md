@@ -39,7 +39,7 @@ Service Power BI, espace de travail « LIREKA - Power BI »
 | Tunnel WireGuard | Configuration installée sur le VPS | COEX |
 | SharePoint **PowerBI-Lireka** | Fichiers et sauvegardes | Lireka |
 
-Au 26/10/2026, la migration vers l'espace de travail LIREKA - Power BI est en cours : ce tableau décrit la configuration cible, effective une fois la migration terminée (voir [6-recette.md](6-recette.md)).
+Au 28/10/2026, la migration vers l'espace de travail LIREKA - Power BI est faite : Marc Bordier et Emma Henry voient le rapport, et le modèle apparaît dans Power BI Desktop. L'accès Git SSH depuis l'extérieur reste ouvert (voir [6-recette.md](6-recette.md)).
 
 Licences : chaque personne qui ouvre le rapport ou publie a besoin d'une licence **Power BI Pro**.
 

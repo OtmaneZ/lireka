@@ -2,7 +2,7 @@
 
 Recette de la mise en production du rapport Power BI de profitabilité dans l'environnement de Lireka (devis D-2026-004, ligne « Recette » : refresh planifié validé, contrôle de la marge, contrôle des accès, compte rendu de recette).
 
-Rédigé le 26/10/2026. Les points marqués **À constater** seront complétés après la migration dans l'espace de travail LIREKA - Power BI.
+Rédigé le 26/10/2026. Constats du 28/10/2026 portés dans les sections 1 et 3. Les points encore marqués **À constater** restent ouverts.
 
 ---
 
@@ -10,9 +10,9 @@ Rédigé le 26/10/2026. Les points marqués **À constater** seront complétés 
 
 | Point de recette | Statut |
 |---|---|
-| 1. Refresh planifié validé | À constater dans l'espace LIREKA - Power BI |
+| 1. Refresh planifié validé | Fait (28/10/2026) : actualisation de 6:00 réussie dans l'espace LIREKA - Power BI |
 | 2. Contrôle de la marge | Fait (voir section 2) ; décisions de définition en attente de Lireka |
-| 3. Contrôle des accès | À constater après migration |
+| 3. Contrôle des accès | Rapport visible par Marc et Emma, modèle visible dans Desktop (28/10/2026) ; accès Git SSH d'Emma encore à constater |
 | 4. Serveur Git et migration du dépôt | Fait : dépôt livré le 26/10/2026 et testé par SSH ; port 22 à ouvrir dans Azure |
 
 ---
@@ -23,7 +23,7 @@ Rédigé le 26/10/2026. Les points marqués **À constater** seront complétés 
 |---|---|
 | Échecs constatés avant recette | 20/10 et 23/10/2026 à 06:08 : vues `analytics_views` momentanément absentes pendant la synchronisation COEX. Cause corrigée par COEX le 26/10/2026. |
 | Avertissements de format à chaque actualisation | Corrigés le 25/10/2026 ; actualisation du 26/10/2026 à 01:44 terminée sans avertissement. |
-| Actualisation de 6:00 réussie dans l'espace LIREKA - Power BI | **À constater** |
+| Actualisation de 6:00 réussie dans l'espace LIREKA - Power BI | **Fait** (28/10/2026) |
 
 ---
 
@@ -79,9 +79,9 @@ Explication (COEX, 26/10/2026) : le backoffice utilise des coûts estimés, la b
 
 | Contrôle | Résultat |
 |---|---|
-| Marc Bordier voit le rapport dans l'espace LIREKA - Power BI | **À constater** |
-| Emma Henry voit le rapport dans l'espace LIREKA - Power BI | **À constater** |
-| Le modèle apparaît dans Power BI Desktop (Obtenir les données > Modèles sémantiques Power BI) | **À constater** |
+| Marc Bordier voit le rapport dans l'espace LIREKA - Power BI | **Fait** (28/10/2026) |
+| Emma Henry voit le rapport dans l'espace LIREKA - Power BI | **Fait** (28/10/2026) |
+| Le modèle apparaît dans Power BI Desktop (Obtenir les données > Modèles sémantiques Power BI) | **Fait** (28/10/2026) |
 | Accès Git d'Emma Henry par SSH | **À constater** (après ouverture du port 22) |
 
 ---
