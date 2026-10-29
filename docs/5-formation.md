@@ -23,7 +23,7 @@ Support de la session de prise en main du rapport et du projet Power BI. Durée 
 | 15 min | Comprendre les chiffres | Revenue hors TVA, composition de la marge brute, commandes exclues, répartition par livre quand on filtre la langue, lecture du Profit bridge et de la Loss analysis | [2-donnees-et-calculs.md](2-donnees-et-calculs.md) |
 | 20 min | Construire ses analyses | Power BI Desktop > **Obtenir les données > Modèles sémantiques Power BI > Lireka_Profitabilite** ; créer une page, un visuel, un filtre ; combiner avec une autre source | ci-dessous |
 | 15 min | Modifier le rapport commun | `git pull`, ouvrir le `.pbip`, modifier, enregistrer, `git add`, `git commit`, `git push`, publier, actualiser | [3-git-et-publication.md](3-git-et-publication.md) |
-| 10 min | Exploitation | Vérifier l'actualisation de 6:00, que faire en cas d'échec, qui contacter | [4-passation.md](4-passation.md) |
+| 10 min | Exploitation | Vérifier l'actualisation de 8:00, que faire en cas d'échec, qui contacter | [4-passation.md](4-passation.md) |
 
 ---
 

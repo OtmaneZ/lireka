@@ -107,7 +107,7 @@ Une commande peut contenir des livres de plusieurs langues. Quand on filtre sur 
 | Étape | Heure (Paris) |
 |---|---|
 | Synchronisation de la base par COEX | à partir de 2:00 |
-| Actualisation du modèle dans le Service Power BI, par la passerelle Lireka-Gateway (VPS, tunnel WireGuard) | 6:00 |
+| Actualisation du modèle dans le Service Power BI, par la passerelle Lireka-Gateway (VPS, tunnel WireGuard) | 8:00, après la fin de la synchronisation COEX (vers 6:30) |
 
 Contrôle : *modèle sémantique* > *Historique d'actualisation*. Les échecs du 20/10 et du 23/10/2026 venaient d'une synchronisation COEX anormalement longue ; COEX a corrigé le problème le 26/10/2026.
 

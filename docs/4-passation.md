@@ -18,7 +18,7 @@ Base analytique PostgreSQL (COEX)  10.111.119.1:5432 / analytics / analytics_vie
 VPS Lireka 20.19.33.4 (Windows Server, Azure, Inforeso)
    ├── Passerelle Power BI « Lireka-Gateway »
    └── Serveur Git : C:\git\lireka.git
-   │  actualisation quotidienne à 6:00
+   │  actualisation quotidienne à 8:00
    ▼
 Service Power BI, espace de travail « LIREKA - Power BI »
    ├── Modèle sémantique Lireka_Profitabilite
@@ -51,7 +51,7 @@ Aucun mot de passe n'est écrit dans ce document ni dans le projet.
 
 | Quoi | Où | Fréquence |
 |---|---|---|
-| Vérifier que l'actualisation de 6:00 a réussi | Modèle sémantique > Historique d'actualisation | Chaque matin, ou sur alerte e-mail |
+| Vérifier que l'actualisation de 8:00 a réussi | Modèle sémantique > Historique d'actualisation | Chaque matin, ou sur alerte e-mail |
 | Vérifier la fraîcheur des données | Carte « Data through … » du rapport | À l'ouverture |
 | Publier une modification | voir [3-git-et-publication.md](3-git-et-publication.md) | À chaque évolution |
 

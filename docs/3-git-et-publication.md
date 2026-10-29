@@ -61,7 +61,7 @@ Les fichiers du dossier `powerbi\` sont gérés par Power BI Desktop : ne pas le
 3. Dans le Service, ouvrir le modèle sémantique **Lireka_Profitabilite** > **Actualiser maintenant**.
 4. Contrôler **Historique d'actualisation** : la ligne doit indiquer « Completed », sans avertissement.
 
-La connexion à la passerelle, les identifiants de la base et l'actualisation planifiée de 6:00 sont conservés lors d'un remplacement.
+La connexion à la passerelle, les identifiants de la base et l'actualisation planifiée de 8:00 sont conservés lors d'un remplacement.
 
 Si le poste n'a pas accès à la base (pas de tunnel WireGuard), le projet s'ouvre sans données : on peut quand même modifier et publier ; c'est le Service qui recharge les données par la passerelle. Ne pas lancer « Actualiser » dans Desktop dans ce cas.
 
@@ -110,6 +110,6 @@ Remove-Item C:\ProgramData\ssh\cles_git\prenom.nom.pub
 |---|---|
 | `Permission denied (publickey)` | Clé non enregistrée, ou nom d'utilisateur erroné dans l'adresse de clonage. |
 | `Connection timed out` | Port 22 fermé côté Azure : voir section 6. |
-| `git-upload-pack` ou `git-receive-pack` n'est pas reconnu | Sur le VPS : `Restart-Service sshd`. Si le message persiste, redémarrer le VPS en dehors de l'actualisation de 6:00, puis vérifier que le tunnel WireGuard et la passerelle sont repartis. |
+| `git-upload-pack` ou `git-receive-pack` n'est pas reconnu | Sur le VPS : `Restart-Service sshd`. Si le message persiste, redémarrer le VPS en dehors de l'actualisation de 8:00, puis vérifier que le tunnel WireGuard et la passerelle sont repartis. |
 | `detected dubious ownership` | Relancer `Installer-ServeurGit.ps1` sur le VPS. |
 | Actualisation en échec dans le Service | Voir [4-passation.md](4-passation.md), section Exploitation. |

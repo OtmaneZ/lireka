@@ -10,7 +10,7 @@ Rédigé le 26/10/2026. Constats du 28/10/2026 portés dans les sections 1 et 3.
 
 | Point de recette | Statut |
 |---|---|
-| 1. Refresh planifié validé | Fait (28/10/2026) : actualisation de 6:00 réussie dans l'espace LIREKA - Power BI |
+| 1. Refresh planifié validé | Fait (28/10/2026) : actualisation planifiée réussie dans l'espace LIREKA - Power BI ; décalée de 6:00 à 8:00 le 29/10/2026, à la demande de COEX, dont la synchronisation se termine vers 6:30 |
 | 2. Contrôle de la marge | Fait (voir section 2) ; décisions de définition en attente de Lireka |
 | 3. Contrôle des accès | Rapport visible par Marc et Emma, modèle visible dans Desktop (28/10/2026) ; accès Git SSH d'Emma encore à constater |
 | 4. Serveur Git et migration du dépôt | Fait : dépôt livré le 26/10/2026 et testé par SSH ; port 22 à ouvrir dans Azure |
@@ -23,7 +23,7 @@ Rédigé le 26/10/2026. Constats du 28/10/2026 portés dans les sections 1 et 3.
 |---|---|
 | Échecs constatés avant recette | 20/10 et 23/10/2026 à 06:08 : vues `analytics_views` momentanément absentes pendant la synchronisation COEX. Cause corrigée par COEX le 26/10/2026. |
 | Avertissements de format à chaque actualisation | Corrigés le 25/10/2026 ; actualisation du 26/10/2026 à 01:44 terminée sans avertissement. |
-| Actualisation de 6:00 réussie dans l'espace LIREKA - Power BI | **Fait** (28/10/2026) |
+| Actualisation planifiée réussie dans l'espace LIREKA - Power BI (6:00 le 28/10, 8:00 depuis le 29/10) | **Fait** (28/10/2026) |
 
 ---
 

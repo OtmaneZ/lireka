@@ -31,7 +31,7 @@ lireka/
 ## Publier et actualiser
 
 - **Publication** : *Accueil* > *Publier* vers l'espace de travail « LIREKA - Power BI », en remplaçant le modèle existant.
-- **Actualisation** : quotidienne à 6:00 (Europe/Paris), par la passerelle Lireka-Gateway installée sur le VPS (tunnel WireGuard vers la base). Détails : [`docs/2-donnees-et-calculs.md`](docs/2-donnees-et-calculs.md).
+- **Actualisation** : quotidienne à 8:00 (Europe/Paris), par la passerelle Lireka-Gateway installée sur le VPS (tunnel WireGuard vers la base). Détails : [`docs/2-donnees-et-calculs.md`](docs/2-donnees-et-calculs.md).
 
 ## Travailler avec Git
 
