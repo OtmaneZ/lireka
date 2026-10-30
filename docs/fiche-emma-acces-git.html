@@ -26,7 +26,7 @@
     html { background: #fff; }
     body {
       margin: 0 auto;
-      padding: 10mm 13mm 8mm;
+      padding: 8mm 13mm 6mm;
       max-width: 210mm;
       font-family: "Inter", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
       font-size: 8.8pt;
@@ -45,7 +45,7 @@
       gap: 12px;
       padding-bottom: 8px;
       border-bottom: 2px solid var(--accent);
-      margin-bottom: 7px;
+      margin-bottom: 6px;
     }
     .surtitre {
       font-size: 7.8pt;
@@ -76,7 +76,7 @@
     .encadre {
       border-radius: 6px;
       padding: 5px 10px;
-      margin: 6px 0 2px;
+      margin: 5px 0 2px;
       font-size: 8.7pt;
     }
     .encadre.important {
@@ -98,7 +98,7 @@
       font-size: 11.5pt;
       font-weight: 700;
       color: var(--encre);
-      margin: 9px 0 4px;
+      margin: 7px 0 3px;
     }
     h2 .num {
       display: inline-flex;
@@ -131,7 +131,7 @@
       counter-increment: etape;
       position: relative;
       padding: 0 0 0 24px;
-      margin: 0 0 4px;
+      margin: 0 0 3px;
     }
     ol.etapes > li::before {
       content: counter(etape);
@@ -158,13 +158,14 @@
       border-radius: 3px;
       padding: 0 3px;
       color: var(--encre);
+      white-space: nowrap;
     }
     pre {
       position: relative;
       background: var(--code-fond);
       border: 1px solid var(--code-bord);
       border-radius: 5px;
-      padding: 4px 10px;
+      padding: 3px 10px;
       margin: 3px 0 2px;
       white-space: pre-wrap;
       color: var(--encre);
@@ -205,6 +206,16 @@
     td:first-child { width: 44%; }
     tr:last-child td { border-bottom: none; }
 
+    .cas-grille {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 14px;
+      margin-top: 4px;
+      font-size: 8.4pt;
+    }
+    .cas { padding: 3px 0; border-bottom: 1px solid var(--filet); }
+    .cas-msg { font-weight: 600; color: var(--encre); margin-bottom: 1px; }
+    @media (max-width: 600px) { .cas-grille { grid-template-columns: 1fr; } }
     footer {
       margin-top: 7px;
       padding-top: 6px;
@@ -235,78 +246,79 @@
     </div>
     <div class="meta">
       Pour <strong>Emma Henry</strong><br>
-      Octobre 2026<br>
-      Une question : <strong>otmane@zineinsight.com</strong>
+      Version du 30/10/2026<br>
+      Une question : Slack ou <strong>otmane@zineinsight.com</strong>
     </div>
   </header>
 
-  <div class="encadre important">
-    <strong>Pendant ma mission, ne pousse rien</strong> (<code>git push</code>) sans m'avoir prévenu.
-    Mes livraisons remplacent le contenu du dépôt et effaceraient ta modification.
-    Cloner et faire <code>git pull</code> : librement.
+  <div class="encadre info">
+    Le dépôt Git, hébergé sur le serveur de Lireka, contient le projet source du <strong>rapport commun</strong>.
+    Il sert à le modifier et à le republier.
+    Pour <strong>tes propres analyses</strong>, tu n'en as pas besoin : dans Power BI Desktop,
+    <strong>Obtenir les données &gt; Modèles sémantiques Power BI &gt; Lireka_Profitabilite</strong>.
   </div>
 
-  <h2><span class="num">1</span> Installation <span class="quand">une seule fois</span></h2>
+  <div class="encadre important">
+    <strong>Pendant ma mission, ne pousse rien</strong> (<code>git push</code>) sans m'avoir prévenu :
+    mes livraisons remplacent le contenu du dépôt et effaceraient ta modification.
+    Cloner et récupérer les versions (<code>git pull</code>) : librement.
+  </div>
+
+  <h2><span class="num">1</span> Mise en place <span class="quand">une seule fois</span></h2>
   <ol class="etapes">
     <li>Installe <strong>Git for Windows</strong> (git-scm.com/download/win, options par défaut).</li>
-    <li>Crée ta clé SSH dans <strong>PowerShell</strong>, puis appuie <strong>trois fois sur Entrée</strong>
-      (emplacement par défaut, pas de phrase secrète, confirmation).
+    <li>Ouvre <strong>PowerShell</strong> (menu Démarrer, tape PowerShell). Crée ta clé SSH, puis appuie
+      <strong>trois fois sur Entrée</strong> (emplacement par défaut, pas de phrase secrète, confirmation).
       <pre>ssh-keygen -t ed25519 -C "ehenry@lireka.com"</pre>
+      Si la question <code>Overwrite (y/n)?</code> apparaît, tu as déjà une clé : réponds <code>n</code> et passe à l'étape 3.
     </li>
-    <li>Envoie-moi <strong>toute la ligne</strong> affichée par cette commande (elle commence par <code>ssh-ed25519</code>) :
+    <li>Envoie-moi <strong>toute la ligne</strong> affichée, qui commence par <code>ssh-ed25519</code> (Slack ou mail : elle n'est pas secrète).
       <pre>Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub</pre>
-      Le fichier <code>id_ed25519</code> <strong>sans</strong> <code>.pub</code> est ta clé privée : il ne quitte jamais ton poste.
+      Le fichier <code>id_ed25519</code> <strong>sans</strong> <code>.pub</code> est ta clé privée : il ne quitte jamais ton ordinateur.
     </li>
-    <li>Dès mon feu vert, ouvre PowerShell dans le dossier de ton choix et récupère le projet : Git y crée un dossier <code>lireka</code>.
-      <code>emma.henry</code> est ton compte sur le serveur, pas ton e-mail.
+    <li>Dès mon feu vert, dans PowerShell, récupère le projet. <code>emma.henry</code> est ton compte sur le serveur, pas ton e-mail.
+      Le projet arrive dans un dossier <code>lireka</code>, dans ton dossier personnel.
       <pre>git config --global user.name "Emma Henry"
 git config --global user.email "ehenry@lireka.com"
 git clone emma.henry@20.19.33.4:C:/git/lireka.git</pre>
-      Au premier clone, Git affiche l'empreinte du serveur. Réponds <code>yes</code> <strong>seulement si elle est exactement</strong> :
+      Au premier clone, réponds <code>yes</code> <strong>seulement si l'empreinte affichée est exactement</strong> :
       <pre class="empreinte sans-etiquette">SHA256:eBMqTCmtpfbE5ym8v8/94o5zQl9i0h6ADtGQhMk4zJc</pre>
     </li>
   </ol>
 
   <h2><span class="num">2</span> Récupérer la dernière version <span class="quand">à tout moment</span></h2>
-  <p>Dans PowerShell, depuis le dossier <code>lireka</code> :</p>
-  <pre>git pull</pre>
-  <p>Ouvre ensuite <code>powerbi\Lireka_Profitabilite.pbip</code>. Sans accès à la base, le rapport s'ouvre sans données :
-    <strong>ne clique pas sur Actualiser</strong>.
-    Si <code>git pull</code> refuse à cause de fichiers modifiés que tu n'as pas touchés (Desktop en réécrit à l'ouverture),
-    lance <code>git restore .</code> puis recommence.</p>
+  <pre>cd lireka
+git pull</pre>
+  <p>Ouvre ensuite <code>lireka\powerbi\Lireka_Profitabilite.pbip</code> (double-clic). Il s'ouvre <strong>sans données</strong>,
+    c'est normal : <strong>ne clique pas sur Actualiser</strong>. Si <code>git pull</code> refuse à cause de fichiers que tu n'as pas
+    modifiés (Desktop en réécrit parfois), lance <code>git restore .</code> puis recommence.</p>
 
   <h2><span class="num">3</span> Modifier et publier <span class="quand">après ma mission, ou après m'avoir prévenu</span></h2>
   <ol class="etapes">
-    <li>Préviens l'équipe dans <strong>#analytics</strong> : une seule personne modifie le rapport à la fois.</li>
+    <li>Si quelqu'un d'autre travaille aussi sur le rapport, prévenez-vous : une seule personne le modifie à la fois.</li>
     <li><code>git pull</code>, ouvre le <code>.pbip</code>, modifie, puis <strong>Fichier &gt; Enregistrer</strong>.</li>
-    <li>Enregistre ta modification dans Git :
-      <pre>git status
-git add -A
-git commit -m "Ce que tu as changé, en une phrase"
+    <li>Enregistre ta modification dans Git, avec une phrase qui dit ce que tu as changé :
+      <pre>git add -A
+git commit -m "Nouveau graphique sur la page Marketplaces"
 git push</pre>
     </li>
     <li>Dans Desktop : <strong>Accueil &gt; Publier</strong>, espace <strong>LIREKA - Power BI</strong>, <strong>Remplacer</strong>.
-      Ne change pas les sources de données.</li>
-    <li>Dans le Service, sur le modèle <strong>Lireka_Profitabilite</strong> : <strong>Actualiser maintenant</strong>,
-      puis <strong>Historique d'actualisation</strong>. La ligne doit indiquer <strong>Completed</strong>.</li>
-    <li>Ferme Desktop, lance <code>git restore .</code> (la publication réécrit des fichiers), puis signale la fin dans <strong>#analytics</strong>.</li>
+      Ne change pas les sources. Le rapport reste vide jusqu'à l'actualisation : publie quand personne ne le consulte.</li>
+    <li>Dans le Service, sur le modèle sémantique <strong>Lireka_Profitabilite</strong> : <strong>Actualiser maintenant</strong>.
+      Quelques minutes plus tard, <strong>Historique d'actualisation</strong> doit indiquer <strong>Terminé</strong> (Completed).</li>
+    <li>Ferme Desktop, puis lance <code>git restore .</code> : la publication réécrit des fichiers déjà enregistrés dans Git.</li>
   </ol>
 
   <h2><span class="num">4</span> Si ça bloque</h2>
-  <div class="encadre info">
-    <strong>Ne corrige rien toi-même</strong> et ne lance jamais <code>git push --force</code> : envoie-moi le message affiché.
+  <p><strong>Ne corrige rien toi-même</strong> et ne lance jamais <code>git push --force</code> : envoie-moi le message affiché.</p>
+  <div class="cas-grille">
+    <div class="cas"><div class="cas-msg"><code>Permission denied (publickey)</code></div><div>Clé pas encore enregistrée sur le serveur, ou nom de compte mal écrit.</div></div>
+    <div class="cas"><div class="cas-msg"><code>Connection timed out</code></div><div>Le serveur n'est pas joignable depuis ta connexion.</div></div>
+    <div class="cas"><div class="cas-msg">Empreinte différente de celle ci-dessus</div><div>Réponds <code>no</code> et écris-moi.</div></div>
+    <div class="cas"><div class="cas-msg"><code>CONFLICT</code>, ou <code>rejected</code> après <code>git push</code></div><div>Quelqu'un a modifié le rapport en même temps.</div></div>
+    <div class="cas"><div class="cas-msg">Desktop n'ouvre pas le <code>.pbip</code></div><div>Mets Power BI Desktop à jour, puis réessaie.</div></div>
+    <div class="cas"><div class="cas-msg">Nouvel ordinateur</div><div>Refais toute la mise en place : la nouvelle clé doit être enregistrée sur le serveur.</div></div>
   </div>
-  <table>
-    <tr><td><code>Permission denied (publickey)</code></td><td>Clé pas encore enregistrée, ou mauvais nom de compte.</td></tr>
-    <tr><td><code>Connection timed out</code></td><td>Accès au serveur fermé de l'extérieur.</td></tr>
-    <tr><td>Empreinte différente de celle ci-dessus</td><td>Réponds <code>no</code> et écris-moi.</td></tr>
-    <tr><td><code>CONFLICT</code> ou <code>git push</code> refusé</td><td>Quelqu'un a modifié le rapport en même temps.</td></tr>
-  </table>
-
-  <footer>
-    <span>ZineInsights pour Lireka</span>
-    <span>Détails : docs/3-git-et-publication.md</span>
-  </footer>
 
 </body>
 </html>
