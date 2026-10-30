@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lireka - Ton accès au projet Power BI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --encre: #16202c;
+      --texte: #2b3542;
+      --discret: #5f6b7a;
+      --accent: #1f4e79;
+      --accent-clair: #e8eef5;
+      --ok: #166534;
+      --ok-fond: #eef7f0;
+      --code-fond: #f4f6f8;
+      --code-bord: #dfe3e8;
+      --filet: #e3e7ec;
+    }
+    * { box-sizing: border-box; }
+    @page { size: A4; margin: 0; }
+    html { background: #fff; }
+    body {
+      margin: 0 auto;
+      padding: 14mm 16mm 12mm;
+      max-width: 210mm;
+      font-family: "Inter", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.45;
+      color: var(--texte);
+      background: #fff;
+    }
+    strong { color: var(--encre); font-weight: 600; }
+    p { margin: 4px 0; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      padding-bottom: 9px;
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: 12px;
+    }
+    .surtitre {
+      font-size: 8pt;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 3px;
+    }
+    h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--encre);
+      margin: 0;
+      line-height: 1.15;
+    }
+    .meta {
+      text-align: right;
+      font-size: 8.5pt;
+      color: var(--discret);
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .intro {
+      background: var(--accent-clair);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 9px 13px;
+      margin: 0 0 14px;
+    }
+    .intro p { margin: 3px 0; }
+
+    .etape {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 0 12px;
+      margin: 0 0 13px;
+    }
+    .num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 11pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    h2 {
+      font-size: 12pt;
+      font-weight: 700;
+      color: var(--encre);
+      margin: 3px 0 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .duree {
+      font-size: 8.5pt;
+      font-weight: 500;
+      color: var(--discret);
+    }
+    code, pre {
+      font-family: "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+      font-size: 8.8pt;
+    }
+    code {
+      background: var(--code-fond);
+      border: 1px solid var(--code-bord);
+      border-radius: 3px;
+      padding: 0 3px;
+      color: var(--encre);
+      white-space: nowrap;
+    }
+    pre {
+      background: var(--code-fond);
+      border: 1px solid var(--code-bord);
+      border-radius: 5px;
+      padding: 6px 11px;
+      margin: 5px 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--encre);
+      font-weight: 600;
+    }
+    .voir {
+      background: var(--ok-fond);
+      border-radius: 5px;
+      padding: 5px 10px;
+      margin: 6px 0 0;
+      font-size: 9.3pt;
+    }
+    .voir strong { color: var(--ok); }
+    .empreinte {
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-weight: 600;
+      font-size: 9pt;
+      color: var(--encre);
+    }
+
+    .fin {
+      border-top: 1px solid var(--filet);
+      padding-top: 11px;
+      margin-top: 4px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .fin h3 {
+      font-size: 10pt;
+      font-weight: 700;
+      color: var(--encre);
+      margin: 0 0 3px;
+    }
+    .fin p { font-size: 9.3pt; }
+
+    @media print {
+      .etape, .fin { page-break-inside: avoid; }
+    }
+    @media (max-width: 600px) {
+      body { padding: 16px; }
+      header { flex-direction: column; align-items: flex-start; }
+      .meta { text-align: left; white-space: normal; }
+      .fin { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <p class="surtitre">Projet Power BI Lireka</p>
+      <h1>Ton accès au projet Power BI</h1>
+    </div>
+    <div class="meta">
+      Pour <strong>Emma Henry</strong><br>
+      Version du 30/10/2026
+    </div>
+  </header>
+
+  <div class="intro">
+    <p>Les fichiers du rapport Power BI sont conservés chez Lireka, sur le serveur géré par Inforeso.
+      Cet accès te donne une copie du projet sur ton PC et, plus tard, la possibilité de modifier et republier le rapport toi-même.</p>
+    <p><strong>Ce que tu as à faire : quatre étapes, une seule fois, une dizaine de minutes.</strong>
+      Pour consulter le rapport ou faire tes propres analyses, rien ne change.</p>
+  </div>
+
+  <div class="etape">
+    <div class="num">1</div>
+    <div>
+      <h2>Installer Git <span class="duree">5 minutes</span></h2>
+      <p>Télécharge <strong>Git for Windows</strong> sur <strong>git-scm.com/download/win</strong>
+        et installe-le en gardant toutes les options proposées.</p>
+    </div>
+  </div>
+
+  <div class="etape">
+    <div class="num">2</div>
+    <div>
+      <h2>Créer ta clé d'accès <span class="duree">2 minutes</span></h2>
+      <p>Ouvre <strong>PowerShell</strong> : touche Windows, tape <strong>PowerShell</strong>, Entrée.
+        Colle cette commande (Ctrl+V), puis Entrée :</p>
+      <pre>ssh-keygen -t ed25519 -C "ehenry@lireka.com"</pre>
+      <p>Trois questions s'affichent : appuie sur <strong>Entrée</strong> à chacune, sans rien taper.</p>
+      <div class="voir"><strong>Tu dois voir</strong> : <code>Your public key has been saved in ...</code>
+        Si la question <code>Overwrite (y/n)?</code> apparaît, tu as déjà une clé : tape <code>n</code>, Entrée, et passe à l'étape 3.</div>
+    </div>
+  </div>
+
+  <div class="etape">
+    <div class="num">3</div>
+    <div>
+      <h2>M'envoyer ta clé <span class="duree">1 minute</span></h2>
+      <p>Dans le même PowerShell, colle cette commande, puis Entrée. Elle copie ta clé, rien ne s'affiche :</p>
+      <pre>Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub | Set-Clipboard</pre>
+      <p>Colle-la (Ctrl+V) dans un message Slack pour moi. Elle n'est pas secrète.
+        N'envoie jamais rien d'autre du dossier <code>.ssh</code>.</p>
+      <div class="voir"><strong>Tu dois voir</strong>, dans ton message : une longue ligne qui commence par <code>ssh-ed25519</code>.</div>
+    </div>
+  </div>
+
+  <div class="etape">
+    <div class="num">4</div>
+    <div>
+      <h2>Récupérer le projet <span class="duree">2 minutes, après mon message</span></h2>
+      <p>J'enregistre ta clé sur le serveur et je te préviens sur Slack. Ensuite seulement,
+        ouvre PowerShell comme à l'étape 2, colle cette commande, puis Entrée :</p>
+      <pre>git clone emma.henry@20.19.33.4:C:/git/lireka.git</pre>
+      <p>Une question <code>Are you sure you want to continue connecting</code> s'affiche.
+        Vérifie que les lignes au-dessus contiennent <span class="empreinte">SHA256:eBMqTCmtpfbE5ym8v8/94o5zQl9i0h6ADtGQhMk4zJc</span>,
+        puis tape <code>yes</code> en entier et Entrée.</p>
+      <div class="voir"><strong>Tu dois voir</strong> : <code>Cloning into 'lireka'...</code>, puis quelques lignes qui finissent par <code>done</code>.
+        Le projet est maintenant sur ton PC, dans <code>C:\Users\&lt;ton nom&gt;\lireka</code>.</div>
+    </div>
+  </div>
+
+  <div class="fin">
+    <div>
+      <h3>C'est tout pour l'instant</h3>
+      <p>Pendant ma mission, tu n'as rien d'autre à faire. Avant la fin, on fera ensemble une courte séance :
+        récupérer les mises à jour, modifier le rapport et le republier.</p>
+    </div>
+    <div>
+      <h3>Si un message d'erreur apparaît</h3>
+      <p>Ne corrige rien. Fais une capture d'écran de PowerShell et envoie-la-moi sur Slack.</p>
+    </div>
+  </div>
+
+</body>
+</html>
