@@ -257,11 +257,10 @@
       <pre>Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub</pre>
       Le fichier <code>id_ed25519</code> <strong>sans</strong> <code>.pub</code> est ta clé privée : il ne quitte jamais ton poste.
     </li>
-    <li>Dès mon feu vert, récupère le projet. <code>emma.henry</code> est ton compte sur le serveur, pas ton e-mail.
+    <li>Dès mon feu vert, ouvre PowerShell dans le dossier de ton choix et récupère le projet : Git y crée un dossier <code>lireka</code>.
+      <code>emma.henry</code> est ton compte sur le serveur, pas ton e-mail.
       <pre>git config --global user.name "Emma Henry"
 git config --global user.email "ehenry@lireka.com"
-New-Item -ItemType Directory -Force C:\src | Out-Null
-cd C:\src
 git clone emma.henry@20.19.33.4:C:/git/lireka.git</pre>
       Au premier clone, Git affiche l'empreinte du serveur. Réponds <code>yes</code> <strong>seulement si elle est exactement</strong> :
       <pre class="empreinte sans-etiquette">SHA256:eBMqTCmtpfbE5ym8v8/94o5zQl9i0h6ADtGQhMk4zJc</pre>
@@ -269,8 +268,8 @@ git clone emma.henry@20.19.33.4:C:/git/lireka.git</pre>
   </ol>
 
   <h2><span class="num">2</span> Récupérer la dernière version <span class="quand">à tout moment</span></h2>
-  <pre>cd C:\src\lireka
-git pull</pre>
+  <p>Dans PowerShell, depuis le dossier <code>lireka</code> :</p>
+  <pre>git pull</pre>
   <p>Ouvre ensuite <code>powerbi\Lireka_Profitabilite.pbip</code>. Sans accès à la base, le rapport s'ouvre sans données :
     <strong>ne clique pas sur Actualiser</strong>.
     Si <code>git pull</code> refuse à cause de fichiers modifiés que tu n'as pas touchés (Desktop en réécrit à l'ouverture),
