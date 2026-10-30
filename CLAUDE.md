@@ -21,7 +21,7 @@
 4. Fermer complètement Desktop, ouvrir `Lireka_Profitabilite.pbip`, publier, puis actualiser le modèle dans le Service.
 5. `git restore .` après publication (Desktop réécrit des fichiers).
 
-**Attention : `C:\lireka\livrer.ps1` est une copie.** Quand `tools/livraison/livrer.ps1` change sur `main` (garde-fou ajouté le 30/10/2026), la VM garde l'ancienne version tant qu'on ne la remplace pas. Avant l'étape 2 (le script supprime le zip à la fin), mettre à jour la copie depuis le zip :
+**À faire une seule fois, à la prochaine livraison** (pas une étape habituelle) : `C:\lireka\livrer.ps1` est une copie, et la VM a encore la version sans le garde-fou ajouté le 30/10/2026. Après l'étape 1 et avant l'étape 2 (le script supprime le zip à la fin), remplacer la copie par celle du zip. À refaire seulement si `tools/livraison/livrer.ps1` change de nouveau sur `main`.
 ```powershell
 Expand-Archive $HOME\Downloads\lireka-main.zip C:\lireka\maj -Force
 Copy-Item C:\lireka\maj\lireka-main\tools\livraison\livrer.ps1 C:\lireka\livrer.ps1 -Force
