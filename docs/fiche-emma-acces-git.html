@@ -248,8 +248,7 @@
 
   <h2><span class="num">1</span> Installation <span class="quand">une seule fois</span></h2>
   <ol class="etapes">
-    <li>Installe <strong>Git for Windows</strong> (git-scm.com/download/win, options par défaut).
-      Pour <strong>Power BI Desktop</strong>, écris-moi avant de l'installer : il faut la même version que la mienne.</li>
+    <li>Installe <strong>Git for Windows</strong> (git-scm.com/download/win, options par défaut).</li>
     <li>Crée ta clé SSH dans <strong>PowerShell</strong>, puis appuie <strong>trois fois sur Entrée</strong>
       (emplacement par défaut, pas de phrase secrète, confirmation).
       <pre>ssh-keygen -t ed25519 -C "ehenry@lireka.com"</pre>
@@ -259,7 +258,6 @@
       Le fichier <code>id_ed25519</code> <strong>sans</strong> <code>.pub</code> est ta clé privée : il ne quitte jamais ton poste.
     </li>
     <li>Dès mon feu vert, récupère le projet. <code>emma.henry</code> est ton compte sur le serveur, pas ton e-mail.
-      Le dossier <code>C:\src</code> est volontairement hors de <strong>Documents</strong>, que OneDrive synchronise et qui abîmerait le dépôt.
       <pre>git config --global user.name "Emma Henry"
 git config --global user.email "ehenry@lireka.com"
 New-Item -ItemType Directory -Force C:\src | Out-Null
