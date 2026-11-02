@@ -78,8 +78,9 @@ Paramètres (*Transformer les données* > *Gérer les paramètres*) : `PgServer`
 | − Droits et taxes | `package.duties_taxes_eur` |
 | − Commissions marketplace | `customer_order.marketplace_fees_eur` |
 | − Fournitures d'expédition | `package.shipping_supply_cost_eur` |
+| − Retours et remboursements | `customer_order.returns_and_refunds_eur` (remboursements, rétrofacturations et remplacements), hors commandes annulées |
 
-**Hors marge brute** : retours et remboursements, coûts génériques. Ils sont disponibles dans le modèle et affichés à part dans les tableaux. **Frais de paiement** : disponibles en base (`payment_cost_eur`), pas encore intégrés (décision en attente, voir [4-passation.md](4-passation.md)).
+**Hors marge brute** : coûts génériques. Selon COEX (02/11/2026), ils sont à 0 pour toutes les commandes depuis le 01/01/2025 ; ils ne sont plus affichés dans les tableaux. **Frais de paiement** : disponibles en base (`payment_cost_eur`), pas encore intégrés (décision en attente, voir [4-passation.md](4-passation.md)).
 
 ### Autres indicateurs
 

@@ -197,21 +197,6 @@
             },
             {
               "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Mesures"
-                    }
-                  },
-                  "Property": "Top Loss — Generic"
-                }
-              },
-              "queryRef": "_Mesures.Top Loss — Generic",
-              "nativeQueryRef": "Top Loss — Generic",
-              "displayName": "Generic costs (not in GP)"
-            },
-            {
-              "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {

@@ -188,21 +188,6 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "Mkt Display - Generic costs"
-                }
-              },
-              "queryRef": "_Mesures.Mkt Display - Generic costs",
-              "nativeQueryRef": "Mkt Display - Generic costs",
-              "displayName": "Generic costs (not in GP)"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Mesures"
-                    }
-                  },
                   "Property": "Mkt Display - Revenue YoY %"
                 }
               },
@@ -568,36 +553,6 @@
               }
             ],
             "metadata": "_Mesures.Mkt Display - Returns and refunds"
-          }
-        },
-        {
-          "properties": {
-            "fontColor": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Measure": {
-                      "Expression": {
-                        "SourceRef": {
-                          "Entity": "_Mesures"
-                        }
-                      },
-                      "Property": "B2C couleur - cout"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "selector": {
-            "data": [
-              {
-                "dataViewWildcard": {
-                  "matchingOption": 1
-                }
-              }
-            ],
-            "metadata": "_Mesures.Mkt Display - Generic costs"
           }
         },
         {

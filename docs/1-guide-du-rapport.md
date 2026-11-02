@@ -101,6 +101,5 @@ Commandes à marge brute négative.
 | Duties and taxes | Droits de douane et taxes à l'import payés par Lireka |
 | Marketplace fees | Commissions des places de marché |
 | Shipping supplies | Fournitures d'expédition (emballages) |
-| Returns and refunds | Retours et remboursements (hors marge brute) |
-| Generic costs | Coûts génériques (hors marge brute) |
+| Returns and refunds | Retours et remboursements (déduits de la marge brute) |
 | PY / YoY / bps | Année précédente / variation sur un an / points de base (1 point de % = 100 bps) |

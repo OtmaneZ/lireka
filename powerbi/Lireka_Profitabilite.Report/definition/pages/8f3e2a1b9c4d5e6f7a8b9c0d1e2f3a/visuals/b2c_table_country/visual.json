@@ -203,21 +203,6 @@
                       "Entity": "_Mesures"
                     }
                   },
-                  "Property": "B2C Display - Generic costs"
-                }
-              },
-              "queryRef": "_Mesures.B2C Display - Generic costs",
-              "nativeQueryRef": "B2C Display - Generic costs",
-              "displayName": "Generic costs (not in GP)"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Mesures"
-                    }
-                  },
                   "Property": "B2C Display - Revenue YoY %"
                 }
               },
