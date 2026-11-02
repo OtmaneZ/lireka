@@ -155,11 +155,11 @@ expression stg_factures_transport_resolu =
 			Colonnes
 	lineageTag: f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c
 
-/// Staging (non chargé) — catalogue ISBN : titre depuis analytics_views.v_book_attributes (book_title), un titre par ISBN.
-/// author reste vide : la vue n'a que about_authors (présentation), pas de nom d'auteur (à confirmer avec COEX).
+/// Staging (non chargé) — catalogue ISBN : titre depuis analytics_views.v_book_titles (isbn, book_title), vue légère COEX à un titre par ISBN.
+/// author reste vide : pas encore de nom d'auteur dans analytics (annoncé par COEX).
 expression stg_catalogue_isbn =
 		let
-			Source = fnRequeteSql("SELECT DISTINCT ON (upper(trim(isbn))) upper(trim(isbn)) AS isbn, book_title AS title FROM " & PgSchema & ".v_book_attributes WHERE isbn IS NOT NULL AND trim(isbn) <> '' ORDER BY upper(trim(isbn)), book_id"),
+			Source = fnRequeteSql("SELECT upper(trim(isbn)) AS isbn, book_title AS title FROM " & PgSchema & ".v_book_titles WHERE isbn IS NOT NULL AND trim(isbn) <> ''"),
 			Types = Table.TransformColumnTypes(Source, {{"isbn", type text}, {"title", type text}}, "en-US"),
 			AvecAuteur = Table.AddColumn(Types, "author", each null, type text)
 		in

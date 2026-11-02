@@ -86,5 +86,5 @@ Aucun mot de passe n'est écrit dans ce document ni dans le projet.
 | Droits et taxes des commandes DDP | Power BI les déduit de la marge ; la marge calculée par COEX (`contribution_profit_eur`) ne semble pas le faire (exemple : commande 20260914-KE-06518B, 504,07 € de droits). À confirmer avec COEX. |
 | Website B2B : variations N-1 très élevées | Activité B2B quasi nulle en 2024 : les pourcentages sont exacts. |
 | Transporteur des colis | Déduit du numéro de suivi. COEX fournit désormais le transporteur réel (`package.carrier`), utilisable dans une prochaine version. |
-| Titres et auteurs des livres | Titres disponibles dans `v_book_attributes` ; auteurs annoncés plus tard par COEX. Non encore intégrés. |
+| Titres et auteurs des livres | Titres intégrés depuis la vue `v_book_titles` (un titre par ISBN). Auteurs annoncés par COEX, non encore disponibles. |
 | Accès Git depuis l'extérieur | Port 22 à ouvrir dans Azure par Inforeso. |
