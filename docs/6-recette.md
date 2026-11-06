@@ -1,8 +1,8 @@
 # 6. Compte rendu de recette
 
-Recette de la mise en production du rapport Power BI de profitabilité dans l'environnement de Lireka (devis D-2026-004, ligne « Recette » : refresh planifié validé, contrôle de la marge, contrôle des accès, compte rendu de recette).
+Recette de la mise en production du rapport Power BI de profitabilité dans l'environnement de Lireka (devis D-2026-004). La ligne « Recette » du devis comprend : actualisation planifiée validée, contrôle de la marge, contrôle des accès, compte rendu de recette.
 
-Rédigé le 26/10/2026. Constats du 28/10/2026 portés dans les sections 1 et 3. Les points encore marqués **À constater** restent ouverts.
+Version finale du 06/11/2026.
 
 ---
 
@@ -10,68 +10,53 @@ Rédigé le 26/10/2026. Constats du 28/10/2026 portés dans les sections 1 et 3.
 
 | Point de recette | Statut |
 |---|---|
-| 1. Refresh planifié validé | Fait (28/10/2026) : actualisation planifiée réussie dans l'espace LIREKA - Power BI ; décalée de 6:00 à 8:00 le 29/10/2026, à la demande de COEX, dont la synchronisation se termine vers 6:30 |
-| 2. Contrôle de la marge | Fait (voir section 2) ; décisions de définition en attente de Lireka |
-| 3. Contrôle des accès | Rapport visible par Marc et Emma, modèle visible dans Desktop (28/10/2026) ; accès Git SSH d'Emma encore à constater |
-| 4. Serveur Git et migration du dépôt | Fait : dépôt livré le 26/10/2026 et testé par SSH ; port 22 à ouvrir dans Azure |
+| 1. Actualisation planifiée | **Validée.** Actualisation quotidienne à 8:00 dans l'espace LIREKA - Power BI. |
+| 2. Contrôle de la marge | **Validé par Lireka le 03/11/2026**, par comparaison avec les comptes du troisième trimestre. |
+| 3. Contrôle des accès | **Validé** pour Marc Bordier, Emma Henry et le compte de la passerelle. Accès de Clémence et de Michal Kašpar à donner par Lireka. |
+| 4. Serveur Git et migration du dépôt | **Fait.** Dépôt en place sur le VPS, accessible de l'extérieur par clé SSH depuis le 28/10/2026. |
 
 ---
 
-## 1. Refresh planifié
+## 1. Actualisation planifiée
 
 | Contrôle | Résultat |
 |---|---|
-| Échecs constatés avant recette | 20/10 et 23/10/2026 à 06:08 : vues `analytics_views` momentanément absentes pendant la synchronisation COEX. Cause corrigée par COEX le 26/10/2026. |
-| Avertissements de format à chaque actualisation | Corrigés le 25/10/2026 ; actualisation du 26/10/2026 à 01:44 terminée sans avertissement. |
-| Actualisation planifiée réussie dans l'espace LIREKA - Power BI (6:00 le 28/10, 8:00 depuis le 29/10) | **Fait** (28/10/2026) |
+| Actualisation planifiée réussie dans l'espace LIREKA - Power BI | Fait, depuis le 28/10/2026 |
+| Heure d'actualisation | 8:00 depuis le 29/10/2026, à la demande de COEX, dont la synchronisation se termine vers 6:30 |
+| Échecs des 20/10 et 23/10/2026 | Synchronisation COEX anormalement longue. Corrigé par COEX le 26/10/2026. |
+| Échec du 01/11/2026 | Connexion interrompue pendant la lecture des titres des livres. Corrigé le 03/11/2026 par la vue légère `v_book_titles`. |
+| Actualisations des 02/11 et 03/11/2026 | Réussies, en 19 à 22 minutes |
 
 ---
 
 ## 2. Contrôle de la marge
 
-### Corrections apportées
+### Corrections apportées pendant la recette
 
 | Correction | Effet |
 |---|---|
-| Frais de port comptés une seule fois (ils sont déjà inclus dans le montant de la commande) | Revenu et marge diminués du port compté en double : 3 459 900,71 € sur tout l'historique |
-| Chiffre d'affaires hors TVA (`order_amount_excl_vat_eur`, fourni par COEX le 26/10/2026) | Revenu et marge diminués du montant de la TVA |
+| Frais de port comptés une seule fois | Ils étaient comptés en double, alors qu'ils sont déjà inclus dans le montant de la commande. |
+| Chiffre d'affaires hors TVA (`order_amount_excl_vat_eur`, fourni par COEX le 26/10/2026) | Revenu et marge calculés hors TVA. |
+| Retours et remboursements déduits de la marge brute (27/10/2026) | Remboursements, rétrofacturations et remplacements, hors commandes annulées. |
+| Coûts génériques hors marge brute | À 0 depuis le 01/01/2025 selon COEX ; colonne retirée des tableaux. |
 
-### Résultat sur l'année 2025 (General View : Website B2C, Website B2B, Marketplaces)
+### Alignement avec le backoffice
 
-| Canal | Revenue | Gross Profit | Gross Margin | Référence Lireka |
-|---|---|---|---|---|
-| Website B2C | 5 430 k€ | 1 265 k€ | 23,3 % | 20 % (site) |
-| Website B2B | 449 k€ | 107 k€ | 23,8 % | 20 % (site) |
-| Marketplaces | 3 381 k€ | 399 k€ | 11,8 % | 10 % |
-| **Total** | **9 259 k€** | **1 771 k€** | **19,1 %** | **17 %** |
+Le 02/11/2026, COEX a aligné le tableau de profitabilité du backoffice sur les mêmes sources que Power BI : coûts réels, factures transporteurs, annulations déduites. COEX confirme que c'est aussi vrai au niveau de chaque commande.
 
-Évolution de la marge affichée : 27 % (09/10/2026, 12 mois glissants, TVA et port en double inclus), 20,8 % après correction du port, 19,1 % après passage hors TVA.
+### Validation par Lireka
 
-L'écart restant avec la référence de 17 % correspond à des postes que la formule actuelle n'inclut pas (retours et remboursements, frais de paiement, coûts génériques) : décision de définition à prendre par Lireka.
+Le 03/11/2026, Marc Bordier a comparé chaque poste de revenu et de coût de Power BI et du backoffice avec les comptes du troisième trimestre préparés par l'expert-comptable.
 
-### Comparaison avec le tableau de profitabilité du backoffice (septembre 2026, tous canaux, avant passage hors TVA)
+| Poste | Écart avec la comptabilité |
+|---|---|
+| Chiffre d'affaires | 1,1 % |
+| Coût d'achat | 7 %, factures fournisseurs de septembre pas encore toutes comptabilisées |
+| Transport sortant | 0,4 % |
+| Droits et taxes | 1,7 % |
+| Commissions marketplace | 4 % |
 
-| Poste | Power BI | Backoffice |
-|---|---|---|
-| Chiffre d'affaires | 1 212 739 € | 1 205 789 € |
-| Coût d'achat | 586 685 € | 604 880 € |
-| Transport amont | 18 300 € | 17 985 € |
-| Transport sortant | 236 811 € | 251 603 € |
-| Droits et taxes | 24 496 € | 24 154 € |
-| Commissions marketplace | 103 410 € | 98 366 € |
-| Fournitures | 12 619 € | 17 388 € |
-| Retours et remboursements | non déduits | 13 877 € |
-| Frais de paiement | non déduits | 4 634 € |
-| Coûts génériques | non déduits | 7 480 € |
-| **Marge brute** | **230 419 €** | **162 449 €** |
-
-Explication (COEX, 26/10/2026) : le backoffice utilise des coûts estimés, la base analytique les coûts réels. COEX aligne le backoffice sur les mêmes valeurs.
-
-### Décisions attendues de Lireka
-
-1. Intégrer ou non dans la marge brute : retours et remboursements, frais de paiement, coûts génériques.
-2. Droits et taxes des commandes DDP (exemple 20260914-KE-06518B : 504,07 €).
-3. Commandes au statut PICKED : comptées ou non.
+Conclusion de Lireka : les données de Power BI et du backoffice sont fiables, et le rapport Finance peut être utilisé.
 
 ---
 
@@ -79,10 +64,12 @@ Explication (COEX, 26/10/2026) : le backoffice utilise des coûts estimés, la b
 
 | Contrôle | Résultat |
 |---|---|
-| Marc Bordier voit le rapport dans l'espace LIREKA - Power BI | **Fait** (28/10/2026) |
-| Emma Henry voit le rapport dans l'espace LIREKA - Power BI | **Fait** (28/10/2026) |
-| Le modèle apparaît dans Power BI Desktop (Obtenir les données > Modèles sémantiques Power BI) | **Fait** (28/10/2026) |
-| Accès Git d'Emma Henry par SSH | **À constater** (après ouverture du port 22) |
+| Marc Bordier, Admin de l'espace LIREKA - Power BI, voit le rapport | Fait (28/10/2026) |
+| Emma Henry, Admin de l'espace LIREKA - Power BI, voit le rapport | Fait (28/10/2026) |
+| Le modèle apparaît dans Power BI Desktop (Obtenir les données > Modèles sémantiques Power BI) | Fait (28/10/2026) |
+| Le compte powerbi-gateway@lireka.com porte la passerelle et le modèle | Fait. Licence Pro à attribuer avant le 26/12/2026 environ. |
+| Accès de Clémence et de Michal Kašpar | À donner par un Admin de l'espace (rôle Lecteur). Michal doit d'abord être invité dans le tenant Lireka. |
+| Accès Git d'Emma Henry | Procédure envoyée le 30/10/2026, en attente de sa clé publique |
 
 ---
 
@@ -91,7 +78,8 @@ Explication (COEX, 26/10/2026) : le backoffice utilise des coûts estimés, la b
 | Contrôle | Résultat |
 |---|---|
 | Git for Windows et OpenSSH Server installés sur le VPS | Fait (25/10/2026) |
-| Authentification par mot de passe désactivée | Fait, vérifié (`passwordauthentication no`) |
+| Authentification par mot de passe désactivée | Fait et vérifié |
 | Dépôt `C:\git\lireka.git` créé, historique protégé | Fait (26/10/2026) |
-| Livraison initiale : 365 fichiers, sans données ni identifiants | Fait, commit `9a580b7` |
-| Récupération du dépôt par SSH avec clé | Testé sur le VPS : réussi |
+| Livraison du projet, sans données ni identifiants | Fait (26/10/2026) |
+| Port 22 ouvert dans Azure par Inforeso | Fait (28/10/2026) |
+| Récupération du dépôt par SSH avec clé, depuis un poste extérieur | Testé : réussi |
